@@ -11,14 +11,14 @@ import java.util.Scanner;
 import java.util.stream.IntStream;
 
 /**
- * Scheduler that reads from a file input. The input should have the following format:
- * a1, b1, c1, a2, b2, c2, ...
- * a3, b3, c3, ...
- * ...
- * Where these are all integer timestamps and:
- * a = start compute
- * b = start moving
- * c = end moving
+ * Scheduler that reads from a file input. The input should have the following format:<br>
+ * a1, b1, c1, a2, b2, c2, ...<br>
+ * a3, b3, c3, ...<br>
+ * ...<br>
+ * Where these are all integer timestamps and:<br>
+ * a = start compute<br>
+ * b = start moving<br>
+ * c = end moving<br>
  * Every line is a new robot. The indices are the same as for the robots array given on creation.
  */
 public class FileScheduler extends Scheduler {

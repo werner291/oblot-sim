@@ -46,11 +46,11 @@ public class Robot {
 
     /**
      * A method to read in a robot configuration from a file.
-     * The format should be as follows:
-     * n
-     * x, y
-     * x, y
-     * ...
+     * The format should be as follows:<br>
+     * n<br>
+     * x, y<br>
+     * x, y<br>
+     * ...<br>
      * First the amount of robots n, then on separate lines, the starting positions of the robots.
      * @param filePath the path of the file to read the starting configuration from
      * @param algo the algorithm all robots should follow

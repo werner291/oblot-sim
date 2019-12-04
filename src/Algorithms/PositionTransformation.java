@@ -3,8 +3,9 @@ package Algorithms;
 import java.util.Arrays;
 
 /**
- * An abstract class that can transform global coordinates to the local coordinate system of a {@link Robot}
- * Note that when implementing this class, p == globalToLocal(localToGlobal(p)) && p == localToGlobal(globalToLocal(p)),
+ * An abstract class that can transform global coordinates to the local coordinate system of a {@link Robot}.
+ * Note that when implementing this class,<br>
+ * p == globalToLocal(localToGlobal(p)) && p == localToGlobal(globalToLocal(p))<br>
  * i.e. they are each others inverses.
  */
 public abstract class PositionTransformation {
