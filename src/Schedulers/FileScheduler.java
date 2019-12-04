@@ -49,8 +49,8 @@ public class FileScheduler extends Scheduler {
             Scanner scanner = new Scanner(new File(filePath));
             while (scanner.hasNextLine()) { // while there are still lines
                 if (lineIndex >= robots.length) {
-                    throw new IllegalArgumentException("The amount of lines in the file does not match" +
-                            "the amount of given robots (more lines)");
+                    throw new IllegalArgumentException(String.format("The amount of lines in the schedule file %s does not match " +
+                            "the amount of given robots! (more lines)", filePath));
                 }
 
                 String line = scanner.nextLine();
@@ -68,8 +68,8 @@ public class FileScheduler extends Scheduler {
             }
 
             if (lineIndex != robots.length) {
-                throw new IllegalArgumentException("The amount of lines in the file does not match " +
-                        "the amount of given robots (more robots)");
+                throw new IllegalArgumentException(String.format("The amount of lines in the schedule file %s does not match " +
+                        "the amount of given robots! (more robots)", filePath));
             }
 
 
@@ -77,7 +77,9 @@ public class FileScheduler extends Scheduler {
             System.err.println(String.format("File not found: %s", filePath));
             System.err.println("Does it exists and does it have read access?");
         } catch (NumberFormatException e) {
-            System.err.println("The file does not have the correct format");
+            System.err.println("The file does not have the correct format.");
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
         }
     }
 

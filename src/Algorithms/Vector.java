@@ -107,4 +107,9 @@ public class Vector {
     public static Vector inv(Vector v) {
         return new Vector(-v.x, -v.y);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Vector (%f; %f)", x, y);
+    }
 }
