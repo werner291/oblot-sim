@@ -4,5 +4,9 @@
  * Is also capable of saving the end result.
  */
 public class Simulator {
+    /**
+     * The {@link Config} for this simulator. Can be changed on the fly.
+     */
+    public Config config;
 
 }

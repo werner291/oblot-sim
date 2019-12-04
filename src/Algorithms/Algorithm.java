@@ -3,7 +3,7 @@ package Algorithms;
 import java.util.List;
 
 /**
- * An abstract class that is a template for algorithms run by robots
+ * An abstract class that is a template for algorithms run by {@link Robot}
  */
 public abstract class Algorithm {
 

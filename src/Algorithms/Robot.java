@@ -7,8 +7,18 @@ import java.util.List;
  */
 public class Robot {
 
+    /**
+     * The algorithm the robot will run.
+     */
     Algorithm algo;
+    /**
+     * The current position of the robot.
+     */
     Vector position;
+    /**
+     * The transformation object to transform global to local coordinates.
+     */
+    PositionTransformation transformation;
 
     /**
      * Calculate where the robot wants to go

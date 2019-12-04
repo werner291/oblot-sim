@@ -5,7 +5,13 @@ package Schedulers;
  */
 public class Event {
 
+    /**
+     * The type of the event.
+     */
     public EventType type;
+    /**
+     * The timestamp of the event.
+     */
     public double timeStamp;
 
     /**
