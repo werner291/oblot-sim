@@ -1,16 +1,21 @@
-package fxml;
-
-import java.net.URL;
-import java.util.ResourceBundle;
+package GUI;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
 
-import javax.swing.*;
+import java.net.URL;
+import java.util.ResourceBundle;
 
+/**
+ * The controller behind the {@link GUI}. The functions here define what happens when
+ * the GUI is manipulated using button presses, slider changes etc.
+ */
 public class FxFXMLController
 {
     @FXML
