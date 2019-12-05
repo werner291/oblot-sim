@@ -1,4 +1,4 @@
-import javafx.application.Application;
+import fxml.GuiClass;
 
 /**
  * The public class that we will use to start our GUI. This is an example class of how the simulator may be used.
