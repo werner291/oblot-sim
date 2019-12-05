@@ -22,6 +22,10 @@ public class Robot {
      * The transformation object to transform global to local coordinates.
      */
     PositionTransformation trans;
+    /**
+     * The current state of this robot.
+     */
+    State state;
 
     /**
      * Creates a new robot
@@ -33,6 +37,7 @@ public class Robot {
         this.algo = algo;
         this.pos = startPos;
         this.trans = trans;
+        this.state = State.SLEEPING;
     }
 
     /**

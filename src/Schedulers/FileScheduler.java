@@ -58,10 +58,10 @@ public class FileScheduler extends Scheduler {
                 int[] timestamps = Arrays.stream(line.split(", ")).mapToInt(Integer::parseInt).toArray();
 
                 Event[] eventsForRobot = new Event[timestamps.length];
-                Event.EventType currentType = Event.EventType.START_COMPUTE;
+                EventType currentType = EventType.START_COMPUTE;
                 for (int i = 0; i < timestamps.length; i++) {
                     eventsForRobot[i] = new Event(currentType, timestamps[i], robots[lineIndex]);
-                    currentType = Event.EventType.next(currentType);
+                    currentType = EventType.next(currentType);
                 }
                 events = merge(events, eventsForRobot);
                 lineIndex++;
