@@ -1,5 +1,7 @@
 package Algorithms;
 
+import java.util.Comparator;
+
 /**
  * A vector containing 2 doubles, used for example as position calculator
  * No function modifies the original vector!
@@ -106,6 +108,47 @@ public class Vector {
      */
     public static Vector inv(Vector v) {
         return new Vector(-v.x, -v.y);
+    }
+
+    /**
+     * Calculate the distance between two points when the vectors are regarded as points.
+     * @param v the vector to get the distance with.
+     * @return the euclidian distance to another point
+     */
+    public double dist(Vector v) {
+        double distX = Math.abs(v.x - this.x);
+        double distY = Math.abs(v.y - this.y);
+        return Math.sqrt(distX*distX + distY*distY);
+    }
+
+    /**
+     * Calculate the distance between two points when the vectors are regarded as points.
+     * @param a the first point
+     * @param b the second point
+     * @return the euclidean distance between a and b
+     */
+    public static double dist(Vector a, Vector b) {
+        double distX = Math.abs(a.x - b.x);
+        double distY = Math.abs(a.y - b.y);
+        return Math.sqrt(distX*distX + distY*distY);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof Vector) {
+            Vector other = (Vector) obj;
+            return this.x == other.x && this.y == other.y; //TODO: floating point correction
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return Double.hashCode(this.x) + Double.hashCode(this.y);
     }
 
     @Override

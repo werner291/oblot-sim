@@ -11,21 +11,21 @@ import java.util.Scanner;
 public class Robot {
 
     /**
-     * The algorithm the robot will run.
-     */
-    Algorithm algo;
-    /**
      * The current position of the robot.
      */
-    Vector pos;
-    /**
-     * The transformation object to transform global to local coordinates.
-     */
-    PositionTransformation trans;
+    public Vector pos;
     /**
      * The current state of this robot.
      */
-    State state;
+    public State state;
+    /**
+     * The transformation object to transform global to local coordinates.
+     */
+    private PositionTransformation trans;
+    /**
+     * The algorithm the robot will run.
+     */
+    private Algorithm algo;
 
     /**
      * Creates a new robot
@@ -42,7 +42,7 @@ public class Robot {
 
     /**
      * Calculate where the robot wants to go
-     * @param snapshot a snapshot of the positions of the robots at a certain timestamp
+     * @param snapshot a snapshot of the positions of the robots at a certain timestamp in the global coordinate system
      * @return A list of positions the robot wants to go to.
      */
     public List<Vector> calculate(Vector[] snapshot) {
