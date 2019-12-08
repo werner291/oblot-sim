@@ -1,0 +1,27 @@
+
+/*
+    We'll probably want to reshape this into a library at some point.
+ */
+
+plugins {
+  id 'application'
+  id 'org.openjfx.javafxplugin' version '0.0.5'
+}
+
+mainClassName = "Main"
+
+repositories {
+    // Not using Maven Central since IntelliJ tries to download the whole index just to provide autocompletion.
+    jcenter()
+}
+
+javafx {
+    version = "12"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+//dependencies {
+//    // https://mvnrepository.com/artifact/org.openjfx/javafx-fxml
+//    compile group: 'org.openjfx', name: 'javafx-fxml', version: '14-ea+4'
+//}
+
