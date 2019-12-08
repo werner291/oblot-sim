@@ -45,10 +45,10 @@ public class Robot {
      * @param snapshot a snapshot of the positions of the robots at a certain timestamp in the global coordinate system
      * @return A list of positions the robot wants to go to.
      */
-    public List<Vector> calculate(Vector[] snapshot) {
+    public Vector calculate(Vector[] snapshot) {
         Vector[] localSnapshot = trans.globalToLocal(snapshot, pos);
-        List<Vector> calculatedPositions = algo.doAlgorithm(localSnapshot, pos);
-        return trans.localToGlobal(calculatedPositions, pos);
+        Vector calculatedPosition = algo.doAlgorithm(localSnapshot);
+        return trans.localToGlobal(calculatedPosition, pos);
     }
 
     /**
