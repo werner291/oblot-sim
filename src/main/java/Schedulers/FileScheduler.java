@@ -58,7 +58,7 @@ public class FileScheduler extends Scheduler {
                 int[] timestamps = Arrays.stream(line.split(", ")).mapToInt(Integer::parseInt).toArray();
 
                 Event[] eventsForRobot = new Event[timestamps.length];
-                EventType currentType = EventType.START_COMPUTE;
+                EventType currentType = EventType.LOOK_COMPUTE;
                 for (int i = 0; i < timestamps.length; i++) {
                     eventsForRobot[i] = new Event(currentType, timestamps[i], robots[lineIndex]);
                     currentType = EventType.next(currentType);
@@ -170,7 +170,7 @@ public class FileScheduler extends Scheduler {
     }
 
     @Override
-    public List<Event> getNextEvent(Robot[] robots, double t) {
+    public List<Event> getNextEvent(Robot[] robots, double t, Event[] triggers) {
         // There can be many events, while the most likely access is in sequential order.
         // Therefore, we maintain the current index and first check if it is the next one.
         // In all other cases, we do a binary search.

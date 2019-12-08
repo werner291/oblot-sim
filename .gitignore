@@ -70,3 +70,8 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 .idea/
 /output/production/2IMG00/
+/.gradle/
+/build/
+/gradle/wrapper/
+/gradlew
+/gradlew.bat

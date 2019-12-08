@@ -1,5 +1,7 @@
 import Algorithms.Robot;
 import Algorithms.Vector;
+import Schedulers.Scheduler;
+import Schedulers.SyncScheduler;
 
 import java.util.Arrays;
 
@@ -19,9 +21,16 @@ public class Simulator {
      */
     private Robot[] robots;
 
-    public Simulator(Config c, Robot[] robots) {
+
+    /**
+     * The {@link Scheduler} that regulates which robots activate when.
+     */
+    private Scheduler scheduler;
+
+    public Simulator(Config c, Robot[] robots, Scheduler scheduler) {
         this.config = c;
         this.robots = robots;
+        this.scheduler = scheduler;
     }
 
     /**
@@ -42,4 +51,14 @@ public class Simulator {
         return positions;
     }
 
+    /**
+     * Run the simulation from the start until either the last event occurs, or the maximum time is reached.
+     *
+     * // TODO: Add some kind of callback such that the simulation can be observed?
+     *
+     * @param maxTime The time at which to stop the simulation. This may be Double.POSITIVE_INFINITY to let it run.
+     */
+    public void run(double maxTime) {
+        // TODO Implement.
+    }
 }

@@ -8,6 +8,8 @@ plugins {
   id 'org.openjfx.javafxplugin' version '0.0.5'
 }
 
+// It is used to specify the main class? IntelliJ is being stupid here.
+//noinspection GroovyUnusedAssignment
 mainClassName = "Main"
 
 repositories {
@@ -20,8 +22,12 @@ javafx {
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
-//dependencies {
-//    // https://mvnrepository.com/artifact/org.openjfx/javafx-fxml
-//    compile group: 'org.openjfx', name: 'javafx-fxml', version: '14-ea+4'
-//}
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    testCompile "org.junit.jupiter:junit-jupiter-engine:5.6.0-M1"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.6.0-M1"
+}
 
