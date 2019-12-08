@@ -46,7 +46,9 @@ public class Robot {
      * @return A list of positions the robot wants to go to.
      */
     public List<Vector> calculate(Vector[] snapshot) {
-        return algo.doAlgorithm(trans.globalToLocal(snapshot, pos), pos);
+        Vector[] localSnapshot = trans.globalToLocal(snapshot, pos);
+        List<Vector> calculatedPositions = algo.doAlgorithm(localSnapshot, pos);
+        return trans.localToGlobal(calculatedPositions, pos);
     }
 
     /**

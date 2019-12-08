@@ -1,6 +1,8 @@
 package Algorithms;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * An abstract class that can transform global coordinates to the local coordinate system of a {@link Robot}.
@@ -44,5 +46,25 @@ public abstract class PositionTransformation {
      */
     public Vector[] localToGlobal(Vector[] a, Vector origin) {
         return Arrays.stream(a).map(p -> localToGlobal(p, origin)).toArray(Vector[]::new);
+    }
+
+    /**
+     * Convert a list of coordinates from global to local
+     * @param a the list to convert
+     * @param origin the origin of the local coordinate system
+     * @return the corresponding local coordinates in the same order
+     */
+    public List<Vector> globalToLocal(List<Vector> a, Vector origin) {
+        return a.stream().map(p -> globalToLocal(p, origin)).collect(Collectors.toList());
+    }
+
+    /**
+     * Convert a list of coordinates from local to global
+     * @param a the list to convert
+     * @param origin the origin of the local coordinate system
+     * @return the corresponding global coordinates in the same order
+     */
+    public List<Vector> localToGlobal(List<Vector> a, Vector origin) {
+        return a.stream().map(p -> localToGlobal(p, origin)).collect(Collectors.toList());
     }
 }
