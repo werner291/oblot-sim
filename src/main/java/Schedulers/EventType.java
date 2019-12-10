@@ -4,7 +4,7 @@ package Schedulers;
  * The different types of events
  */
 public enum EventType {
-    LOOK_COMPUTE, // A robot's algorithm will be evaluated at this time
+    START_COMPUTE,
     START_MOVING,
     END_MOVING;
 

@@ -7,7 +7,7 @@ import java.util.List;
 public class AsyncScheduler extends Scheduler {
 
     @Override
-    public List<Event> getNextEvent(Robot[] robots, double t, Event[] triggers) {
+    public List<Event> getNextEvent(Robot[] robots, double t) {
         return null;
     }
 }
