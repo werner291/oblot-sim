@@ -36,7 +36,7 @@ public class Vector {
      * @return this+v
      */
     public Vector add(Vector v) {
-        return new Vector(this.x+v.x, this.y+v.y);
+        return Vector.add(this, v);
     }
 
     /**
@@ -55,7 +55,7 @@ public class Vector {
      * @return this-v
      */
     public Vector sub(Vector v) {
-        return new Vector(this.x - v.x, this.y - v.y);
+        return Vector.sub(this, v);
     }
 
     /**
@@ -74,14 +74,24 @@ public class Vector {
      * @return the multiplied vector
      */
     public Vector mult(double a) {
-        return new Vector(this.x*a, this.y*a);
+        return Vector.mult(this, a);
+    }
+
+    /**
+     * Scalar multiplication of a vector
+     * @param v the vector to multiply
+     * @param a the scalar to multiply with
+     * @return the multiplied vector
+     */
+    public static Vector mult(Vector v, double a) {
+        return new Vector(v.x*a, v.y*a);
     }
 
     /**
      * Returns the dot product of the two vectors
      */
     public double dot(Vector v) {
-        return this.x * v.x + this.y * v.y;
+        return Vector.dot(this, v);
     }
 
     /**
@@ -96,7 +106,7 @@ public class Vector {
      * @return the inverse of this vector
      */
     public Vector inv() {
-        return new Vector(-this.x, -this.y);
+        return Vector.inv(this);
     }
 
     /**
@@ -114,9 +124,7 @@ public class Vector {
      * @return the euclidian distance to another point
      */
     public double dist(Vector v) {
-        double distX = Math.abs(v.x - this.x);
-        double distY = Math.abs(v.y - this.y);
-        return Math.sqrt(distX*distX + distY*distY);
+        return Vector.dist(this, v);
     }
 
     /**
@@ -129,6 +137,27 @@ public class Vector {
         double distX = Math.abs(a.x - b.x);
         double distY = Math.abs(a.y - b.y);
         return Math.sqrt(distX*distX + distY*distY);
+    }
+
+    /**
+     * Assuming a vector from the origin to (x, y), rotate the vector anticlockwise around the origin
+     * @param a the angle to rotate with, in radians
+     * @return a new rotated vector
+     */
+    public Vector rotate(double a) {
+        return Vector.rotate(this, a);
+    }
+
+    /**
+     * Assuming a vector from the origin to (x, y), rotate the vector anticlockwise around the origin
+     * @param v the vector to rotate
+     * @param a the angle to rotate with, in radians
+     * @return a new rotated vector
+     */
+    public static Vector rotate(Vector v, double a) {
+        double newX = Math.cos(a) * v.x - Math.sin(a) * v.y;
+        double newY = Math.sin(a) * v.x + Math.cos(a) * v.y;
+        return new Vector(newX, newY);
     }
 
     @Override
