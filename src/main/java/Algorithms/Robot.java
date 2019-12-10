@@ -2,6 +2,8 @@ package Algorithms;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Scanner;
 
@@ -59,14 +61,18 @@ public class Robot {
      * x, y<br>
      * ...<br>
      * First the amount of robots n, then on separate lines, the starting positions of the robots.
-     * @param filePath the path of the file to read the starting configuration from
+     * @param fileName the path of the file to read the starting configuration from
      * @param algo the algorithm all robots should follow
      * @param t the transformation to global coordinate system the robots should use
      * @return a list of robots that start on the positions specified in the file
      */
-    public static Robot[] fromFile(String filePath, Algorithm algo, PositionTransformation t) {
+    public static Robot[] fromFile(String fileName, Algorithm algo, PositionTransformation t) {
         try {
-            Scanner s = new Scanner(new File(filePath));
+            URL filePath = Robot.class.getClassLoader().getResource(fileName);
+            if (filePath == null) {
+                throw new FileNotFoundException();
+            }
+            Scanner s = new Scanner(new File(filePath.toURI()));
             int n = Integer.parseInt(s.nextLine());
             Robot[] robots = new Robot[n];
             int i = 0;
@@ -80,8 +86,8 @@ public class Robot {
                 i++;
             }
             return robots;
-        } catch (FileNotFoundException e) {
-            System.err.println(String.format("File not found: %s", filePath));
+        } catch (FileNotFoundException | URISyntaxException e) {
+            System.err.println(String.format("File not found: %s", fileName));
             System.err.println("Does it exists and does it have read access?");
         } catch (NumberFormatException e) {
             System.err.println("The file does not have the correct format.");
