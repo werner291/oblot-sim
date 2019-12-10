@@ -34,6 +34,23 @@ public class Simulator {
     }
 
     /**
+     * Simulate the robots until timestamp t
+     * @param t the timestamp to simulate to
+     */
+    public void simulateTillTimestamp(double t) {
+
+    }
+
+    /**
+     * Simulate the robots until the next event that will be requested from the scheduler.
+     * It could be the case that there are no events anymore. In this case, the simulator will simulate until all robots
+     * are not moving anymore.
+     */
+    public void simulateTillNextEvent() {
+
+    }
+
+    /**
      * Get a snapshot of the current view (in global coordinates) for a specific robot, given that it has a visibility and a current position.
      * @param r the robot to get the snapshot for
      * @return a snapshot of the positions of all robots in global space for a specific robot

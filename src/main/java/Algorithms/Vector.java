@@ -1,7 +1,5 @@
 package Algorithms;
 
-import java.util.Comparator;
-
 /**
  * A vector containing 2 doubles, used for example as position calculator
  * No function modifies the original vector!

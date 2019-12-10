@@ -219,4 +219,9 @@ public class FileScheduler extends Scheduler {
         return eventsFound;
     }
 
+    @Override
+    public void addEvent(Event e) {
+
+    }
+
 }

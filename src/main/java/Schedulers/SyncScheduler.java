@@ -10,4 +10,9 @@ public class SyncScheduler extends Scheduler {
     public List<Event> getNextEvent(Robot[] robots, double t) {
         return null;
     }
+
+    @Override
+    public void addEvent(Event e) {
+
+    }
 }
