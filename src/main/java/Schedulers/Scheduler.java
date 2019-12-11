@@ -26,7 +26,7 @@ public abstract class Scheduler {
     /**
      * Add an event that the scheduler should take into account.
      * For an added event e, if the scheduler already planned a similar event e' with
-     * the same robot and type, a different timestamp and no other events for that robot inbetween e.t and e'.t,
+     * the same robot and type, a different timestamp and no other events for that robot in between e.t and e'.t,
      * it will remove the latest of the two. So if e.t < e'.t, it will discard the event that was send. If e.t > e'.t
      * e' will be discarded.
      * Moreover, if e breaks the natural chain of events (START_COMPUTE, START_MOVE, END_MOVE), it will also be discarded.

@@ -1,9 +1,10 @@
 import Algorithms.Robot;
 import Algorithms.Vector;
+import Schedulers.Event;
 import Schedulers.Scheduler;
-import Schedulers.SyncScheduler;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * The main simulator. Works by extracting an event list of the schedule,
@@ -21,6 +22,10 @@ public class Simulator {
      */
     private Robot[] robots;
 
+    /**
+     * The list of events that have happened up till the current simulated timestamp
+     */
+    private List<Event> events;
 
     /**
      * The {@link Scheduler} that regulates which robots activate when.
@@ -38,7 +43,7 @@ public class Simulator {
      * @param t the timestamp to simulate to
      */
     public void simulateTillTimestamp(double t) {
-
+        // use simulateTillNextEvent until we pass the correct t and interpolate back to the correct t
     }
 
     /**

@@ -14,7 +14,7 @@ public class Event {
     /**
      * The timestamp of the event.
      */
-    public double timeStamp;
+    public double t;
 
     /**
      * The {@link Robot} this event belongs to.
@@ -24,17 +24,17 @@ public class Event {
     /**
      * Creates a new event
      * @param type the type of event
-     * @param timeStamp the timestamp of the event
+     * @param t the timestamp of the event
      * @param r the {@link Robot} this event belongs to
      */
-    public Event(EventType type, double timeStamp, Robot r) {
+    public Event(EventType type, double t, Robot r) {
         this.type = type;
-        this.timeStamp = timeStamp;
+        this.t = t;
         this.r = r;
     }
 
     @Override
     public String toString() {
-        return String.format("Event: %s, %s, %f", type, r, timeStamp);
+        return String.format("Event: %s, %s, %f", type, r, t);
     }
 }

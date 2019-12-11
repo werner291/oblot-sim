@@ -96,8 +96,8 @@ public class FileScheduler extends Scheduler {
      * @return an event array sorted on timestamp
      */
     private Event[] merge(Event[] a, Event[] b) {
-        boolean ASorted = IntStream.range(0, a.length - 1).noneMatch(i -> a[i].timeStamp > a[i + 1].timeStamp);
-        boolean BSorted = IntStream.range(0, b.length - 1).noneMatch(i -> b[i].timeStamp > b[i + 1].timeStamp);
+        boolean ASorted = IntStream.range(0, a.length - 1).noneMatch(i -> a[i].t > a[i + 1].t);
+        boolean BSorted = IntStream.range(0, b.length - 1).noneMatch(i -> b[i].t > b[i + 1].t);
         if (!ASorted) {
             throw new IllegalArgumentException("Array a is not sorted");
         }
@@ -118,7 +118,7 @@ public class FileScheduler extends Scheduler {
             } else {
                 // cannot happen both because k = a.length + b.length, so in this case we have
                 // i < a.length && j < b.length
-                if (a[i].timeStamp < b[j].timeStamp) {
+                if (a[i].t < b[j].t) {
                     result[k] = a[i];
                     i++;
                 } else { // in case they are equal it does not matter
@@ -131,7 +131,7 @@ public class FileScheduler extends Scheduler {
     }
 
     /**
-     * Finds the index i in the event array such that event[i].timestamp > t && event[i-1].timestamp <= t or -1
+     * Finds the index i in the event array such that event[i].timestamp > t && event[i-1].timestamp <= t
      * It returns events.length if event[events.length-1].timestamp <= t
      * @param t the timestamp to look for
      * @return the index of the correct event
@@ -151,20 +151,20 @@ public class FileScheduler extends Scheduler {
             int mid = l + (r - l) / 2;
 
             // check the special case at the beginning
-            if (mid == 0 && events[0].timeStamp > t) {
+            if (mid == 0 && events[0].t > t) {
                 return 0;
             }
 
             // check the special cases at the end
-            if (mid == events.length - 2 && events[mid+1].timeStamp <= t) { // -2 because mid calculation will always be rounded down
+            if (mid == events.length - 2 && events[mid+1].t <= t) { // -2 because mid calculation will always be rounded down
                 return events.length;
             }
-            if (events[mid].timeStamp <= t && events[mid+1].timeStamp > t) {
+            if (events[mid].t <= t && events[mid+1].t > t) {
                 return mid+1;
             }
 
             // recurse on left or right part of the array
-            if (events[mid].timeStamp > t) {
+            if (events[mid].t > t) {
                 return binarySearch(l, mid, t);
             } else {
                 return binarySearch(mid, r, t);
@@ -180,23 +180,23 @@ public class FileScheduler extends Scheduler {
         // There can be many events, while the most likely access is in sequential order.
         // Therefore, we maintain the current index and first check if it is the next one.
         // In all other cases, we do a binary search.
-        if (currentIndex == events.length && events[currentIndex-1].timeStamp <= t) {
+        if (currentIndex == events.length && events[currentIndex-1].t <= t) {
             return null;
         }
-        if (currentIndex == events.length - 1 && events[currentIndex].timeStamp <= t) {
+        if (currentIndex == events.length - 1 && events[currentIndex].t <= t) {
             currentIndex++;
             return null;
         }
-        if (currentIndex == 0 && events[currentIndex].timeStamp > t) {
+        if (currentIndex == 0 && events[currentIndex].t > t) {
             return getSameEvents(currentIndex);
         }
         // if there are multiple events with the same timestamp, increase currentIndex until the last one
-        while (currentIndex != events.length - 1 && events[currentIndex].timeStamp == events[currentIndex+1].timeStamp) {
+        while (currentIndex != events.length - 1 && events[currentIndex].t == events[currentIndex+1].t) {
             currentIndex++;
         }
 
         // check the easy case if the next is the following event
-        if (events[currentIndex].timeStamp <= t && events[currentIndex + 1].timeStamp > t) {
+        if (events[currentIndex].t <= t && events[currentIndex + 1].t > t) {
             return getSameEvents(++currentIndex);
         }
 
@@ -218,7 +218,7 @@ public class FileScheduler extends Scheduler {
     private List<Event> getSameEvents(int start) {
         List<Event> eventsFound = new ArrayList<>();
         int i = start;
-        while (i < events.length && events[i].timeStamp == events[start].timeStamp) {
+        while (i < events.length && events[i].t == events[start].t) {
             eventsFound.add(events[i]);
             i++;
         }
@@ -227,7 +227,38 @@ public class FileScheduler extends Scheduler {
 
     @Override
     public void addEvent(Event e) {
+        int index = binarySearch(e.t);
+        int indexSameRobotAfter = -1;
+        for (int i = index; i < events.length; i++) {
+            if (events[i].r == e.r){
+                indexSameRobotAfter = i;
+                break;
+            }
+        }
+        int indexSameRobotBefore = -1; // or with the same timestamp
+        for (int i = index - 1; i >= 0; i--) {
+            if (events[i].r == e.r) {
+                indexSameRobotBefore = i;
+                break;
+            }
+        }
 
+        // check if the event falls strictly in between
+        if (events[indexSameRobotBefore].t < e.t) {
+            // if it does not break the chain of events (START_COMPUTE, START_MOVE, END_MOVE), insert it
+            // it should be the eventType after the previous for the same robot, but it should be the same type as the one
+            // it will be switched for.
+            if (EventType.next(events[indexSameRobotBefore].type) == e.type && e.type == events[indexSameRobotAfter].type) { // it is a correct insertion
+                // insert e and remove the event at indexSameRobotAfter. Shift everything in between
+                if (indexSameRobotAfter - index >= 0) {
+                    System.arraycopy(events, index, events, index + 1, indexSameRobotAfter - index);
+                }
+                events[index] = e;
+            }
+        }
+        // in case the event is not strictly in between the other events
+        // for the same robot, but instead it has the same timestamp as an already defined event in the list,
+        // this will always break the natural chain of events
     }
 
 }
