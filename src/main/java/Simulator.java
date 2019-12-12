@@ -143,7 +143,11 @@ public class Simulator {
                 Vector position = robot.pos;
                 Vector goal = goals[i];
                 double endTime = Interpolate.getEndTime(position, startTime, goal, robot.speed);
-                robot.pos = Interpolate.linearInterpolate(position, startTime, goal, endTime, interpolateTime);
+                if (endTime < interpolateTime) {
+                    robot.pos = goal;
+                } else {
+                    robot.pos = Interpolate.linearInterpolate(position, startTime, goal, endTime, interpolateTime);
+                }
             }
         }
     }
