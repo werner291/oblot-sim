@@ -18,6 +18,13 @@ public final class Interpolate {
      * @return the position of the object at time t
      */
     public static Vector linearInterpolate(Vector start, double tStart, Vector end, double tEnd, double t) {
+        if (tStart == tEnd) {
+            if (start.equals(end)) {
+                return start;
+            } else {
+                throw new IllegalArgumentException("Start and end are not the same, but the timestamps are");
+            }
+        }
         if (tStart >= tEnd) {
             throw new IllegalArgumentException("tStart should be strictly smaller than tEnd");
         }

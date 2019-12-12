@@ -102,16 +102,19 @@ public class Simulator {
                     int index = Arrays.asList(robots).indexOf(e.r);
                     goals[index] = goal;
                     e.r.state = State.COMPUTING;
+                    break;
                 case START_MOVING:
                     if (e.r.state != State.COMPUTING) {
                         throw new IllegalStateException("Scheduled event has a wrong type");
                     }
                     e.r.state = State.MOVING;
+                    break;
                 case END_MOVING:
                     if (e.r.state != State.MOVING) {
                         throw new IllegalStateException("Scheduled event has a wrong type");
                     }
                     e.r.state = State.SLEEPING;
+                    break;
             }
         }
         Vector[] positions = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);

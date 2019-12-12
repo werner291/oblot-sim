@@ -61,6 +61,11 @@ public class Robot {
         return trans.localToGlobal(calculatedPosition, pos);
     }
 
+    @Override
+    public String toString() {
+        return "Robot: " + pos.toString() + " state: "+ state;
+    }
+
     /**
      * A method to read in a robot configuration from a file.
      * The format should be as follows:<br>

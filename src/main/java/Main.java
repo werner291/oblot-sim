@@ -1,7 +1,6 @@
-import Algorithms.AlgoStub;
 import Algorithms.BasicPositionTransformation;
+import Algorithms.GoToCoG;
 import Algorithms.Robot;
-import GUI.GUI;
 import Schedulers.FileScheduler;
 import Schedulers.Scheduler;
 
@@ -15,8 +14,13 @@ public class Main{
     public static void main(String[] args) {
         // We're keeping this
         System.out.println("Most awesome simulator ever.");
-        Robot[] r = Robot.fromFile("testRobots", new AlgoStub(), new BasicPositionTransformation());
+        Robot[] r = Robot.fromFile("testRobots", new GoToCoG(), new BasicPositionTransformation());
         Scheduler s = new FileScheduler("testSchedule", r);
-        new GUI().startGUI(args);
+        Config c = new Config(false, -1);
+        Simulator simulator = new Simulator(c, r, s);
+        while (true) {
+            simulator.simulateTillNextEvent();
+        }
+//        new GUI().startGUI(args);
     }
 }
