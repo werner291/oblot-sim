@@ -6,10 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.IntStream;
 
 /**
@@ -62,6 +59,9 @@ public class FileScheduler extends Scheduler {
                 String line = scanner.nextLine();
                 // convert to array of timestamps
                 int[] timestamps = Arrays.stream(line.split(", ")).mapToInt(Integer::parseInt).toArray();
+                if (!isSorted(timestamps)) {
+                    throw new IllegalArgumentException("The timestamps are not in increasing order");
+                }
 
                 Event[] eventsForRobot = new Event[timestamps.length];
                 EventType currentType = EventType.START_COMPUTE;
@@ -87,6 +87,22 @@ public class FileScheduler extends Scheduler {
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         }
+    }
+
+    /**
+     * Checks if an array is sorted. Same ints are allowed, but they should be next to each other.
+     * @param array the array of ints
+     * @return if the array is sorted
+     */
+    private boolean isSorted(int[] array) {
+        int previous = Integer.MIN_VALUE;
+        for (int value : array) {
+            if (previous > value) {
+                return false;
+            }
+            previous = value;
+        }
+        return true;
     }
 
     /**
