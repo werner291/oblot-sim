@@ -47,6 +47,7 @@ public class Simulator {
         this.config = c;
         this.robots = robots;
         this.scheduler = scheduler;
+
     }
 
     /**
@@ -55,7 +56,15 @@ public class Simulator {
      */
     public void simulateTillTimestamp(double t) {
         // use simulateTillNextEvent until we pass the correct t and interpolate back to the correct t
+        while (scheduler.getNextEvent(robots, currentTime) != null && scheduler.getNextEvent(robots, currentTime).get(0).t < t) {
+            //this changes the current time
+            simulateTillNextEvent();
+        }
+        interpolateRobots(currentTime, t);
+        currentTime = t;
     }
+
+
 
     /**
      * Simulate the robots until the next event that will be requested from the scheduler.
@@ -64,27 +73,24 @@ public class Simulator {
      */
     public void simulateTillNextEvent() {
         List<Event> nextEvents = scheduler.getNextEvent(robots, currentTime);
-        Vector[] goals =  null;
+
+        if (nextEvents == null) {
+            return;
+        }
+
+        Vector[] goals;
 
         if (!calculatedEvents.isEmpty()) {
             goals = calculatedEvents.get(calculatedEvents.size()-1).goals;
         } else {
             //set the goals to the current position of the robots
             goals = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
-
         }
 
         double previousTime = currentTime;
         currentTime = nextEvents.get(0).t;
-        for (int i = 0; i < robots.length; i++) {
-            Robot robot = robots[i];
-            if (robot.state == State.MOVING) {
-                Vector position = robot.pos;
-                Vector goal = goals[i];
-                double endTime = Interpolate.getEndTime(position, previousTime, goal, robot.speed);
-                robot.pos = Interpolate.linearInterpolate(position, previousTime, goal, endTime, currentTime);
-            }
-        }
+
+        interpolateRobots(previousTime, currentTime);
 
         for (Event e : nextEvents) { // process all events
             switch (e.type) {
@@ -111,6 +117,32 @@ public class Simulator {
         Vector[] positions = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
         CalculatedEvent calculatedEvent = new CalculatedEvent(nextEvents, positions, goals);
         calculatedEvents.add(calculatedEvent);
+    }
+
+    /**
+     * moves the robots to the position of the given timestamp.
+     * @param startTime The time they started moving (time of the last event)
+     * @param interpolateTime The time until they want to move
+     */
+    private void interpolateRobots(double startTime, double interpolateTime) {
+        Vector[] goals;
+        if (!calculatedEvents.isEmpty()) {
+            goals = calculatedEvents.get(calculatedEvents.size()-1).goals;
+        } else {
+            //set the goals to the current position of the robots
+            goals = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
+
+        }
+
+        for (int i = 0; i < robots.length; i++) {
+            Robot robot = robots[i];
+            if (robot.state == State.MOVING) {
+                Vector position = robot.pos;
+                Vector goal = goals[i];
+                double endTime = Interpolate.getEndTime(position, startTime, goal, robot.speed);
+                robot.pos = Interpolate.linearInterpolate(position, startTime, goal, endTime, interpolateTime);
+            }
+        }
     }
 
     /**
