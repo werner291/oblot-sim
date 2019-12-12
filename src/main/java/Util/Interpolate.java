@@ -17,7 +17,7 @@ public final class Interpolate {
      * @param t the timestamp to get the position of
      * @return the position of the object at time t
      */
-    public Vector linearInterpolate(Vector start, double tStart, Vector end, double tEnd, double t) {
+    public static Vector linearInterpolate(Vector start, double tStart, Vector end, double tEnd, double t) {
         if (tStart >= tEnd) {
             throw new IllegalArgumentException("tStart should be strictly smaller than tEnd");
         }
@@ -43,7 +43,7 @@ public final class Interpolate {
      * @param speed the constant units per timestamp that the object is moving at
      * @return the timestamp at which the object will reach the goal position
      */
-    public double getEndTime(Vector start, double tStart, Vector end, double speed) {
+    public static double getEndTime(Vector start, double tStart, Vector end, double speed) {
         if (speed < 0) {
             throw new IllegalArgumentException("Speed cannot be negative");
         }

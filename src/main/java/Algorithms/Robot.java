@@ -22,6 +22,11 @@ public class Robot {
      */
     public State state;
     /**
+     * The speed of the robot.
+     */
+    public double speed;
+
+    /**
      * The transformation object to transform global to local coordinates.
      */
     private PositionTransformation trans;
@@ -29,6 +34,7 @@ public class Robot {
      * The algorithm the robot will run.
      */
     private Algorithm algo;
+
 
     /**
      * Creates a new robot
@@ -41,6 +47,7 @@ public class Robot {
         this.pos = startPos;
         this.trans = trans;
         this.state = State.SLEEPING;
+        this.speed = 1.0;
     }
 
     /**

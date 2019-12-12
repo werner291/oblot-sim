@@ -1,5 +1,7 @@
 import Algorithms.Robot;
+import Algorithms.State;
 import Schedulers.CalculatedEvent;
+import Util.Interpolate;
 import Util.Vector;
 import Schedulers.Event;
 import Schedulers.Scheduler;
@@ -62,9 +64,53 @@ public class Simulator {
      */
     public void simulateTillNextEvent() {
         List<Event> nextEvents = scheduler.getNextEvent(robots, currentTime);
-        for (Event e : nextEvents) { // process all events
+        Vector[] goals =  null;
+
+        if (!calculatedEvents.isEmpty()) {
+            goals = calculatedEvents.get(calculatedEvents.size()-1).goals;
+        } else {
+            //set the goals to the current position of the robots
+            goals = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
 
         }
+
+        double previousTime = currentTime;
+        currentTime = nextEvents.get(0).t;
+        for (int i = 0; i < robots.length; i++) {
+            Robot robot = robots[i];
+            if (robot.state == State.MOVING) {
+                Vector position = robot.pos;
+                Vector goal = goals[i];
+                double endTime = Interpolate.getEndTime(position, previousTime, goal, robot.speed);
+                robot.pos = Interpolate.linearInterpolate(position, previousTime, goal, endTime, currentTime);
+            }
+        }
+
+        for (Event e : nextEvents) { // process all events
+            switch (e.type) {
+                case START_COMPUTE:
+                    if (e.r.state != State.SLEEPING) {
+                        throw new IllegalStateException("Scheduled event has a wrong type");
+                    }
+                    Vector goal = e.r.calculate(getSnapshot(e.r));
+                    int index = Arrays.asList(robots).indexOf(e.r);
+                    goals[index] = goal;
+                    e.r.state = State.COMPUTING;
+                case START_MOVING:
+                    if (e.r.state != State.COMPUTING) {
+                        throw new IllegalStateException("Scheduled event has a wrong type");
+                    }
+                    e.r.state = State.MOVING;
+                case END_MOVING:
+                    if (e.r.state != State.MOVING) {
+                        throw new IllegalStateException("Scheduled event has a wrong type");
+                    }
+                    e.r.state = State.SLEEPING;
+            }
+        }
+        Vector[] positions = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
+        CalculatedEvent calculatedEvent = new CalculatedEvent(nextEvents, positions, goals);
+        calculatedEvents.add(calculatedEvent);
     }
 
     /**
