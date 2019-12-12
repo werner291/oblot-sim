@@ -1,10 +1,11 @@
 package Algorithms;
 
+import Util.Vector;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.Scanner;
 
 /**

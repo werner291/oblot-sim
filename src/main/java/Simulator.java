@@ -1,8 +1,10 @@
 import Algorithms.Robot;
-import Algorithms.Vector;
+import Schedulers.CalculatedEvent;
+import Util.Vector;
 import Schedulers.Event;
 import Schedulers.Scheduler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,9 +25,16 @@ public class Simulator {
     private Robot[] robots;
 
     /**
-     * The list of events that have happened up till the current simulated timestamp
+     * The list of events that have happened up till the current simulated timestamp.
+     * This should be sorted in the order of timestamps of the inner events.
+     * The previous events can be extracted from this.
      */
-    private List<Event> events;
+    private List<CalculatedEvent> calculatedEvents = new ArrayList<>();
+
+    /**
+     * The timestamp the simulator is currently at.
+     */
+    private double currentTime = 0;
 
     /**
      * The {@link Scheduler} that regulates which robots activate when.
@@ -48,11 +57,14 @@ public class Simulator {
 
     /**
      * Simulate the robots until the next event that will be requested from the scheduler.
-     * It could be the case that there are no events anymore. In this case, the simulator will simulate until all robots
-     * are not moving anymore.
+     * It could be the case that there are no events anymore. In this case, the simulator will do nothing,
+     * as all information is already known
      */
     public void simulateTillNextEvent() {
+        List<Event> nextEvents = scheduler.getNextEvent(robots, currentTime);
+        for (Event e : nextEvents) { // process all events
 
+        }
     }
 
     /**

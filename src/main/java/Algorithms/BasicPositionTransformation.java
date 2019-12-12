@@ -1,5 +1,7 @@
 package Algorithms;
 
+import Util.Vector;
+
 /**
  * A basic transformation from global to local coordinates and back. It just transforms the coordinates without changing
  * the axis.

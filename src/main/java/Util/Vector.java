@@ -1,4 +1,4 @@
-package Algorithms;
+package Util;
 
 /**
  * A vector containing 2 doubles, used for example as position calculator

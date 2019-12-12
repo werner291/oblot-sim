@@ -1,5 +1,7 @@
 package Algorithms;
 
+import Util.Vector;
+
 /**
  * An abstract class that is a template for algorithms run by {@link Robot}
  */

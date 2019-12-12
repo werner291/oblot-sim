@@ -1,5 +1,7 @@
 package Algorithms;
 
+import Util.Vector;
+
 /**
  * An algorithm that computes the center of gravity of all visible robots and goes there.
  */
