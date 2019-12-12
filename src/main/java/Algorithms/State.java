@@ -4,7 +4,7 @@ package Algorithms;
  * The different states robots can be in.
  */
 public enum State {
-    CALCULATING,
+    COMPUTING,
     MOVING,
     SLEEPING;
 

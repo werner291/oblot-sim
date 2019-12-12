@@ -17,6 +17,7 @@ public abstract class Scheduler {
      * Therefore, if there is an event at timestep t, it will not return that event,
      * but instead it will return the next one
      *
+     * If there are multiple events for the same robot they should be in the natural order of events (START_COMPUTE, START_MOVE, END_MOVE).
      * @param robots the snapshot of the robots
      * @param t the current time
      * @return the next event(s), null if there is none or a list if multiple happen on the same timestamp
