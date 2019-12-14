@@ -1,6 +1,9 @@
+package Simulator;
+
 import Algorithms.Robot;
 import Algorithms.State;
 import Schedulers.CalculatedEvent;
+import Util.Config;
 import Util.Interpolate;
 import Util.Vector;
 import Schedulers.Event;
@@ -170,14 +173,11 @@ public class Simulator {
         return positions;
     }
 
-    /**
-     * Run the simulation from the start until either the last event occurs, or the maximum time is reached.
-     *
-     * // TODO: Add some kind of callback such that the simulation can be observed?
-     *
-     * @param maxTime The time at which to stop the simulation. This may be Double.POSITIVE_INFINITY to let it run.
-     */
-    public void run(double maxTime) {
-        // TODO Implement.
+    public Robot[] getRobots() {
+        return this.robots;
+    }
+
+    public List<CalculatedEvent> getCalculatedEvents() {
+        return this.calculatedEvents;
     }
 }
