@@ -24,6 +24,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.stage.Popup;
+import org.w3c.dom.Text;
 
 import java.net.URL;
 import java.util.List;
@@ -36,12 +37,15 @@ import java.util.ResourceBundle;
 public class FxFXMLController
 {
     boolean isPaused = true;
-    double playBackSpeed = 0.01;
+    int playBackSpeed = 1;
     int last_size_calc_events = 0;
 
     @FXML
     // The reference of inputText will be injected by the FXML loader
     private ProgressBar progressBarSimulation;
+
+    @FXML
+    private TextField playBackSpeedLabel;
 
     @FXML
     // The reference of inputText will be injected by the FXML loader
@@ -110,17 +114,21 @@ public class FxFXMLController
         };
         timer.start();
 
+        playBackSpeedLabel.setText(""+playBackSpeed);
+        playBackSpeedLabel.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    playBackSpeed = Integer.parseInt(playBackSpeedLabel.getText());
+                } catch (NumberFormatException e) {
+                    playBackSpeedLabel.setText(""+playBackSpeed);
+                }
+            }
+        });
+
         // set the values for the events scrollpane
         eventsVBox.setSpacing(1);
         eventsVBox.setPadding(new Insets(1));
-
-        // Setup dragSimulationBar
-        dragBarSimulation.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-//                paintCanvas(recomputeRobots(newValue.doubleValue()));
-            }
-        });
     }
 
     private Popup warningPopup = new Popup();
@@ -151,10 +159,10 @@ public class FxFXMLController
         // Get list of computed events
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
         if (calculatedEvents.size() == 0) {
-            showWarningPopUp("Nothing has been simulated yet");
-            isPaused = true;
-            playButton.setText("Play");
-            return;
+            if (!simulateNextEvent()) {
+                isPaused = true;
+                playButton.setText("Play");
+            }
         }
         List<Event> recentEvents = calculatedEvents.get((simulator.getCalculatedEvents().size()-1)).events;
 
@@ -166,9 +174,18 @@ public class FxFXMLController
 
         // Redraw robot positions
         double simulationTime = dragBarSimulation.valueProperty().get();
-        if (simulationTime < recentTimeStamp) {
-            dragBarSimulation.valueProperty().set(simulationTime + playBackSpeed);
-        } else {
+        if (simulationTime == recentTimeStamp && playBackSpeed <= 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+        else if (simulationTime == 0 && playBackSpeed >= 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+        else if (simulationTime < recentTimeStamp && simulationTime > 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+        else if (simulationTime >= recentTimeStamp && playBackSpeed >= 0)
+        {
+            if (!simulateNextEvent()) {
+                isPaused = true;
+                playButton.setText("Play");
+            }
+            dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+        }
+        else {
             isPaused = true;
             playButton.setText("Play");
         }
@@ -261,6 +278,17 @@ public class FxFXMLController
      */
     @FXML
     private void nextSimulation() {
+        if (!simulateNextEvent()) {
+            isPaused = true;
+            playButton.setText("Play");
+        }
+    }
+
+    /**
+     * Called to gather the new events and add them to the eventlist, set the new timestep
+     * @return true if the next event exists, false if it does not
+     */
+    private boolean simulateNextEvent() {
 //        System.out.println("Next event");
         hideWarningPopUp();
 
@@ -274,7 +302,7 @@ public class FxFXMLController
         // Check if an additional event was added. If not, then don't add anything to the list
         if (calculatedEvents.size() == last_size_calc_events) {
             showWarningPopUp("No new events have been found by the simulator");
-            return;
+            return false;
         }
         last_size_calc_events = calculatedEvents.size();
 
@@ -294,6 +322,8 @@ public class FxFXMLController
 
         // Redraw robot positions
         progressBarSimulation.setProgress(100);
+
+        return true;
     }
 
     /**
@@ -306,11 +336,28 @@ public class FxFXMLController
         else playButton.setText("Pause");
     }
 
+    @FXML
+    private void forwardAction() {
+        playBackSpeed += 1;
+        playBackSpeedLabel.setText(""+playBackSpeed);
+    }
+
+    @FXML
+    private void backwardsAction() {
+        playBackSpeed -= 1;
+        playBackSpeedLabel.setText(""+playBackSpeed);
+    }
+
+
     /**
      * TODO: Computes until all the robots have stopped moving and are sleeping, might never finish
      */
     @FXML
     private void endSimulation() {
+        boolean doneSimulating = false;
+        while (!doneSimulating) {
+            doneSimulating = simulateNextEvent();
+        }
     }
 
     /**
@@ -327,10 +374,7 @@ public class FxFXMLController
     }
 
     /**
-     * Recompute robot location at certain timestamps. Never modifies data given by the simulator. Uses its local robots
-     * object. Computes where they would have been using the computedevents list stored by the simulator.
-     * TODO: Depends on the simulator's stored robots object to figure out how many robots there are. So don't remove robots
-     * from the list! Could perhaps be done more robustly.
+     * Compute the position and state of robots from a timestamp in the past
      * @param timestamp Timestamp of the simulation to display on the canvas
      */
 
@@ -395,38 +439,6 @@ public class FxFXMLController
 
             robotIndex++;
         }
-
-
-//        short robotIndex = 0;
-//        for (Robot robot : robots) {
-//            robot = robotsSim[robotIndex].copy();
-//
-//            Vector startPos = prevEvent.positions[robotIndex];
-//            double startTime = prevEvent.events.get(0).t;
-//            Vector endPos = nextEvent.positions[robotIndex];
-//            double endTime = nextEvent.events.get(0).t;
-//            switch (prevEvent.events.get(robotIndex).type){
-//                case END_MOVING:
-//                    robot.state = State.SLEEPING;
-//                    break;
-//                case START_COMPUTE:
-//                    robot.state = State.COMPUTING;
-//                    break;
-//                case START_MOVING:
-//                    robot.state = State.MOVING;
-//                    break;
-//            }
-//
-//            // In case the robot didn't move
-//            if (startTime == endTime) robot.pos = endPos;
-//            // Else interpolate
-//            else {
-//                robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp);
-//            }
-//
-//            robots[robotIndex] = robot;
-//            robotIndex++;
-//        }
     }
 
     /**
