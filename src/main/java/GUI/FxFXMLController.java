@@ -100,7 +100,8 @@ public class FxFXMLController
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                paintCanvas(recomputeRobots(dragBarSimulation.getValue()));
+                recomputeRobots(dragBarSimulation.getValue());
+                paintCanvas();
 
                 if (!isPaused) {
                     playDragBar();
@@ -292,7 +293,6 @@ public class FxFXMLController
         dragBarSimulation.setValue(recentTimeStamp);
 
         // Redraw robot positions
-//        paintCanvas(recomputeRobots(recentTimeStamp));
         progressBarSimulation.setProgress(100);
     }
 
@@ -334,27 +334,27 @@ public class FxFXMLController
      * @param timestamp Timestamp of the simulation to display on the canvas
      */
 
-    private Robot[] recomputeRobots(double timestamp) {
+    private void recomputeRobots(double timestamp) {
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
         if (calculatedEvents.size() == 0) {
-            return simulator.getRobots();
-        }
-
-        // Gather the timestamps of each event until now
-        Double[] timestampOfEvents = new Double[calculatedEvents.size()];
-        short timestampOfEventsIndex = 0;
-        for (CalculatedEvent calculatedEvent : calculatedEvents) {
-            timestampOfEvents[timestampOfEventsIndex] = calculatedEvent.events.get(0).t;
-            timestampOfEventsIndex++;
+            return;
         }
 
         // Select the Last event at the given timestep in the simulation
         short indexOfCalcEvents = 0;
         CalculatedEvent prevEvent = null;
         CalculatedEvent nextEvent = null;
-        for (double currentTimestampEvent : timestampOfEvents) {
+        for (int i = 0; i <= calculatedEvents.size(); i++) {
+            // If the next event is not yet known don't assign any next event
+            if (i == calculatedEvents.size()) {
+                prevEvent = calculatedEvents.get(i-1);
+                nextEvent = prevEvent;
+                break;
+            }
+
+            double calculatedEventsTime = calculatedEvents.get(i).events.get(0).t;
             // The event with this timestamp happened after the selected timestamp
-            if (currentTimestampEvent >= timestamp)
+            if (calculatedEventsTime > timestamp)
             {
                 // If there is no previous event simply use the first event, only occurs when the first timestamp an
                 // event occurs is selected to be simulated. Otherwise pick the most recent event
@@ -364,26 +364,20 @@ public class FxFXMLController
                 // Stop after finding first candidate
                 break;
             }
-            if (currentTimestampEvent == timestamp)
-            {
-                prevEvent = calculatedEvents.get(indexOfCalcEvents);
-            }
 
             indexOfCalcEvents++;
         }
 
-        Robot[] robots = new Robot[simulator.getRobots().length];
-        final Robot[] robotsSim = simulator.getRobots();
+        Robot[] robots = simulator.getRobots();
 
         short robotIndex = 0;
         for (Robot robot : robots) {
-            robot = robotsSim[robotIndex].copy();
-
             Vector startPos = prevEvent.positions[robotIndex];
             double startTime = prevEvent.events.get(0).t;
             Vector endPos = nextEvent.positions[robotIndex];
             double endTime = nextEvent.events.get(0).t;
-            switch (prevEvent.events.get(robotIndex).type){
+
+            switch (prevEvent.events.get(robotIndex).type) {
                 case END_MOVING:
                     robot.state = State.SLEEPING;
                     break;
@@ -395,25 +389,50 @@ public class FxFXMLController
                     break;
             }
 
-            // In case the robot didn't move
             if (startTime == endTime) robot.pos = endPos;
-            // Else interpolate
-            else {
-                robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp);
-            }
+            else if (endTime < timestamp) { robot.pos = endPos; }
+            else { robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp); }
 
-            robots[robotIndex] = robot;
             robotIndex++;
         }
 
-        return robots;
+
+//        short robotIndex = 0;
+//        for (Robot robot : robots) {
+//            robot = robotsSim[robotIndex].copy();
+//
+//            Vector startPos = prevEvent.positions[robotIndex];
+//            double startTime = prevEvent.events.get(0).t;
+//            Vector endPos = nextEvent.positions[robotIndex];
+//            double endTime = nextEvent.events.get(0).t;
+//            switch (prevEvent.events.get(robotIndex).type){
+//                case END_MOVING:
+//                    robot.state = State.SLEEPING;
+//                    break;
+//                case START_COMPUTE:
+//                    robot.state = State.COMPUTING;
+//                    break;
+//                case START_MOVING:
+//                    robot.state = State.MOVING;
+//                    break;
+//            }
+//
+//            // In case the robot didn't move
+//            if (startTime == endTime) robot.pos = endPos;
+//            // Else interpolate
+//            else {
+//                robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp);
+//            }
+//
+//            robots[robotIndex] = robot;
+//            robotIndex++;
+//        }
     }
 
     /**
      * Draws a grid in the canvas based on the viewX, viewY and the scale
-     * @param robots lists the robots to paint onto the canvas. NOT THE SIMULATOR ROBOTS, ONES MODIFIED BY THE GUI.
      */
-    private void paintCanvas(Robot[] robots) {
+    private void paintCanvas() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         double portHeight = canvas.getHeight();
         double portWidth = canvas.getWidth();
@@ -476,6 +495,7 @@ public class FxFXMLController
         // draw on the coordinate system
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(0.05);
+        Robot[] robots = simulator.getRobots();
         for (Robot r : robots) {
             switch (r.state) {
                 case SLEEPING:

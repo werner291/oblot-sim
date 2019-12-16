@@ -130,7 +130,7 @@ public class Simulator {
      * @param startTime The time they started moving (time of the last event)
      * @param interpolateTime The time until they want to move
      */
-    private void interpolateRobots(double startTime, double interpolateTime) {
+    public void interpolateRobots(double startTime, double interpolateTime) {
         Vector[] goals;
         if (!calculatedEvents.isEmpty()) {
             goals = calculatedEvents.get(calculatedEvents.size()-1).goals;

@@ -17,6 +17,10 @@ import java.util.Scanner;
  */
 public class CalculatedEvent {
     /**
+     * Timastamp of the event
+     */
+
+    /**
      * A list of events which all happen at the same timestamp.
      */
     public List<Event> events;
