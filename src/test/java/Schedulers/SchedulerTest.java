@@ -147,7 +147,7 @@ class SchedulerTest {
             for (int j = 0; j < 50; j++) {
                 // Poke at the schedule at random times to make sure there aren't wierd state bugs.
                 // This may be in the future!
-                List<Event> events1 = ((Scheduler) scheduler).getNextEvent(robots, r.nextDouble() * eventT * 1.01);
+                List<Event> events1 = scheduler.getNextEvent(robots, r.nextDouble() * eventT * 1.01);
                 checkNewEvents.accept(robots, events1);
             }
 
