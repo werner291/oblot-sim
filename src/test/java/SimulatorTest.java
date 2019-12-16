@@ -36,7 +36,7 @@ class SimulatorTest {
         Simulator sim = new Simulator(config, robots, new FSyncScheduler());
 
         // Run until it all stops. Note that this implies that it stops.
-        sim.simulateTillTimestamp(Double.POSITIVE_INFINITY);
+        //sim.simulateTillTimestamp(Double.POSITIVE_INFINITY);
 
         // Expect the robots to have gathered exactly at the COG.
         assertEquals(expected, robots[0].pos);

@@ -1,24 +1,33 @@
 package GUI;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import Algorithms.Robot;
+import Algorithms.State;
+import Schedulers.CalculatedEvent;
+import Schedulers.Event;
 import Simulator.Simulator;
+import Util.Interpolate;
+import Util.Vector;
 import javafx.animation.AnimationTimer;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Slider;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
+import javafx.stage.Popup;
+import org.w3c.dom.Text;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -27,17 +36,29 @@ import java.util.ResourceBundle;
  */
 public class FxFXMLController
 {
+    boolean isPaused = true;
+    int playBackSpeed = 1;
+    int last_size_calc_events = 0;
+
     @FXML
     // The reference of inputText will be injected by the FXML loader
     private ProgressBar progressBarSimulation;
 
     @FXML
+    private TextField playBackSpeedLabel;
+
+    @FXML
     // The reference of inputText will be injected by the FXML loader
     private Button playButton;
+    @FXML
+    private Button nextButton;
+    @FXML
+    private Button endButton;
 
     @FXML
     // The reference of inputText will be injected by the FXML loader
     private ScrollPane eventList;
+    private VBox eventsVBox = new VBox();
 
     // The reference of outputText will be injected by the FXML loader
     @FXML
@@ -53,6 +74,9 @@ public class FxFXMLController
     // The canvas on which we can draw the robots and its corresponding graphics object
     @FXML
     private Canvas canvas;
+
+    @FXML
+    private AnchorPane canvasBackground;
 
     // parameters for the canvas
     private double viewX = 0; // bottom left coords
@@ -80,10 +104,91 @@ public class FxFXMLController
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
+                recomputeRobots(dragBarSimulation.getValue());
                 paintCanvas();
+
+                if (!isPaused) {
+                    playDragBar();
+                }
             }
         };
         timer.start();
+
+        playBackSpeedLabel.setText(""+playBackSpeed);
+        playBackSpeedLabel.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    playBackSpeed = Integer.parseInt(playBackSpeedLabel.getText());
+                } catch (NumberFormatException e) {
+                    playBackSpeedLabel.setText(""+playBackSpeed);
+                }
+            }
+        });
+
+        // set the values for the events scrollpane
+        eventsVBox.setSpacing(1);
+        eventsVBox.setPadding(new Insets(1));
+    }
+
+    private Popup warningPopup = new Popup();
+    private void showWarningPopUp(String warning) {
+        Label label = new Label(warning);
+        Button button = new Button("OK");
+        warningPopup.getContent().add(label);
+        warningPopup.getContent().add(button);
+        label.setMinWidth(80);
+        label.setMinHeight(50);
+        label.setStyle(" -fx-background-color: white;");
+        button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                hideWarningPopUp();
+            }
+        });
+
+        warningPopup.show(GUI.stage);
+
+    }
+
+    private void hideWarningPopUp() {
+        warningPopup.hide();
+    }
+
+    private void playDragBar() {
+        // Get list of computed events
+        List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
+        if (calculatedEvents.size() == 0) {
+            if (!simulateNextEvent()) {
+                isPaused = true;
+                playButton.setText("Play");
+            }
+        }
+        List<Event> recentEvents = calculatedEvents.get((simulator.getCalculatedEvents().size()-1)).events;
+
+        // Add recent events to Vbox containing all events
+        double recentTimeStamp = 0;
+        for (Event calculatedEvent : recentEvents) {
+            recentTimeStamp = calculatedEvent.t;
+        }
+
+        // Redraw robot positions
+        double simulationTime = dragBarSimulation.valueProperty().get();
+        if (simulationTime == recentTimeStamp && playBackSpeed <= 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+        else if (simulationTime == 0 && playBackSpeed >= 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+        else if (simulationTime < recentTimeStamp && simulationTime > 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+        else if (simulationTime >= recentTimeStamp && playBackSpeed >= 0)
+        {
+            if (!simulateNextEvent()) {
+                isPaused = true;
+                playButton.setText("Play");
+            }
+            dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+        }
+        else {
+            isPaused = true;
+            playButton.setText("Play");
+        }
     }
 
     public void setSimulator(Simulator sim) {
@@ -163,39 +268,177 @@ public class FxFXMLController
     }
 
     @FXML
-    private void playSimulation()
-    {
-        System.out.println("Playing Simulation");
-//        progressBarSimulation.setProgress(100);
-//
-//        eventList.setContent(buildContent());
-//        eventList.setPannable(true); // it means that the user should be able to pan the viewport by using the mouse.
-//        playButton.setText("ReCompute");
+    private void onDragDetected() {
+        isPaused = true;
+        playButton.setText("Play");
+    }
+
+    /**
+     * Called whenever the Next Event button is pressed
+     */
+    @FXML
+    private void nextSimulation() {
+        if (!simulateNextEvent()) {
+            isPaused = true;
+            playButton.setText("Play");
+        }
+    }
+
+    /**
+     * Called to gather the new events and add them to the eventlist, set the new timestep
+     * @return true if the next event exists, false if it does not
+     */
+    private boolean simulateNextEvent() {
+//        System.out.println("Next event");
+        hideWarningPopUp();
+
+        // Compute next events
+        progressBarSimulation.setProgress(0);
         simulator.simulateTillNextEvent();
+
+        // Get list of computed events
+        List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
+
+        // Check if an additional event was added. If not, then don't add anything to the list
+        if (calculatedEvents.size() == last_size_calc_events) {
+            showWarningPopUp("No new events have been found by the simulator");
+            return false;
+        }
+        last_size_calc_events = calculatedEvents.size();
+
+        List<Event> recentEvents = calculatedEvents.get((simulator.getCalculatedEvents().size()-1)).events;
+        progressBarSimulation.setProgress(50);
+
+        // Add recent events to Vbox containing all events
+        double recentTimeStamp = 0;
+        for (Event calculatedEvent : recentEvents) {
+            eventsVBox.getChildren().add(createEventButton(calculatedEvent.type.toString(), calculatedEvent.t));
+            recentTimeStamp = calculatedEvent.t;
+        }
+        progressBarSimulation.setProgress(75);
+        eventList.setContent(eventsVBox);
+        dragBarSimulation.setMax(recentTimeStamp);
+        dragBarSimulation.setValue(recentTimeStamp);
+
+        // Redraw robot positions
+        progressBarSimulation.setProgress(100);
+
+        return true;
     }
 
-    private Node buildContent() {
-        VBox events = new VBox();
-        events.getChildren().addAll(createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(),
-                createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(),
-                createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(),
-                createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(),
-                createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(),
-                createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton(), createEventButton());
-        events.setSpacing(1);
-        events.setPadding(new Insets(1));
-
-        return events;
+    /**
+     * Starts and pauses automatic playback, stops when it reaches the end of what has currently been computed
+     */
+    @FXML
+    private void playSimulation() {
+        isPaused = !isPaused;
+        if (isPaused) playButton.setText("Play");
+        else playButton.setText("Pause");
     }
 
-    static private int eventNr = 0;
-    private Button createEventButton() {
-        Button eventButton = new Button("EVENT: " + eventNr);
-        eventButton.setPrefWidth(150);
-        eventButton.setMaxWidth(200);
-        eventButton.setMinWidth(25);
-        eventNr++;
+    @FXML
+    private void forwardAction() {
+        playBackSpeed += 1;
+        playBackSpeedLabel.setText(""+playBackSpeed);
+    }
+
+    @FXML
+    private void backwardsAction() {
+        playBackSpeed -= 1;
+        playBackSpeedLabel.setText(""+playBackSpeed);
+    }
+
+
+    /**
+     * TODO: Computes until all the robots have stopped moving and are sleeping, might never finish
+     */
+    @FXML
+    private void endSimulation() {
+        boolean doneSimulating = false;
+        while (!doneSimulating) {
+            doneSimulating = simulateNextEvent();
+        }
+    }
+
+    /**
+     * Create a button for in the event scrollpane
+     * @param eventName Name of the event, probably the type of event
+     * @param timeStamp Timestamp of when the event took place
+     * @return The object that can be clicked by the user to return to a certain timestamp/event
+     */
+    private Button createEventButton(String eventName, double timeStamp) {
+        EventButton eventButton = new EventButton(eventName + " | @: " + timeStamp, timeStamp);
+        eventButton.prefWidthProperty().bind(eventList.widthProperty());
+        eventButton.setOnAction(eventButtonHandler);
         return eventButton;
+    }
+
+    /**
+     * Compute the position and state of robots from a timestamp in the past
+     * @param timestamp Timestamp of the simulation to display on the canvas
+     */
+
+    private void recomputeRobots(double timestamp) {
+        List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
+        if (calculatedEvents.size() == 0) {
+            return;
+        }
+
+        // Select the Last event at the given timestep in the simulation
+        short indexOfCalcEvents = 0;
+        CalculatedEvent prevEvent = null;
+        CalculatedEvent nextEvent = null;
+        for (int i = 0; i <= calculatedEvents.size(); i++) {
+            // If the next event is not yet known don't assign any next event
+            if (i == calculatedEvents.size()) {
+                prevEvent = calculatedEvents.get(i-1);
+                nextEvent = prevEvent;
+                break;
+            }
+
+            double calculatedEventsTime = calculatedEvents.get(i).events.get(0).t;
+            // The event with this timestamp happened after the selected timestamp
+            if (calculatedEventsTime > timestamp)
+            {
+                // If there is no previous event simply use the first event, only occurs when the first timestamp an
+                // event occurs is selected to be simulated. Otherwise pick the most recent event
+                prevEvent = calculatedEvents.get(Math.max(0, indexOfCalcEvents-1));
+                nextEvent = calculatedEvents.get(indexOfCalcEvents);
+
+                // Stop after finding first candidate
+                break;
+            }
+
+            indexOfCalcEvents++;
+        }
+
+        Robot[] robots = simulator.getRobots();
+
+        short robotIndex = 0;
+        for (Robot robot : robots) {
+            Vector startPos = prevEvent.positions[robotIndex];
+            double startTime = prevEvent.events.get(0).t;
+            Vector endPos = nextEvent.positions[robotIndex];
+            double endTime = nextEvent.events.get(0).t;
+
+            switch (prevEvent.events.get(robotIndex).type) {
+                case END_MOVING:
+                    robot.state = State.SLEEPING;
+                    break;
+                case START_COMPUTE:
+                    robot.state = State.COMPUTING;
+                    break;
+                case START_MOVING:
+                    robot.state = State.MOVING;
+                    break;
+            }
+
+            if (startTime == endTime) robot.pos = endPos;
+            else if (endTime < timestamp) { robot.pos = endPos; }
+            else { robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp); }
+
+            robotIndex++;
+        }
     }
 
     /**
@@ -262,11 +505,21 @@ public class FxFXMLController
         gc.translate(-viewX, -viewY);
 
         // draw on the coordinate system
-        Robot[] robots = simulator.getRobots();
-        gc.setFill(Color.AQUA);
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(0.05);
+        Robot[] robots = simulator.getRobots();
         for (Robot r : robots) {
+            switch (r.state) {
+                case SLEEPING:
+                    gc.setFill(Color.WHITE);
+                    break;
+                case MOVING:
+                    gc.setFill(Color.GREEN);
+                    break;
+                case COMPUTING:
+                    gc.setFill(Color.RED);
+                    break;
+            }
             double robotWidth = 0.5;
             gc.fillOval(r.pos.x - robotWidth/2, r.pos.y - robotWidth/2, robotWidth, robotWidth);
             gc.strokeOval(r.pos.x - robotWidth/2, r.pos.y - robotWidth/2, robotWidth, robotWidth);
@@ -274,6 +527,22 @@ public class FxFXMLController
 
         // transform back to the old transform
         gc.setTransform(tOld);
+
+        canvasBackground.widthProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                canvas.widthProperty().setValue(newValue);
+//                System.out.println("Width: " + newValue.doubleValue());
+            }
+        });
+
+        canvasBackground.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                canvas.heightProperty().set(newValue.doubleValue() - dragBarSimulation.getHeight());
+//                System.out.println("Height: " + newValue.doubleValue());
+            }
+        });
     }
 
     /**
@@ -346,4 +615,14 @@ public class FxFXMLController
             }
         }
     }
+
+    private EventHandler<ActionEvent> eventButtonHandler = event -> {
+        if (!event.getSource().getClass().equals(EventButton.class)) {
+            throw new IllegalArgumentException("Event button trigger by: " + event.getSource().getClass() +
+                    " was not an event button, please only use this eventHandler for EventButtons");
+        }
+        EventButton eventButton = (EventButton) event.getSource();
+        dragBarSimulation.setValue(eventButton.getTimeStamp());
+        event.consume();
+    };
 }

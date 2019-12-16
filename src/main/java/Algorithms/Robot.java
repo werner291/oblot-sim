@@ -107,4 +107,8 @@ public class Robot {
         }
         return null;
     }
+
+    public Robot copy() {
+        return new Robot(this.algo, this.pos, this.trans);
+    }
 }
