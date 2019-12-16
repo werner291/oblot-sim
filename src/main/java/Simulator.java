@@ -24,14 +24,14 @@ public class Simulator {
     /**
      * The robots that will be simulated
      */
-    private Robot[] robots;
+    public Robot[] robots;
 
     /**
      * The list of events that have happened up till the current simulated timestamp.
      * This should be sorted in the order of timestamps of the inner events.
      * The previous events can be extracted from this.
      */
-    private List<CalculatedEvent> calculatedEvents = new ArrayList<>();
+    public List<CalculatedEvent> calculatedEvents = new ArrayList<>();
 
     /**
      * The timestamp the simulator is currently at.
