@@ -12,8 +12,6 @@ import Util.Vector;
 import javafx.animation.AnimationTimer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.canvas.Canvas;
@@ -102,7 +100,7 @@ public class FxFXMLController
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                paintCanvas(repaintRobots(simulator.getCalculatedEvents(), dragBarSimulation.getValue()));
+                paintCanvas(recomputeRobots(dragBarSimulation.getValue()));
 
                 if (!isPaused) {
                     playDragBar();
@@ -119,7 +117,7 @@ public class FxFXMLController
         dragBarSimulation.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                repaintRobots(simulator.getCalculatedEvents(), newValue.doubleValue());
+//                paintCanvas(recomputeRobots(newValue.doubleValue()));
             }
         });
     }
@@ -294,7 +292,7 @@ public class FxFXMLController
         dragBarSimulation.setValue(recentTimeStamp);
 
         // Redraw robot positions
-        repaintRobots(calculatedEvents, recentTimeStamp);
+//        paintCanvas(recomputeRobots(recentTimeStamp));
         progressBarSimulation.setProgress(100);
     }
 
@@ -329,15 +327,15 @@ public class FxFXMLController
     }
 
     /**
-     * Recompute robot location at certain timestamps. Never modifies data given by the simulator. Uses it's local robots
+     * Recompute robot location at certain timestamps. Never modifies data given by the simulator. Uses its local robots
      * object. Computes where they would have been using the computedevents list stored by the simulator.
      * TODO: Depends on the simulator's stored robots object to figure out how many robots there are. So don't remove robots
      * from the list! Could perhaps be done more robustly.
-     * @param calculatedEvents List of all events from the simulator that have been computed until now
      * @param timestamp Timestamp of the simulation to display on the canvas
      */
 
-    private Robot[] repaintRobots(List<CalculatedEvent> calculatedEvents, double timestamp) {
+    private Robot[] recomputeRobots(double timestamp) {
+        List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
         if (calculatedEvents.size() == 0) {
             return simulator.getRobots();
         }
@@ -365,6 +363,10 @@ public class FxFXMLController
 
                 // Stop after finding first candidate
                 break;
+            }
+            if (currentTimestampEvent == timestamp)
+            {
+                prevEvent = calculatedEvents.get(indexOfCalcEvents);
             }
 
             indexOfCalcEvents++;
@@ -396,7 +398,9 @@ public class FxFXMLController
             // In case the robot didn't move
             if (startTime == endTime) robot.pos = endPos;
             // Else interpolate
-            else robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp);
+            else {
+                robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp);
+            }
 
             robots[robotIndex] = robot;
             robotIndex++;
@@ -507,8 +511,6 @@ public class FxFXMLController
 //                System.out.println("Height: " + newValue.doubleValue());
             }
         });
-
-
     }
 
     /**
@@ -588,7 +590,7 @@ public class FxFXMLController
                     " was not an event button, please only use this eventHandler for EventButtons");
         }
         EventButton eventButton = (EventButton) event.getSource();
-        System.out.println("Button pressed: " + eventButton.getTimeStamp());
+        dragBarSimulation.setValue(eventButton.getTimeStamp());
         event.consume();
     };
 }
