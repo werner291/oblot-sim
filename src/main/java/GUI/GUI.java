@@ -19,6 +19,7 @@ import java.net.URL;
 public class GUI extends Application {
     // only one simulator for every gui. Needs to be static because Application.launch launches a new GUI instance
     private static Simulator simulator;
+    public static Stage stage;
     @Override
     public void start(Stage stage) {
         try {
@@ -30,6 +31,7 @@ public class GUI extends Application {
             Parent root = loader.load();
             loader.<FxFXMLController>getController().setSimulator(GUI.simulator); // set the simulator of the controller
 
+            GUI.stage = stage;
             stage.setTitle("Oblivious Point Robot Simulator.Simulator");
             stage.initStyle(StageStyle.DECORATED);
             stage.setScene(new Scene(root));

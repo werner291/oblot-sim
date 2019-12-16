@@ -99,7 +99,7 @@ public class Simulator {
             switch (e.type) {
                 case START_COMPUTE:
                     if (e.r.state != State.SLEEPING) {
-                        throw new IllegalStateException("Scheduled event has a wrong type");
+                        throw new IllegalStateException("Scheduled event has a wrong type: " + e.r.state + " Should be " + State.SLEEPING);
                     }
                     Vector goal = e.r.calculate(getSnapshot(e.r));
                     int index = Arrays.asList(robots).indexOf(e.r);
@@ -108,13 +108,13 @@ public class Simulator {
                     break;
                 case START_MOVING:
                     if (e.r.state != State.COMPUTING) {
-                        throw new IllegalStateException("Scheduled event has a wrong type");
+                        throw new IllegalStateException("Scheduled event has a wrong type: " + e.r.state + " Should be " + State.COMPUTING);
                     }
                     e.r.state = State.MOVING;
                     break;
                 case END_MOVING:
                     if (e.r.state != State.MOVING) {
-                        throw new IllegalStateException("Scheduled event has a wrong type");
+                        throw new IllegalStateException("Scheduled event has a wrong type: " + e.r.state + " Should be " + State.MOVING);
                     }
                     e.r.state = State.SLEEPING;
                     break;

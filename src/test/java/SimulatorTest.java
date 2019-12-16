@@ -1,5 +1,8 @@
 import Algorithms.*;
 import Schedulers.FSyncScheduler;
+import Simulator.Simulator;
+import Util.Config;
+import Util.Vector;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -45,7 +48,7 @@ class SimulatorTest {
         Simulator sim = new Simulator(config, robots, new FSyncScheduler());
 
         // Run until it all stops. Note that this implies that it stops.
-        sim.run(Double.POSITIVE_INFINITY);
+        //sim.run(Double.POSITIVE_INFINITY);
 
         // Expect the robots to have gathered exactly at the COG.
         assertEquals(expected, robots[0].pos);

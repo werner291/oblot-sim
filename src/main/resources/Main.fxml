@@ -66,7 +66,7 @@
     </MenuBar>
     <SplitPane dividerPositions="0.2, 0.5" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
       <items>
-        <AnchorPane minWidth="150.0" prefWidth="150.0">
+        <AnchorPane minWidth="200.0" prefWidth="250.0">
           <children>
             <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" style="&#10;" text="Events" textAlignment="CENTER" wrapText="false">
                      <font>
@@ -76,16 +76,16 @@
                         <Color blue="0.624" green="0.624" red="0.624" fx:id="x8" />
                      </textFill></Label>
                   <AnchorPane layoutY="505.0" prefHeight="45.0" prefWidth="507.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="505.0" />
-                  <ScrollPane fx:id="eventList" layoutY="41.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
+                  <ScrollPane fx:id="eventList" layoutY="41.0" minWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
           </children>
         </AnchorPane>
-            <AnchorPane prefHeight="547.0" prefWidth="400.0">
+            <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
                <children>
-                  <Canvas fx:id="canvas" height="547.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled" width="400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                  <Slider fx:id="dragBarSimulation" prefHeight="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
+                  <Canvas fx:id="canvas" height="547.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled" width="400.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <Slider fx:id="dragBarSimulation" blockIncrement="1.0" max="0.0" maxHeight="40.0" minHeight="40.0" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
                </children>
             </AnchorPane>
-        <AnchorPane minWidth="150.0" prefWidth="150.0">
+        <AnchorPane maxWidth="600.0" minWidth="260.0" prefWidth="280.0">
           <children>
             <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Algorithms" textAlignment="CENTER" wrapText="false">
               <font>
@@ -95,7 +95,13 @@
                 <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
               </textFill>
             </Label>
-                  <Button fx:id="playButton" layoutY="525.0" mnemonicParsing="false" onAction="#playSimulation" prefHeight="40.0" text="Compute" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <AnchorPane layoutX="2.0" layoutY="520.0" maxWidth="300.0" minWidth="200.0" prefHeight="80.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                     <children>
+                        <Button fx:id="playButton" layoutX="-4.0" layoutY="49.0" mnemonicParsing="false" onAction="#playSimulation" prefWidth="80.0" text="Play" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
+                        <Button fx:id="nextButton" layoutX="150.0" layoutY="58.0" mnemonicParsing="false" onAction="#nextSimulation" prefWidth="80.0" text="Next" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="100.0" AnchorPane.topAnchor="10.0" />
+                        <Button fx:id="endButton" layoutX="188.0" layoutY="42.0" mnemonicParsing="false" onAction="#endSimulation" prefWidth="80.0" text="Until End" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="190.0" AnchorPane.topAnchor="10.0" />
+                     </children>
+                  </AnchorPane>
           </children>
         </AnchorPane>
       </items>
