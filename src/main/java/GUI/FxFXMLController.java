@@ -1,5 +1,7 @@
 package GUI;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import Algorithms.Robot;
 import Algorithms.State;
 import Schedulers.CalculatedEvent;
@@ -320,10 +322,9 @@ public class FxFXMLController
      * @return The object that can be clicked by the user to return to a certain timestamp/event
      */
     private Button createEventButton(String eventName, double timeStamp) {
-        Button eventButton = new Button(eventName + " | @: " + timeStamp);
-        eventButton.setPrefWidth(200);
-        eventButton.setMinWidth(200);
+        EventButton eventButton = new EventButton(eventName + " | @: " + timeStamp, timeStamp);
         eventButton.prefWidthProperty().bind(eventList.widthProperty());
+        eventButton.setOnAction(eventButtonHandler);
         return eventButton;
     }
 
@@ -580,4 +581,14 @@ public class FxFXMLController
             }
         }
     }
+
+    private EventHandler<ActionEvent> eventButtonHandler = event -> {
+        if (!event.getSource().getClass().equals(EventButton.class)) {
+            throw new IllegalArgumentException("Event button trigger by: " + event.getSource().getClass() +
+                    " was not an event button, please only use this eventHandler for EventButtons");
+        }
+        EventButton eventButton = (EventButton) event.getSource();
+        System.out.println("Button pressed: " + eventButton.getTimeStamp());
+        event.consume();
+    };
 }
