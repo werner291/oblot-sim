@@ -1,5 +1,6 @@
 package GUI;
 
+import Simulator.Simulator;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -16,6 +17,8 @@ import java.net.URL;
  * If you want to edit what functions GUI elements trigger either edit the Main.fxml file or the Controller file
  */
 public class GUI extends Application {
+    // only one simulator for every gui. Needs to be static because Application.launch launches a new GUI instance
+    private static Simulator simulator;
     @Override
     public void start(Stage stage) {
         try {
@@ -23,8 +26,11 @@ public class GUI extends Application {
             if (fxmlFile == null) {
                 throw new NullPointerException("The Main.fxml file does not exist.");
             }
-            Parent root = FXMLLoader.load(fxmlFile);
-            stage.setTitle("Oblivious Point Robot Simulator");
+            FXMLLoader loader = new FXMLLoader(fxmlFile);
+            Parent root = loader.load();
+            loader.<FxFXMLController>getController().setSimulator(GUI.simulator); // set the simulator of the controller
+
+            stage.setTitle("Oblivious Point Robot Simulator.Simulator");
             stage.initStyle(StageStyle.DECORATED);
             stage.setScene(new Scene(root));
             // Show GUI
@@ -35,10 +41,12 @@ public class GUI extends Application {
     }
 
     /**
-     * Starts the gui
+     * Starts the gui. Does not return until the gui is exited.
      * @param args the arguments to start the application
+     * @param simulator the simulator to start the application with
      */
-    public void startGUI(String[] args) {
+    public static void runGUI(String[] args, Simulator simulator) {
+        GUI.simulator = simulator;
         Application.launch(args);
     }
 }

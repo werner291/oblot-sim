@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 /**
  * An event for the simulator. Will be used to store what happened in the simulator.
- * It is used whenever an event has been processed and the goal of the robot in question is known.
+ * For every timestamp that there is an event, a calculatedEvent will be generated and stored.
  */
 public class CalculatedEvent {
     /**
