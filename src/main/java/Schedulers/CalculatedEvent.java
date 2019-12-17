@@ -142,4 +142,18 @@ public class CalculatedEvent {
         }
         return calculatedEvents;
     }
+
+    public CalculatedEvent copyDeep() {
+        List<Event> eventsCopy = new ArrayList<>();
+        for (Event event : this.events) {
+            eventsCopy.add(event.copyEvent());
+        }
+        Vector[] positionsCopy = new Vector[this.positions.length];
+        int i = 0;
+        for (Vector vector : this.positions) {
+            positionsCopy[i] = new Vector(this.positions[i]);
+            i++;
+        }
+        return new CalculatedEvent(eventsCopy, positionsCopy, this.goals);
+    }
 }

@@ -37,4 +37,8 @@ public class Event {
     public String toString() {
         return String.format("Event: %s, %s, %f", type, r, t);
     }
+
+    public Event copyEvent() {
+        return new Event(this.type, this.t, this.r.copy());
+    }
 }

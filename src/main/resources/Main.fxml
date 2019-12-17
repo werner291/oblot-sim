@@ -82,8 +82,8 @@
         </AnchorPane>
             <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
                <children>
-                  <Canvas fx:id="canvas" height="547.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled" width="400.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                  <Slider fx:id="dragBarSimulation" blockIncrement="1.0" max="0.0" maxHeight="40.0" minHeight="40.0" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
+                  <Canvas fx:id="canvas" height="547.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled" width="400.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0" />
+                  <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="0.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
                </children>
             </AnchorPane>
         <AnchorPane maxWidth="600.0" minWidth="260.0" prefWidth="260.0">

@@ -1,5 +1,6 @@
 package GUI;
 
+import Schedulers.EventType;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import Algorithms.Robot;
@@ -348,15 +349,14 @@ public class FxFXMLController
         playBackSpeedLabel.setText(""+playBackSpeed);
     }
 
-
     /**
      * TODO: Computes until all the robots have stopped moving and are sleeping, might never finish
      */
     @FXML
     private void endSimulation() {
-        boolean doneSimulating = false;
-        while (!doneSimulating) {
-            doneSimulating = simulateNextEvent();
+        boolean keepSimulating = true;
+        while (keepSimulating) {
+            keepSimulating = simulateNextEvent();
         }
     }
 
@@ -379,49 +379,49 @@ public class FxFXMLController
      */
 
     private void recomputeRobots(double timestamp) {
-        List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
-        if (calculatedEvents.size() == 0) {
-            return;
-        }
 
         // Select the Last event at the given timestep in the simulation
-        short indexOfCalcEvents = 0;
-        CalculatedEvent prevEvent = null;
-        CalculatedEvent nextEvent = null;
-        for (int i = 0; i <= calculatedEvents.size(); i++) {
-            // If the next event is not yet known don't assign any next event
-            if (i == calculatedEvents.size()) {
-                prevEvent = calculatedEvents.get(i-1);
-                nextEvent = prevEvent;
-                break;
-            }
 
-            double calculatedEventsTime = calculatedEvents.get(i).events.get(0).t;
-            // The event with this timestamp happened after the selected timestamp
-            if (calculatedEventsTime > timestamp)
-            {
-                // If there is no previous event simply use the first event, only occurs when the first timestamp an
-                // event occurs is selected to be simulated. Otherwise pick the most recent event
-                prevEvent = calculatedEvents.get(Math.max(0, indexOfCalcEvents-1));
-                nextEvent = calculatedEvents.get(indexOfCalcEvents);
+        // Gather the most recent and the next event if available
+        CalculatedEvent[] eventsFound = gatherRecentEvents(timestamp);
+        // If neither can be found nothing has been simulated yet don't recompute their positions
+        if (eventsFound == null) return;
 
-                // Stop after finding first candidate
-                break;
-            }
-
-            indexOfCalcEvents++;
-        }
+        // Unpack the previous and next events from the helper function
+        CalculatedEvent currentEvent = eventsFound[0];
+        CalculatedEvent nextEvent = eventsFound[1];
 
         Robot[] robots = simulator.getRobots();
-
         short robotIndex = 0;
+
+        if (currentEvent == null) { // If the next event is the first event, make up the prev event as sleeping until the first event.
+            currentEvent = nextEvent.copyDeep();
+            for (Event event : currentEvent.events) {
+                event.t = 0;
+                event.type = EventType.END_MOVING;
+            }
+        }
+        if (nextEvent == null) { // If the last event is the prev event, make up the next event until sleep.
+            nextEvent = currentEvent.copyDeep();
+            for (Event event : currentEvent.events) {
+                for (Robot robot : robots) {
+                    if (event.r == robot)
+                    {
+                        Event currentRobotEvent = event;
+                        Interpolate.getEndTime(robot.pos, currentRobotEvent.t, currentEvent.goals[0], robot.speed);
+                        break;
+                    }
+                }
+            }
+        }
+
         for (Robot robot : robots) {
-            Vector startPos = prevEvent.positions[robotIndex];
-            double startTime = prevEvent.events.get(0).t;
+            Vector startPos = currentEvent.positions[robotIndex];
+            double startTime = currentEvent.events.get(0).t;
             Vector endPos = nextEvent.positions[robotIndex];
             double endTime = nextEvent.events.get(0).t;
 
-            switch (prevEvent.events.get(robotIndex).type) {
+            switch (currentEvent.events.get(robotIndex).type) {
                 case END_MOVING:
                     robot.state = State.SLEEPING;
                     break;
@@ -439,6 +439,54 @@ public class FxFXMLController
 
             robotIndex++;
         }
+    }
+
+    /**
+     * Gather the previous and next event given a timestamp.
+     * @param timestamp timestamp to find the prev and next events for
+     * @return a length 2 array containing the previous and next event in order
+     */
+    private CalculatedEvent[] gatherRecentEvents(double timestamp) {
+        List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
+        if (calculatedEvents.size() == 0) {
+            // Only occurs if nothing has been simulated yet
+            return null;
+        }
+
+        CalculatedEvent currentEvent = null;
+        CalculatedEvent nextEvent = null;
+
+        for (int i = 0; i < calculatedEvents.size(); i++) {
+            double calculatedEventsTime = calculatedEvents.get(i).events.get(0).t;
+
+            // If the previous event is non-existant due to the first event being the next event
+            if (i == 0 && calculatedEventsTime > timestamp)
+            {
+                currentEvent = null;
+                nextEvent = calculatedEvents.get(i);
+                break;
+            }
+
+            // The event with this timestamp happens at the selected timestamp
+            if (calculatedEventsTime == timestamp)
+            {
+                currentEvent = calculatedEvents.get(i);
+                nextEvent = null;
+            }
+
+            // The event with this timestamp happened after the selected timestamp
+            if (calculatedEventsTime > timestamp)
+            {
+                // If there is no previous event simply use the first event, only occurs when the first timestamp an
+                // event occurs is selected to be simulated. Otherwise pick the most recent event
+                currentEvent = calculatedEvents.get(i-1);
+                nextEvent = calculatedEvents.get(i);
+
+                // Stop after finding first candidate
+                break;
+            }
+        }
+        return new CalculatedEvent[]{currentEvent, nextEvent};
     }
 
     /**
@@ -531,15 +579,15 @@ public class FxFXMLController
         canvasBackground.widthProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                canvas.widthProperty().setValue(newValue);
-//                System.out.println("Width: " + newValue.doubleValue());
+                canvas.widthProperty().set(newValue.doubleValue() - 30);
+                System.out.println("Width: " + newValue.doubleValue());
             }
         });
 
         canvasBackground.heightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                canvas.heightProperty().set(newValue.doubleValue() - dragBarSimulation.getHeight());
+                canvas.heightProperty().set(newValue.doubleValue() - (dragBarSimulation.getHeight()+15));
 //                System.out.println("Height: " + newValue.doubleValue());
             }
         });
