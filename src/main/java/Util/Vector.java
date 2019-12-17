@@ -140,12 +140,61 @@ public class Vector {
     }
 
     /**
+     * Calculate the length of this vector
+     * @return the length of this vector
+     */
+    public double len() {
+        return len(this);
+    }
+
+    /**
+     * Calculate the length of a vector
+     * @param a the vector to get the length of
+     * @return the length of the vector a
+     */
+    public static double len(Vector a) {
+        return dist(a, new Vector(0, 0));
+    }
+
+    /**
      * Assuming a vector from the origin to (x, y), rotate the vector anticlockwise around the origin
      * @param a the angle to rotate with, in radians
      * @return a new rotated vector
      */
     public Vector rotate(double a) {
         return Vector.rotate(this, a);
+    }
+
+    /**
+     * Calculate the smallest angle between this vector and another vector
+     * @param a the second vector
+     * @return the smallest angle between the two vectors. Positive if clockwise, negative if anticlockwise.
+     */
+    public double angle(Vector a) {
+        return angle(this, a);
+    }
+
+    /**
+     * Calculate the smallest angle between two vectors.
+     * @param a the first vector
+     * @param b the second vector
+     * @return the smallest angle between the two vectors. Positive if clockwise, negative if anticlockwise.
+     */
+    public static double angle(Vector a, Vector b) {
+        double dot = a.x*b.x + a.y*b.y;
+        double det = a.x*b.y - a.y*b.x;
+        return Math.atan2(det, dot);
+    }
+
+    /**
+     * The angle between the lines ba and bc (in that order), when the vectors are regarded as points.
+     * @param a the endpoint of the first line segment
+     * @param b the point at which the line segments connect and at which we want to calculate the angle
+     * @param c the endpoint of the second line segment
+     * @return the angle abc between the line segments ba and bc. Positive if clockwise, negative if anticlockwise.
+     */
+    public static double angle(Vector a, Vector b, Vector c) {
+        return angle(a.sub(b), c.sub(b));
     }
 
     /**
