@@ -224,6 +224,7 @@ public class FileScheduler extends Scheduler {
         }
 
         // check the easy case if the next is the following event
+
         if (events[currentIndex].t <= t && events[currentIndex + 1].t > t) {
             return getSameEvents(++currentIndex);
         }

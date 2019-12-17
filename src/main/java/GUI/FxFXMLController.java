@@ -37,6 +37,8 @@ import java.util.ResourceBundle;
  */
 public class FxFXMLController
 {
+    boolean isDoneSimulating = false;
+    boolean paddedLastEvent = false;
     boolean isPaused = true;
     int playBackSpeed = 1;
     int last_size_calc_events = 0;
@@ -295,14 +297,18 @@ public class FxFXMLController
 
         // Compute next events
         progressBarSimulation.setProgress(0);
-        simulator.simulateTillNextEvent();
+
+        try {
+            simulator.simulateTillNextEvent();
+        } catch (Exception e) {
+        }
 
         // Get list of computed events
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
 
         // Check if an additional event was added. If not, then don't add anything to the list
         if (calculatedEvents.size() == last_size_calc_events) {
-            showWarningPopUp("No new events have been found by the simulator");
+            isDoneSimulating = true;
             return false;
         }
         last_size_calc_events = calculatedEvents.size();
@@ -312,9 +318,11 @@ public class FxFXMLController
 
         // Add recent events to Vbox containing all events
         double recentTimeStamp = 0;
-        for (Event calculatedEvent : recentEvents) {
-            eventsVBox.getChildren().add(createEventButton(calculatedEvent.type.toString(), calculatedEvent.t));
-            recentTimeStamp = calculatedEvent.t;
+        int eventIndex = 1;
+        for (Event event : recentEvents) {
+            eventsVBox.getChildren().add(createEventButton(eventIndex, event.type.toString(), event.t));
+            recentTimeStamp = event.t;
+            eventIndex++;
         }
         progressBarSimulation.setProgress(75);
         eventList.setContent(eventsVBox);
@@ -366,11 +374,15 @@ public class FxFXMLController
      * @param timeStamp Timestamp of when the event took place
      * @return The object that can be clicked by the user to return to a certain timestamp/event
      */
-    private Button createEventButton(String eventName, double timeStamp) {
-        EventButton eventButton = new EventButton(eventName + " | @: " + timeStamp, timeStamp);
+    private Button createEventButton(int robotnr, String eventName, double timeStamp) {
+        EventButton eventButton = new EventButton( "Robot: " + robotnr + " | " + eventName + " | @: " + timeStamp, timeStamp);
         eventButton.prefWidthProperty().bind(eventList.widthProperty());
         eventButton.setOnAction(eventButtonHandler);
         return eventButton;
+    }
+
+    private CalculatedEvent getLastEvent() {
+        return null;
     }
 
     /**
@@ -403,15 +415,28 @@ public class FxFXMLController
         }
         if (nextEvent == null) { // If the last event is the prev event, make up the next event until sleep.
             nextEvent = currentEvent.copyDeep();
-            for (Event event : currentEvent.events) {
-                for (Robot robot : robots) {
-                    if (event.r == robot)
-                    {
-                        Event currentRobotEvent = event;
-                        Interpolate.getEndTime(robot.pos, currentRobotEvent.t, currentEvent.goals[0], robot.speed);
-                        break;
-                    }
+            int robotIndexTemp = 0;
+            double maxEndTime = -1;
+            for (Robot robot : robots) {
+                Event nextRobotEvent = nextEvent.events.get(robotIndexTemp);
+                Vector nextRobotGoal = nextEvent.goals[robotIndexTemp];
+
+                double endTime = Interpolate.getEndTime(robot.pos, nextRobotEvent.t, nextRobotGoal, robot.speed);
+
+                nextRobotEvent.type = EventType.END_MOVING;
+                nextRobotEvent.t = endTime;
+                nextEvent.positions[robotIndexTemp] = nextRobotGoal;
+                if (isDoneSimulating && !paddedLastEvent && currentEvent.events.get(robotIndexTemp).type.equals(EventType.START_MOVING)) {
+                    if (endTime > maxEndTime) maxEndTime = endTime;
+                    simulator.getCalculatedEvents().add(nextEvent);
+                    eventsVBox.getChildren().add(createEventButton(robotIndexTemp+1, EventType.END_MOVING.toString(), endTime));
                 }
+                robotIndexTemp++;
+            }
+            if (isDoneSimulating && !paddedLastEvent && maxEndTime != -1) {
+                paddedLastEvent = true;
+                dragBarSimulation.setMax(maxEndTime);
+                dragBarSimulation.setValue(maxEndTime);
             }
         }
 
