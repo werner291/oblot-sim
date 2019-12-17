@@ -90,6 +90,18 @@ public class FileScheduler extends Scheduler {
     }
 
     /**
+     * Reads a file and stores an ordered array of events. Does this by reading a file and then merging it with the total
+     * This is not the most efficient way, as insertion per event would be better. However, this was easier to implement
+     * and it will only be done once anyway.
+     *
+     * @param file the file this scheduler should load
+     * @param robots the list of robots for which this scheduler needs to load the schedule
+     */
+    public FileScheduler(File file, Robot[] robots) {
+        throw new UnsupportedOperationException("TODO: Implement!");
+    }
+
+    /**
      * Checks if an array is sorted. Same ints are allowed, but they should be next to each other.
      * @param array the array of ints
      * @return if the array is sorted

@@ -3,15 +3,102 @@ package Schedulers;
 import Algorithms.Robot;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static Schedulers.EventType.START_MOVING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SchedulerTest {
+
+    @Test
+    void fileSchedulerTest() {
+
+        Random rng = new Random(1337);
+
+        // Generate a set of robots (really only the object Ids matter)
+        Robot[] robots = TestUtil.generateRobotCloud(TestUtil.DO_NOTHING, 10.0, 50);
+
+        // Pre-generate a schedule for each robot.
+        Map<Robot, SortedSet<Event>> schedule = Arrays.stream(robots).collect(Collectors.toMap(Function.identity(), (Robot robot) -> {
+
+            // Pick a starting time for the first event.
+            double t = rng.nextDouble() * 10.0;
+
+            // Determine the number of events in the schedule.
+            int numEvents = rng.nextInt(500);
+
+            // Create a sorted set of events.
+            TreeSet<Event> events = new TreeSet<>(Comparator.comparing((Event o) -> o.t));
+
+            // Generate the events in sequence
+            for (int i = 0; i < numEvents; i++) {
+                // Add an event with random type at timestamp t.
+                // TODO: Simulate possibly missing event types? Need to clarify.
+                // We could use null event types for that?
+                events.add(new Event(EventType.values()[i%3], t, robot));
+                // Advance by random time delta
+                t += rng.nextDouble() + 0.01;
+            }
+
+            // Freeze the set so we don't modify the schedule accidentally.
+            return Collections.unmodifiableSortedSet(events);
+        }));
+
+        // Get the maximum event time to determine a sample range.
+        double maxT = schedule.values().stream().mapToDouble(events -> events.last().t).max().getAsDouble();
+
+        try {
+            // Create a temp file.
+            File file = File.createTempFile("test_schedule", ".csv");
+
+            // For each robot, write the schedule to it.
+            try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+                for (Robot robot : robots) {
+                    for (Event event : schedule.get(robot)) {
+                        writer.print(event.t);
+                        writer.print(",");
+                    }
+                    writer.println();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Now, load the same file in the FileScheduler.
+            Scheduler scheduler = new FileScheduler(file, robots);
+
+            for (int i = 0; i < 1000; i++) {
+                // Take 1000 random timestamps.
+                double sampleT = rng.nextDouble() * maxT * 1.01;
+
+                // Ask the scheduler which events are next.
+                List<Event> events = scheduler.getNextEvent(robots, sampleT);
+
+                for (Event event : events) {
+                    // In the schedule, for the given robot, find the first event with a timestamp strictly greater
+                    // than the sample time.
+                    Event expected = schedule.get(event.r).tailSet(event).stream().filter(event1 -> event1.t > sampleT).findFirst().get();
+
+                    // We should expect the event in the schedule to match with the event from the FileScheduler.
+                    // We do inexact comparison to account for rounding errors while enconding/decoding.
+                    assertTrue(Math.abs(event.t - expected.t) < 0.000001);
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     /**
      * An FSYNC schedule should consist of an alternation between START_COMPUTE and START_MOVING schedule events.
@@ -43,7 +130,6 @@ class SchedulerTest {
     }
 
     /**
-     *
      * @param r         Random number generator to use (so you can seed it)
      * @param scheduler The Scheduler being tested.
      * @param events    A list of events occurring during this timestamp
@@ -63,7 +149,7 @@ class SchedulerTest {
 
     /**
      * Assert that there is exactly one robot for each event.
-     *
+     * <p>
      * This is mainly used in the FSYNC scheduler check.
      *
      * @param robots Array of robots
@@ -85,12 +171,12 @@ class SchedulerTest {
 
     /**
      * Shorthand method to check whether all events have a given type.
-     *
+     * <p>
      * This is mainly used for the synchronous schedulers where
      * events of a given type are always synchronized.
      *
-     * @param events        List of events to check.
-     * @param expectedType  Event type to expect.
+     * @param events       List of events to check.
+     * @param expectedType Event type to expect.
      */
     static void assertAllOfType(List<Event> events, EventType expectedType) {
         for (Event event : events) {
@@ -100,13 +186,12 @@ class SchedulerTest {
     }
 
     /**
-     *
      * Method that runs a given scheduler through a test environment resembling a simulation and verifies output validity.
-     *
+     * <p>
      * Robot movement times are randomized and provided to the scheduler.
      *
-     * @param scheduler         The scheduler to test.
-     * @param checkNewEvents    A callback that can be used to check additional things about individual batches of events.
+     * @param scheduler      The scheduler to test.
+     * @param checkNewEvents A callback that can be used to check additional things about individual batches of events.
      */
     static void testScheduler(Scheduler scheduler, BiConsumer<Robot[], List<Event>> checkNewEvents) {
 
