@@ -281,9 +281,15 @@ public class FxFXMLController
      */
     @FXML
     private void nextSimulation() {
-        if (!simulateNextEvent()) {
-            isPaused = true;
-            playButton.setText("Play");
+        if (dragBarSimulation.getValue()+1 <= dragBarSimulation.getMax()) {
+            dragBarSimulation.setValue(dragBarSimulation.getValue()+1);
+        } else if (dragBarSimulation.getValue() != dragBarSimulation.getMax()) {
+            dragBarSimulation.setValue(dragBarSimulation.getMax());
+        } else {
+            if (!simulateNextEvent()) {
+                isPaused = true;
+                playButton.setText("Play");
+            }
         }
     }
 
@@ -307,8 +313,9 @@ public class FxFXMLController
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
 
         // Check if an additional event was added. If not, then don't add anything to the list
-        if (calculatedEvents.size() == last_size_calc_events) {
+        if (calculatedEvents.size() == last_size_calc_events || isDoneSimulating) {
             isDoneSimulating = true;
+            showWarningPopUp("No new event was generated");
             return false;
         }
         last_size_calc_events = calculatedEvents.size();
