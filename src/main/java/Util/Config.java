@@ -18,4 +18,9 @@ public class Config {
      * The range the robots can see other robots in. -1 for infinite visibility.
      */
     public double visibility;
+
+    /**
+     * If two floats differ less than this value, they are considered to be equal.
+     */
+    public static final double EPSILON = 1e-14;
 }

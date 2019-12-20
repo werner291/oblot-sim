@@ -157,15 +157,6 @@ public class Vector {
     }
 
     /**
-     * Assuming a vector from the origin to (x, y), rotate the vector anticlockwise around the origin
-     * @param a the angle to rotate with, in radians
-     * @return a new rotated vector
-     */
-    public Vector rotate(double a) {
-        return Vector.rotate(this, a);
-    }
-
-    /**
      * Calculate the smallest angle between this vector and another vector
      * @param a the second vector
      * @return the smallest angle between the two vectors. Positive if clockwise, negative if anticlockwise.
@@ -178,7 +169,7 @@ public class Vector {
      * Calculate the smallest angle between two vectors.
      * @param a the first vector
      * @param b the second vector
-     * @return the smallest angle between the two vectors. Positive if clockwise, negative if anticlockwise.
+     * @return the smallest angle between the two vectors. Positive if anticlockwise, negative if clockwise.
      */
     public static double angle(Vector a, Vector b) {
         double dot = a.x*b.x + a.y*b.y;
@@ -191,10 +182,19 @@ public class Vector {
      * @param a the endpoint of the first line segment
      * @param b the point at which the line segments connect and at which we want to calculate the angle
      * @param c the endpoint of the second line segment
-     * @return the angle abc between the line segments ba and bc. Positive if clockwise, negative if anticlockwise.
+     * @return the angle abc between the line segments ba and bc. Positive if anticlockwise, negative if clockwise.
      */
     public static double angle(Vector a, Vector b, Vector c) {
         return angle(a.sub(b), c.sub(b));
+    }
+
+    /**
+     * Assuming a vector from the origin to (x, y), rotate the vector anticlockwise around the origin
+     * @param a the angle to rotate with, in radians
+     * @return a new rotated vector
+     */
+    public Vector rotate(double a) {
+        return Vector.rotate(this, a);
     }
 
     /**
@@ -209,6 +209,25 @@ public class Vector {
         return new Vector(newX, newY);
     }
 
+    /**
+     * Calculates the cross product or determinant of two vectors
+     * @param a the vector to calculate the cross product with
+     * @return the determinant of this and a
+     */
+    public double cross(Vector a) {
+            return cross(this, a);
+    }
+
+    /**
+     * Calculates the cross product or determinant of two vectors
+     * @param a the first vector
+     * @param b the second vector
+     * @return the cross product of the two vectors
+     */
+    public static double cross(Vector a, Vector b) {
+        return a.x * b.y - a.y * b.x;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
@@ -216,7 +235,8 @@ public class Vector {
         }
         if (obj instanceof Vector) {
             Vector other = (Vector) obj;
-            return this.x == other.x && this.y == other.y; //TODO: floating point correction
+            // equality with floating point correction
+            return Math.abs(this.x - other.x) < Config.EPSILON && Math.abs(this.y - other.y) < Config.EPSILON;
         } else {
             return false;
         }
@@ -224,7 +244,9 @@ public class Vector {
 
     @Override
     public int hashCode() {
-        return Double.hashCode(this.x) + Double.hashCode(this.y);
+        double roundedX = ((int)(this.x / Config.EPSILON) * Config.EPSILON);
+        double roundedY = ((int)(this.y / Config.EPSILON) * Config.EPSILON);
+        return Double.hashCode(roundedX) + Double.hashCode(roundedY);
     }
 
     @Override

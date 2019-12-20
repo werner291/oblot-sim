@@ -1,10 +1,10 @@
 import Algorithms.BasicPositionTransformation;
-import Algorithms.GoToCoG;
+import Algorithms.Gathering;
 import Algorithms.Robot;
 import Schedulers.FileScheduler;
 import Schedulers.Scheduler;
-import GUI.GUI;
 import Simulator.Simulator;
+import GUI.GUI;
 
 /**
  * The public class that we will use to start our GUI. This is an example class of how the simulator may be used.
@@ -16,9 +16,9 @@ public class Main{
     public static void main(String[] args) {
         // We're keeping this
         System.out.println("Most awesome simulator ever.");
-        Robot[] r = Robot.fromFile("testRobots", new GoToCoG(), new BasicPositionTransformation());
+        Robot[] r = Robot.fromFile("testRobots2", new Gathering(), new BasicPositionTransformation());
         Scheduler s = new FileScheduler("testSchedule", r);
-        Util.Config c = new Util.Config(false, -1);
+        Util.Config c = new Util.Config(true, -1);
         Simulator simulator = new Simulator(c, r, s);
 
         GUI.runGUI(args, simulator);

@@ -307,6 +307,7 @@ public class FxFXMLController
         try {
             simulator.simulateTillNextEvent();
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         // Get list of computed events
@@ -465,9 +466,13 @@ public class FxFXMLController
                     break;
             }
 
-            if (startTime == endTime) robot.pos = endPos;
-            else if (endTime < timestamp) { robot.pos = endPos; }
-            else { robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp); }
+            if (startTime == endTime) {
+                robot.pos = endPos;
+            } else if (endTime < timestamp) {
+                robot.pos = endPos;
+            } else {
+                robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp);
+            }
 
             robotIndex++;
         }

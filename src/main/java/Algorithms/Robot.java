@@ -92,8 +92,8 @@ public class Robot {
             while (s.hasNextLine()) {
                 String nextLine = s.nextLine();
                 String[] coordsString = nextLine.split(", ");
-                int x = Integer.parseInt(coordsString[0]);
-                int y = Integer.parseInt(coordsString[1]);
+                double x = Double.parseDouble(coordsString[0]);
+                double y = Double.parseDouble(coordsString[1]);
                 Vector pos = new Vector(x, y);
                 robots[i] = new Robot(algo, pos, t);
                 i++;
