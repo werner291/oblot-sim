@@ -422,7 +422,7 @@ public class FxFXMLController
         if (nextEvent == null) { // If the last event is the prev event, make up the next event until sleep.
             nextEvent = currentEvent.copyDeep();
             int robotIndexTemp = 0;
-            double maxEndTime = -1;
+            double maxEndTime = currentEvent.events.get(0).t + 1;
             for (Robot robot : robots) {
                 Event nextRobotEvent = nextEvent.events.get(robotIndexTemp);
                 Vector nextRobotGoal = nextEvent.goals[robotIndexTemp];
@@ -432,38 +432,44 @@ public class FxFXMLController
 
                     // If robots have started moving then finish the movement to their goal and calculate how much time this takes. TODO: Make sure this takes the current scheduler into account
                     if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.START_MOVING)) {
-                        nextRobotEvent.type = EventType.START_MOVING;
+                        nextRobotEvent.type = EventType.END_MOVING;
                         nextEvent.positions[robotIndexTemp] = nextRobotGoal;
                         double endTime = Interpolate.getEndTime(robot.pos, nextRobotEvent.t, nextRobotGoal, robot.speed);
                         if (endTime > maxEndTime) maxEndTime = endTime;
 
                         simulator.getCalculatedEvents().add(nextEvent);
-                        if (robotIndexTemp == robots.length-1 && maxEndTime != -1) {
-                            paddedLastEvent = true;
-                            dragBarSimulation.setMax(maxEndTime);
-                            dragBarSimulation.setValue(maxEndTime);
-
-                            // Set the time of all robots events to the max time till now
-                            for (Event event : nextEvent.events) {
-                                event.t = maxEndTime;
-                                eventsVBox.getChildren().add(createEventButton(robotIndexTemp + 1, EventType.END_MOVING.toString(), endTime));
-                            }
-                        }
                     }
 
                     // If robots have started computing, finish the compute cycle and afterwards should start moving to final goal.
                     if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.START_COMPUTE)) {
                         nextRobotEvent.type = EventType.START_MOVING;
+                        nextRobotEvent.t = nextRobotEvent.t + 1;
                         simulator.getCalculatedEvents().add(nextEvent);
-                        eventsVBox.getChildren().add(createEventButton(robotIndexTemp + 1, EventType.START_MOVING.toString(), nextRobotEvent.t));
                     }
 
                     // If robots have started stopped moving, but are not yet at their goal start computing next round.
                     if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.END_MOVING)) {
                         nextRobotEvent.type = EventType.START_COMPUTE;
+                        nextRobotEvent.t = nextRobotEvent.t + 1;
                         nextEvent.positions[robotIndexTemp] = nextRobotGoal;
                         simulator.getCalculatedEvents().add(nextEvent);
-                        eventsVBox.getChildren().add(createEventButton(robotIndexTemp + 1, EventType.START_MOVING.toString(), nextRobotEvent.t));
+                    }
+
+                    if (robotIndexTemp == robots.length-1) {
+                        dragBarSimulation.setMax(maxEndTime);
+                        dragBarSimulation.setValue(maxEndTime);
+
+                        // Set the time of all robots events to the max time till now
+                        int temp = 0;
+                        for (Event event : nextEvent.events) {
+                            event.t = maxEndTime;
+                            eventsVBox.getChildren().add(createEventButton(temp + 1, event.type.toString(), maxEndTime));
+                            temp++;
+                        }
+
+                        if (nextEvent.events.get(robotIndexTemp).type.equals(EventType.END_MOVING)) {
+                            paddedLastEvent = true;
+                        }
                     }
                 }
                 robotIndexTemp++;
@@ -529,7 +535,7 @@ public class FxFXMLController
             }
 
             // The event with this timestamp happens at the selected timestamp
-            if (calculatedEventsTime == timestamp)
+            if (i == calculatedEvents.size()-1)
             {
                 currentEvent = calculatedEvents.get(i);
                 nextEvent = null;
