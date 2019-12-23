@@ -25,7 +25,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.stage.Popup;
-import org.w3c.dom.Text;
 
 import java.net.URL;
 import java.util.List;
@@ -37,6 +36,7 @@ import java.util.ResourceBundle;
  */
 public class FxFXMLController
 {
+    boolean isScheduleDone = false;
     boolean isDoneSimulating = false;
     boolean paddedLastEvent = false;
     boolean isPaused = true;
@@ -294,6 +294,22 @@ public class FxFXMLController
     }
 
     /**
+     * Returns whether or not every robot can return
+     * @param calculatedEvents list of all events until now, used to check
+     * @return if the robots have all reached their goal
+     */
+
+    private boolean checkIsDoneSimulating(List<CalculatedEvent> calculatedEvents) {
+        CalculatedEvent lastEvent = calculatedEvents.get(calculatedEvents.size()-1);
+
+        for (int i = 0; i < lastEvent.events.size(); i++) {
+            if (lastEvent.positions[i] != lastEvent.goals[i]) return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Called to gather the new events and add them to the eventlist, set the new timestep
      * @return true if the next event exists, false if it does not
      */
@@ -314,8 +330,9 @@ public class FxFXMLController
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
 
         // Check if an additional event was added. If not, then don't add anything to the list
-        if (calculatedEvents.size() == last_size_calc_events || isDoneSimulating) {
-            isDoneSimulating = true;
+        if (calculatedEvents.size() == last_size_calc_events || isScheduleDone) {
+            isDoneSimulating = checkIsDoneSimulating(calculatedEvents);
+            isScheduleDone = true;
             showWarningPopUp("No new event was generated");
             return false;
         }
@@ -428,7 +445,7 @@ public class FxFXMLController
                 Vector nextRobotGoal = nextEvent.goals[robotIndexTemp];
 
                 // If no more calculatedevents came up and we haven't finished padding till all robots stop do this
-                if (isDoneSimulating && !paddedLastEvent) {
+                if (!isDoneSimulating && isScheduleDone && !paddedLastEvent) {
 
                     // If robots have started moving then finish the movement to their goal and calculate how much time this takes. TODO: Make sure this takes the current scheduler into account
                     if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.START_MOVING)) {
@@ -436,15 +453,12 @@ public class FxFXMLController
                         nextEvent.positions[robotIndexTemp] = nextRobotGoal;
                         double endTime = Interpolate.getEndTime(robot.pos, nextRobotEvent.t, nextRobotGoal, robot.speed);
                         if (endTime > maxEndTime) maxEndTime = endTime;
-
-                        simulator.getCalculatedEvents().add(nextEvent);
                     }
 
                     // If robots have started computing, finish the compute cycle and afterwards should start moving to final goal.
                     if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.START_COMPUTE)) {
                         nextRobotEvent.type = EventType.START_MOVING;
                         nextRobotEvent.t = nextRobotEvent.t + 1;
-                        simulator.getCalculatedEvents().add(nextEvent);
                     }
 
                     // If robots have started stopped moving, but are not yet at their goal start computing next round.
@@ -452,7 +466,6 @@ public class FxFXMLController
                         nextRobotEvent.type = EventType.START_COMPUTE;
                         nextRobotEvent.t = nextRobotEvent.t + 1;
                         nextEvent.positions[robotIndexTemp] = nextRobotGoal;
-                        simulator.getCalculatedEvents().add(nextEvent);
                     }
 
                     if (robotIndexTemp == robots.length-1) {
@@ -466,7 +479,7 @@ public class FxFXMLController
                             eventsVBox.getChildren().add(createEventButton(temp + 1, event.type.toString(), maxEndTime));
                             temp++;
                         }
-
+                        simulator.getCalculatedEvents().add(nextEvent);
                         if (nextEvent.events.get(robotIndexTemp).type.equals(EventType.END_MOVING)) {
                             paddedLastEvent = true;
                         }
@@ -497,7 +510,7 @@ public class FxFXMLController
             }
 
             if (startTime == endTime) {
-                // skip
+                robot.pos = endPos;
             } else if (endTime < timestamp) {
                 robot.pos = endPos;
             } else {
@@ -534,14 +547,6 @@ public class FxFXMLController
                 break;
             }
 
-            // The event with this timestamp happens at the selected timestamp
-            if (i == calculatedEvents.size()-1)
-            {
-                currentEvent = calculatedEvents.get(i);
-                nextEvent = null;
-                break;
-            }
-
             // The event with this timestamp happened after the selected timestamp
             if (calculatedEventsTime > timestamp)
             {
@@ -551,6 +556,14 @@ public class FxFXMLController
                 nextEvent = calculatedEvents.get(i);
 
                 // Stop after finding first candidate
+                break;
+            }
+
+            // The event with this timestamp happens at the selected timestamp
+            if (i == calculatedEvents.size()-1)
+            {
+                currentEvent = calculatedEvents.get(i);
+                nextEvent = null;
                 break;
             }
         }
