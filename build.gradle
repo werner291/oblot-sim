@@ -4,8 +4,9 @@
  */
 
 plugins {
-  id 'application'
-  id 'org.openjfx.javafxplugin' version '0.0.5'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.5'
+    id 'java-library'
 }
 
 // It is used to specify the main class? IntelliJ is being stupid here.
@@ -31,3 +32,11 @@ dependencies {
     testRuntime "org.junit.jupiter:junit-jupiter-engine:5.6.0-M1"
 }
 
+
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                   'Implementation-Version': project.version)
+    }
+}
