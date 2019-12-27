@@ -33,4 +33,12 @@ This library can then be linked into a project of one's choice. It then contains
     
     -   `FileScheduler` which plays a pre-written schedule from a CSV file.
     
-    New schedulers can be written by extending the `Scheduler` abstract class.
+New schedulers can be written by extending the `Scheduler` abstract class.
+    
+## Simulation model
+
+A simulation is, for each robot, an ordered sequence of events. Each event has a time at which it occurs as well as a type. The type must be one of `START_COMPUTE, START_MOVING, END_MOVING`, where the type of each subsequent event must be the logical successor of the one before, starting with `START_COMPUTE`, where the robot will receive a snapshot of the robots at that time and the algorithm is evaluated, `START_MOVING` where the robot will start moving towards the target location determined by the algorithm, and `END_MOVING` where the robot's movement stops. After this, the cycle restarts with a `START_COMPUTE` step.
+
+Up to the precision of floating-point numbers, the simulation representation effectively has continuous-time semantics, where events can be scheduled at arbitrary times without being restricted by any kind of fixed time step.
+
+Also, note that this representation does not have dedicated "Look", "Compute" and "Move" periods. Instead, "Look" and "Compute" are represented as a single, instantaneous `START_COMPUTE` event. Any time spent on computations is then modeled by the time between the `START_COMPUTE` and `START_MOVING` events. The actual time spent on evaluating the algorithm does not affect the outcome of the simulation, which is deterministic as long as the algorithm, scheduler and other user-defined components are.
