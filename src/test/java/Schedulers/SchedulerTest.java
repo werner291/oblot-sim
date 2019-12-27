@@ -11,11 +11,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static Schedulers.EventType.START_MOVING;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SchedulerTest {
 
@@ -54,6 +51,7 @@ class SchedulerTest {
         }));
 
         // Get the maximum event time to determine a sample range.
+        //noinspection OptionalGetWithoutIsPresent Exception can be ignored since we always have some events in the schedule.
         double maxT = schedule.values().stream().mapToDouble(events -> events.last().t).max().getAsDouble();
 
         try {
@@ -86,6 +84,7 @@ class SchedulerTest {
                 for (Event event : events) {
                     // In the schedule, for the given robot, find the first event with a timestamp strictly greater
                     // than the sample time.
+                    //noinspection OptionalGetWithoutIsPresent Throwing an exception here is fine since it'll fail like the test like it should.
                     Event expected = schedule.get(event.r).tailSet(event).stream().filter(event1 -> event1.t > sampleT).findFirst().get();
 
                     // We should expect the event in the schedule to match with the event from the FileScheduler.
@@ -211,12 +210,15 @@ class SchedulerTest {
         for (int i = 0; i < 1000; i++) {
 
             // Check when the next event occurs.
-            List<Event> events = ((Scheduler) scheduler).getNextEvent(robots, t);
+            List<Event> events = scheduler.getNextEvent(robots, t);
 
             for (Event event : events) {
-                assertEquals(expectedType.get(event.r), event.t);
-                // Expect a strict alternation between START_COMPUTE and START_MOVING per robot.
-                expectedType.compute(event.r, (robot, eventType) -> eventType == EventType.START_MOVING ? EventType.START_COMPUTE : START_MOVING);
+                // Expect the ordering of event types to be correct.
+                assertEquals(expectedType.get(event.r), event.type);
+                expectedType.compute(event.r, (robot, eventType) -> {
+                    assertNotNull(eventType);
+                    return EventType.next(eventType);
+                });
             }
 
             // Get the timestamp of the first event and make sure it's strictly in the future.
@@ -230,7 +232,7 @@ class SchedulerTest {
             addRandomArrivalToSchedule(r, scheduler, events, eventT);
 
             for (int j = 0; j < 50; j++) {
-                // Poke at the schedule at random times to make sure there aren't wierd state bugs.
+                // Poke at the schedule at random times to make sure there aren't weird state bugs.
                 // This may be in the future!
                 List<Event> events1 = scheduler.getNextEvent(robots, r.nextDouble() * eventT * 1.01);
                 checkNewEvents.accept(robots, events1);
