@@ -14,7 +14,7 @@ This project can be built through the Gradle build system through the command `g
 
 This library can then be linked into a project of one's choice. It then contains the following classes that are immediately relevant:
 
-- `Simulator` which represents a single simulation. To use it, construct an object, passing it an array of `Robot` instances, a set of configuration settings (such as whether robots can detect multilicity), and the scheduler to be used.
+- `Simulator` which represents a single simulation. To use it, construct an object, passing it an array of `Robot` instances, a set of configuration settings (such as whether robots can detect multilicity), and the scheduler to be used. The simulation can be controlled through the various methods in this class.
 
 - `Robot` which represents a single robot during a simulation. Robots take a starting position within the simulation as well as:
     - An `Algorithm` that determines their behavior,which is an abstract class that features a function that maps from a set of positions (that represent what the robot sees) to a single position which tells the simulator where the robot wishes to move.
@@ -34,6 +34,8 @@ This library can then be linked into a project of one's choice. It then contains
     -   `FileScheduler` which plays a pre-written schedule from a CSV file.
     
 New schedulers can be written by extending the `Scheduler` abstract class.
+
+- `GUI` which implements an optional graphical interface through which the simulation can be evaluated. It can be started by calling the static method `runGUI`, passing in a `Simulation` object to be visualized and interacted with.
     
 ## Simulation model
 
