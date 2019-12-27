@@ -31,10 +31,10 @@ public class TestUtil {
     };
 
     public static Robot[] generateRobotCloud(Algorithm algo, double edgeLen, int n) {
-        return (Robot[]) Stream.generate(() ->
+        return Stream.generate(() ->
                 new Robot(algo,
                         new Vector(2.0 * edgeLen * (Math.random() - 0.5),
                                 2.0 * edgeLen * (Math.random() - 0.5)),
-                        new BasicPositionTransformation())).limit(n).toArray();
+                        new BasicPositionTransformation())).limit(n).toArray(Robot[]::new);
     }
 }
