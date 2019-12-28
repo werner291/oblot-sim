@@ -45,6 +45,12 @@ public class CalculatedEvent {
         this.goals = goals;
     }
 
+    /**
+     * Puts all the events in the history into a file which could be loaded into the simulator at a later time
+     * @param absolutePath Path to the file in which the events needs to be written
+     * @param calculatedEvents List of events that needs to be in the file
+     * @param robots Array of robots that are used in the events
+     */
     public static void toFile(String absolutePath, List<CalculatedEvent> calculatedEvents, Robot[] robots) {
         try {
             FileWriter fileWriter = new FileWriter(absolutePath);
@@ -80,6 +86,11 @@ public class CalculatedEvent {
         }
     }
 
+    /**
+     * puts the events from the file into a list of calculatedEvent objects
+     * @param absolutePath absolute path to the file to read from
+     * @return the event history in a List of CalculatedEvent objects
+     */
     public static List<CalculatedEvent> fromFile(String absolutePath) {
         List<CalculatedEvent> calculatedEvents = new ArrayList<>();
         try {
