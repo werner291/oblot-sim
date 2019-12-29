@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * A proof of concept algorithm that solves gathering with multiplicity detection
  * and infinite visibility for an even amount of robots > 2
  */
-public class Gathering extends Algorithm {
+public class GatheringWithMultiplicity extends Algorithm {
     @Override
     public Vector doAlgorithm(Vector[] snapshot) {
         if (snapshot.length == 2) {
