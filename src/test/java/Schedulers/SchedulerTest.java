@@ -36,17 +36,20 @@ class SchedulerTest {
             File file = File.createTempFile("test_schedule", ".csv");
             scheduleToFile(robots, schedule, file);
 
-            // Now, load the same file in the FileScheduler.
-            Scheduler scheduler = new FileScheduler(file, robots);
+            {
+                // Now, load the same file in the FileScheduler.
+                Scheduler scheduler = new FileScheduler(file, robots);
 
-            for (int i = 0; i < 1000; i++) {
-                // Take 1000 random timestamps.
-                double sampleT = rng.nextDouble() * maxT * 1.01;
-                probeScheduleCorrectness(robots, schedule, scheduler, sampleT);
+                for (int i = 0; i < 1000; i++) {
+                    // Take 1000 random timestamps.
+                    double sampleT = rng.nextDouble() * maxT * 1.01;
+                    probeScheduleCorrectness(robots, schedule, scheduler, sampleT);
+                }
             }
 
-            // Make sure to put this after the random probing test since this will add random movement stop events.
-            SchedulerTest.testScheduler(scheduler, (robots1, events) -> { /* No additional checks. */ });
+            // Run the regular scheduler test as well, using a new instance of the scheduler since running this test
+            // adds movement stop events to the schedule.
+            SchedulerTest.testScheduler(new FileScheduler(file, robots), (robots1, events) -> { /* No additional checks. */ });
 
         } catch (IOException e) {
             e.printStackTrace();
