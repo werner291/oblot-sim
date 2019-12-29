@@ -25,7 +25,65 @@ class SchedulerTest {
         Robot[] robots = TestUtil.generateRobotCloud(TestUtil.DO_NOTHING, 10.0, 50);
 
         // Pre-generate a schedule for each robot.
-        Map<Robot, SortedSet<Event>> schedule = Arrays.stream(robots).collect(Collectors.toMap(Function.identity(), (Robot robot) -> {
+        Map<Robot, SortedSet<Event>> schedule = makeRandomFixedSchedule(rng, robots);
+
+        // Get the maximum event time to determine a sample range.
+        //noinspection OptionalGetWithoutIsPresent Exception can be ignored since we always have some events in the schedule.
+        double maxT = schedule.values().stream().mapToDouble(events -> events.last().t).max().getAsDouble();
+
+        try {
+            // Create a temp file.
+            File file = File.createTempFile("test_schedule", ".csv");
+            scheduleToFile(robots, schedule, file);
+
+            // Now, load the same file in the FileScheduler.
+            Scheduler scheduler = new FileScheduler(file, robots);
+
+            for (int i = 0; i < 1000; i++) {
+                // Take 1000 random timestamps.
+                double sampleT = rng.nextDouble() * maxT * 1.01;
+                probeScheduleCorrectness(robots, schedule, scheduler, sampleT);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void probeScheduleCorrectness(Robot[] robots, Map<Robot, SortedSet<Event>> schedule, Scheduler scheduler, double sampleT) {
+        // Ask the scheduler which events are next.
+        List<Event> events = scheduler.getNextEvent(robots, sampleT);
+
+        for (Event event : events) {
+            // In the schedule, for the given robot, find the first event with a timestamp strictly greater
+            // than the sample time.
+            //noinspection OptionalGetWithoutIsPresent Throwing an exception here is fine since it'll fail like the test like it should.
+            Event expected = schedule.get(event.r).tailSet(event).stream().filter(event1 -> event1.t > sampleT).findFirst().get();
+
+            // We should expect the event in the schedule to match with the event from the FileScheduler.
+            // We do inexact comparison to account for rounding errors while enconding/decoding.
+            assertTrue(Math.abs(event.t - expected.t) < 0.000001);
+        }
+    }
+
+    private void scheduleToFile(Robot[] robots, Map<Robot, SortedSet<Event>> schedule, File file) {
+        // For each robot, write the schedule to it.
+        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+            for (Robot robot : robots) {
+                for (Event event : schedule.get(robot)) {
+                    writer.print(event.t);
+                    writer.print(",");
+                }
+                writer.println();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Map<Robot, SortedSet<Event>> makeRandomFixedSchedule(Random rng, Robot[] robots) {
+        return Arrays.stream(robots).collect(Collectors.toMap(Function.identity(), (Robot robot) -> {
 
             // Pick a starting time for the first event.
             double t = rng.nextDouble() * 10.0;
@@ -49,54 +107,6 @@ class SchedulerTest {
             // Freeze the set so we don't modify the schedule accidentally.
             return Collections.unmodifiableSortedSet(events);
         }));
-
-        // Get the maximum event time to determine a sample range.
-        //noinspection OptionalGetWithoutIsPresent Exception can be ignored since we always have some events in the schedule.
-        double maxT = schedule.values().stream().mapToDouble(events -> events.last().t).max().getAsDouble();
-
-        try {
-            // Create a temp file.
-            File file = File.createTempFile("test_schedule", ".csv");
-
-            // For each robot, write the schedule to it.
-            try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
-                for (Robot robot : robots) {
-                    for (Event event : schedule.get(robot)) {
-                        writer.print(event.t);
-                        writer.print(",");
-                    }
-                    writer.println();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            // Now, load the same file in the FileScheduler.
-            Scheduler scheduler = new FileScheduler(file, robots);
-
-            for (int i = 0; i < 1000; i++) {
-                // Take 1000 random timestamps.
-                double sampleT = rng.nextDouble() * maxT * 1.01;
-
-                // Ask the scheduler which events are next.
-                List<Event> events = scheduler.getNextEvent(robots, sampleT);
-
-                for (Event event : events) {
-                    // In the schedule, for the given robot, find the first event with a timestamp strictly greater
-                    // than the sample time.
-                    //noinspection OptionalGetWithoutIsPresent Throwing an exception here is fine since it'll fail like the test like it should.
-                    Event expected = schedule.get(event.r).tailSet(event).stream().filter(event1 -> event1.t > sampleT).findFirst().get();
-
-                    // We should expect the event in the schedule to match with the event from the FileScheduler.
-                    // We do inexact comparison to account for rounding errors while enconding/decoding.
-                    assertTrue(Math.abs(event.t - expected.t) < 0.000001);
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     /**
