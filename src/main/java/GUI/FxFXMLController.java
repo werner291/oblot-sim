@@ -11,8 +11,6 @@ import Simulator.Simulator;
 import Util.Interpolate;
 import Util.Vector;
 import javafx.animation.AnimationTimer;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.canvas.Canvas;
@@ -132,6 +130,13 @@ public class FxFXMLController
         // set the values for the events scrollpane
         eventsVBox.setSpacing(1);
         eventsVBox.setPadding(new Insets(1));
+
+        canvasBackground.widthProperty().addListener((ov, oldValue, newValue) -> {
+            canvas.setWidth(newValue.doubleValue() - 30);
+        });
+        canvasBackground.heightProperty().addListener((ov, oldValue, newValue) -> {
+            canvas.setHeight(newValue.doubleValue() - dragBarSimulation.getHeight());
+        });
     }
 
     private Popup warningPopup = new Popup();
@@ -656,22 +661,6 @@ public class FxFXMLController
 
         // transform back to the old transform
         gc.setTransform(tOld);
-
-        canvasBackground.widthProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                canvas.widthProperty().set(newValue.doubleValue() - 30);
-                System.out.println("Width: " + newValue.doubleValue());
-            }
-        });
-
-        canvasBackground.heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                canvas.heightProperty().set(newValue.doubleValue() - (dragBarSimulation.getHeight()+15));
-//                System.out.println("Height: " + newValue.doubleValue());
-            }
-        });
     }
 
     /**

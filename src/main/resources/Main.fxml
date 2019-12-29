@@ -82,7 +82,7 @@
         </AnchorPane>
             <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
                <children>
-                  <Canvas fx:id="canvas" height="547.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled" width="400.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0" />
+                  <Canvas fx:id="canvas" height="547.0" width="400.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled"/>
                   <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="0.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
                </children>
             </AnchorPane>
@@ -96,7 +96,7 @@
                 <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
               </textFill>
             </Label>
-                  <AnchorPane layoutX="2.0" layoutY="520.0" maxWidth="300.0" minWidth="200.0" prefHeight="120.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                  <AnchorPane layoutX="2.0" layoutY="520.0" minWidth="200.0" prefHeight="120.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                      <children>
                         <Button fx:id="backwardsButton" layoutX="6.0" layoutY="59.0" mnemonicParsing="false" onAction="#backwardsAction" prefHeight="50.0" prefWidth="100.0" text="Backwards &lt;&lt;" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
                         <Button fx:id="playButton" layoutX="-4.0" layoutY="49.0" mnemonicParsing="false" onAction="#playSimulation" prefWidth="80.0" text="Play" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="70.0" />
