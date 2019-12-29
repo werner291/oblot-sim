@@ -45,6 +45,9 @@ class SchedulerTest {
                 probeScheduleCorrectness(robots, schedule, scheduler, sampleT);
             }
 
+            // Make sure to put this after the random probing test since this will add random movement stop events.
+            SchedulerTest.testScheduler(scheduler, (robots1, events) -> { /* No additional checks. */ });
+
         } catch (IOException e) {
             e.printStackTrace();
         }
