@@ -1,18 +1,18 @@
 package GUI;
 
+import Algorithms.Algorithm;
+import PositionTransformations.RotationTransformation;
 import Schedulers.EventType;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import Algorithms.Robot;
-import Algorithms.State;
 import Schedulers.CalculatedEvent;
 import Schedulers.Event;
 import Simulator.Simulator;
+import Simulator.Robot;
+import Simulator.State;
 import Util.Interpolate;
 import Util.Vector;
 import javafx.animation.AnimationTimer;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.canvas.Canvas;
@@ -63,6 +63,10 @@ public class FxFXMLController
     private ScrollPane eventList;
     private VBox eventsVBox = new VBox();
 
+    @FXML
+    private ScrollPane algorithmsList;
+    private VBox algorithmsVBox = new VBox();
+
     // The reference of outputText will be injected by the FXML loader
     @FXML
     private Slider dragBarSimulation;
@@ -81,6 +85,13 @@ public class FxFXMLController
     @FXML
     private AnchorPane canvasBackground;
 
+    @FXML
+    private CheckMenuItem chiralityAxisButton;
+    @FXML
+    private CheckMenuItem unitLengthAxisButton;
+    @FXML
+    private CheckMenuItem rotationAxisButton;
+
     // parameters for the canvas
     private double viewX = 0; // bottom left coords
     private double viewY = 0;
@@ -93,7 +104,10 @@ public class FxFXMLController
     private final double MAX_SCALE = 200; // the maximum scale of the coordinate system
     private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
 
+    private boolean drawCoordinateSystems = true;
+
     private Simulator simulator; // the simulator that will run the simulation.
+    private Class[] algorithms; // the list of possible algorithms
 
     // Add a public no-args constructor
     public FxFXMLController()
@@ -132,6 +146,17 @@ public class FxFXMLController
         // set the values for the events scrollpane
         eventsVBox.setSpacing(1);
         eventsVBox.setPadding(new Insets(1));
+
+        algorithmsVBox.setSpacing(1);
+        algorithmsVBox.setPadding(new Insets(1));
+
+        // set the canvas to listen to the size of its parent
+        canvasBackground.widthProperty().addListener((ov, oldValue, newValue) -> {
+            canvas.setWidth(newValue.doubleValue() - 30);
+        });
+        canvasBackground.heightProperty().addListener((ov, oldValue, newValue) -> {
+            canvas.setHeight(newValue.doubleValue() - dragBarSimulation.getHeight());
+        });
     }
 
     private Popup warningPopup = new Popup();
@@ -196,6 +221,22 @@ public class FxFXMLController
 
     public void setSimulator(Simulator sim) {
         this.simulator = sim;
+    }
+
+    public void setAlgorithms(Class[] algorithms) {
+        // set all algorithms
+        this.algorithms = algorithms;
+        for (Class a : algorithms) {
+            if (!Algorithm.class.isAssignableFrom(a)) { // try to cast algorithm to his subclass
+                System.err.println("Class " + a + " is not a subclass of Algorithm.");
+                continue;
+            }
+            Button algorithmButton = new Button(a.getSimpleName());
+            algorithmButton.prefWidthProperty().bind(algorithmsList.widthProperty());
+            algorithmButton.setOnAction(algorithmButtonHandler);
+            algorithmsVBox.getChildren().add(algorithmButton);
+        }
+        algorithmsList.setContent(algorithmsVBox);
     }
 
     @FXML
@@ -634,10 +675,21 @@ public class FxFXMLController
         gc.translate(-viewX, -viewY);
 
         // draw on the coordinate system
-        gc.setStroke(Color.BLACK);
-        gc.setLineWidth(0.05);
         Robot[] robots = simulator.getRobots();
         for (Robot r : robots) {
+            if (drawCoordinateSystems) {
+                Vector up = new Vector(0, 1);
+                Vector right = new Vector(1, 0);
+                Vector upGlobal = r.trans.localToGlobal(up, r.pos);
+                Vector rightGlobal = r.trans.localToGlobal(right, r.pos);
+                gc.setLineWidth(0.05);
+                gc.setStroke(Color.RED);
+                gc.strokeLine(r.pos.x, r.pos.y, upGlobal.x, upGlobal.y);
+                gc.setStroke(Color.GREEN);
+                gc.strokeLine(r.pos.x, r.pos.y, rightGlobal.x, rightGlobal.y);
+            }
+            gc.setStroke(Color.BLACK);
+            gc.setLineWidth(0.05);
             switch (r.state) {
                 case SLEEPING:
                     gc.setFill(Color.WHITE);
@@ -656,22 +708,6 @@ public class FxFXMLController
 
         // transform back to the old transform
         gc.setTransform(tOld);
-
-        canvasBackground.widthProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                canvas.widthProperty().set(newValue.doubleValue() - 30);
-                System.out.println("Width: " + newValue.doubleValue());
-            }
-        });
-
-        canvasBackground.heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                canvas.heightProperty().set(newValue.doubleValue() - (dragBarSimulation.getHeight()+15));
-//                System.out.println("Height: " + newValue.doubleValue());
-            }
-        });
     }
 
     /**
@@ -754,4 +790,44 @@ public class FxFXMLController
         dragBarSimulation.setValue(eventButton.getTimeStamp());
         event.consume();
     };
+
+    private EventHandler<ActionEvent> algorithmButtonHandler = event -> {
+        String simpleName = ((Button)event.getSource()).getText();
+        Class algorithmClass = null;
+        for (Class c : algorithms) {
+            if (c.getSimpleName().equals(simpleName)) {
+                algorithmClass = c;
+            }
+        }
+        // cannot give NullPointer if the algorithms array is not changed in between
+        System.out.println("Algorithm will be set to: " + algorithmClass.getName());
+        Robot[] robots = simulator.getRobots();
+        for (Robot r : robots) {
+            try {
+                Algorithm algorithm = (Algorithm)algorithmClass.newInstance();
+                r.setAlgorithm(algorithm);
+            } catch (InstantiationException | IllegalAccessException e) {
+                System.err.println("Algorithm " + algorithmClass + " cannot be instantiated.");
+                e.printStackTrace();
+            }
+        }
+    };
+
+    public void showAxisTriggered(ActionEvent actionEvent) {
+        this.drawCoordinateSystems = ((CheckMenuItem)actionEvent.getSource()).isSelected();
+        if (drawCoordinateSystems) {
+            System.out.println("Coordinate systems of the robots will be drawn.");
+        } else {
+            System.out.println("Coordinate systems of the robots will not be drawn.");
+        }
+    }
+
+    public void axisChanged(ActionEvent actionEvent) {
+        boolean sameChirality = chiralityAxisButton.isSelected();
+        boolean sameUnitLength = unitLengthAxisButton.isSelected();
+        boolean sameRotation = rotationAxisButton.isSelected();
+        for (Robot r : simulator.getRobots()) {
+            r.trans = new RotationTransformation().randomize(sameChirality, sameUnitLength, sameRotation);
+        }
+    }
 }

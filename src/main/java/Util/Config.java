@@ -18,6 +18,10 @@ public class Config {
      * The range the robots can see other robots in. -1 for infinite visibility.
      */
     public double visibility;
+    /**
+     * Whether or not the robots will always reach their target position. If false, the scheduler will never stop the robots before they reach their target.
+     */
+    public boolean interuptable;
 
     /**
      * If two floats differ less than this value, they are considered to be equal.

@@ -1,9 +1,11 @@
-package Algorithms;
+package PositionTransformations;
 
+import Simulator.Robot;
 import Util.Vector;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -13,6 +15,11 @@ import java.util.stream.Collectors;
  * i.e. they are each others inverses.
  */
 public abstract class PositionTransformation {
+
+    /**
+     * A random object used for randomized transformations
+     */
+    protected static Random random = new Random();
 
     /**
      * Transforms a global coordinate to a local coordinate

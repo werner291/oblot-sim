@@ -1,8 +1,8 @@
 package Schedulers;
 
-import Algorithms.BasicPositionTransformation;
 import Algorithms.GoToCoG;
-import Algorithms.Robot;
+import PositionTransformations.RotationTransformation;
+import Simulator.Robot;
 import Util.Vector;
 
 import java.io.*;
@@ -108,7 +108,7 @@ public class CalculatedEvent {
                     double y = Double.parseDouble(coordinatesString[1]);
                     Vector position = new Vector(x, y);
                     positions[i] = position;
-                    Robot robot = new Robot(new GoToCoG(), position, new BasicPositionTransformation());
+                    Robot robot = new Robot(new GoToCoG(), position, new RotationTransformation());
                     robots[i] = robot;
                     i++;
                 }

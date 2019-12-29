@@ -1,6 +1,6 @@
 package Schedulers;
 
-import Algorithms.Robot;
+import Simulator.Robot;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;

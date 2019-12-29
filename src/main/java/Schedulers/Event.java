@@ -1,6 +1,6 @@
 package Schedulers;
 
-import Algorithms.Robot;
+import Simulator.Robot;
 
 /**
  * An event of a robot. Could be either start compute, start moving

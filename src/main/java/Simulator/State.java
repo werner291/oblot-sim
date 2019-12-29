@@ -1,4 +1,4 @@
-package Algorithms;
+package Simulator;
 
 /**
  * The different states robots can be in.

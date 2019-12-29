@@ -1,8 +1,7 @@
 package Schedulers;
 
 import Algorithms.Algorithm;
-import Algorithms.BasicPositionTransformation;
-import Algorithms.Robot;
+import Simulator.Robot;
 import Util.Vector;
 
 import java.util.Arrays;
@@ -31,10 +30,10 @@ public class TestUtil {
     };
 
     public static Robot[] generateRobotCloud(Algorithm algo, double edgeLen, int n) {
-        return Stream.generate(() ->
+        return (Robot[]) Stream.generate(() ->
                 new Robot(algo,
                         new Vector(2.0 * edgeLen * (Math.random() - 0.5),
                                 2.0 * edgeLen * (Math.random() - 0.5)),
-                        new BasicPositionTransformation())).limit(n).toArray(Robot[]::new);
+                        new SameAxisTransformation())).limit(n).toArray();
     }
 }

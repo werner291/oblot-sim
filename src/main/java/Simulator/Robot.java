@@ -1,5 +1,7 @@
-package Algorithms;
+package Simulator;
 
+import Algorithms.Algorithm;
+import PositionTransformations.PositionTransformation;
 import Util.Vector;
 
 import java.io.File;
@@ -29,7 +31,7 @@ public class Robot {
     /**
      * The transformation object to transform global to local coordinates.
      */
-    private PositionTransformation trans;
+    public PositionTransformation trans;
     /**
      * The algorithm the robot will run.
      */
@@ -110,5 +112,13 @@ public class Robot {
 
     public Robot copy() {
         return new Robot(this.algo, this.pos, this.trans);
+    }
+
+    public void setAlgorithm(Algorithm a) {
+        this.algo = a;
+    }
+
+    public void setTransformation(PositionTransformation pt) {
+        this.trans = pt;
     }
 }
