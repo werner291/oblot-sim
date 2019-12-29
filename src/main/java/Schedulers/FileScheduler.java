@@ -223,8 +223,12 @@ public class FileScheduler extends Scheduler {
             currentIndex++;
         }
 
-        // check the easy case if the next is the following event
+        // if we now are at the end of the events, there are no new events anymore.
+        if (currentIndex == events.length - 1) {
+            return null;
+        }
 
+        // check the easy case if the next is the following event
         if (events[currentIndex].t <= t && events[currentIndex + 1].t > t) {
             return getSameEvents(++currentIndex);
         }

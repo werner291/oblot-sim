@@ -1,5 +1,5 @@
 import Algorithms.BasicPositionTransformation;
-import Algorithms.Gathering;
+import Algorithms.GatheringWithMultiplicity;
 import Algorithms.Robot;
 import Schedulers.FileScheduler;
 import Schedulers.Scheduler;
@@ -16,7 +16,7 @@ public class Main{
     public static void main(String[] args) {
         // We're keeping this
         System.out.println("Most awesome simulator ever.");
-        Robot[] r = Robot.fromFile("testRobots2", new Gathering(), new BasicPositionTransformation());
+        Robot[] r = Robot.fromFile("testRobots2", new GatheringWithMultiplicity(), new BasicPositionTransformation());
         Scheduler s = new FileScheduler("testSchedule", r);
         Util.Config c = new Util.Config(true, -1);
         Simulator simulator = new Simulator(c, r, s);
