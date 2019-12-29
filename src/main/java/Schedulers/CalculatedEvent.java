@@ -1,8 +1,8 @@
 package Schedulers;
 
-import Algorithms.BasicPositionTransformation;
+import PositionTransformations.BasicPositionTransformation;
 import Algorithms.GoToCoG;
-import Algorithms.Robot;
+import Simulator.Robot;
 import Util.Vector;
 
 import java.io.*;

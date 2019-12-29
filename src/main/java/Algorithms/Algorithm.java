@@ -1,5 +1,6 @@
 package Algorithms;
 
+import Simulator.Robot;
 import Util.Vector;
 
 /**

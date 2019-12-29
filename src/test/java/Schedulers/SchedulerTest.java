@@ -1,6 +1,6 @@
 package Schedulers;
 
-import Algorithms.Robot;
+import Simulator.Robot;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -11,7 +11,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static Schedulers.EventType.START_MOVING;
 import static org.junit.jupiter.api.Assertions.assertEquals;

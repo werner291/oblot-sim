@@ -1,4 +1,4 @@
-package Algorithms;
+package PositionTransformations;
 
 import Util.Vector;
 

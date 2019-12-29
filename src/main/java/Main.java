@@ -1,7 +1,9 @@
 import Algorithms.*;
+import PositionTransformations.BasicPositionTransformation;
 import Schedulers.FileScheduler;
 import Schedulers.Scheduler;
 import Simulator.Simulator;
+import Simulator.Robot;
 import GUI.GUI;
 
 /**

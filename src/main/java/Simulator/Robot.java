@@ -1,5 +1,7 @@
-package Algorithms;
+package Simulator;
 
+import Algorithms.Algorithm;
+import PositionTransformations.PositionTransformation;
 import Util.Vector;
 
 import java.io.File;

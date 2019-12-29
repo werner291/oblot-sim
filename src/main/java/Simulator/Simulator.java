@@ -1,7 +1,5 @@
 package Simulator;
 
-import Algorithms.Robot;
-import Algorithms.State;
 import Schedulers.CalculatedEvent;
 import Schedulers.EventType;
 import Util.Config;

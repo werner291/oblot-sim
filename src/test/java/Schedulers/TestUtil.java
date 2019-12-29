@@ -1,8 +1,8 @@
 package Schedulers;
 
 import Algorithms.Algorithm;
-import Algorithms.BasicPositionTransformation;
-import Algorithms.Robot;
+import PositionTransformations.BasicPositionTransformation;
+import Simulator.Robot;
 import Util.Vector;
 
 import java.util.Arrays;

@@ -1,7 +1,7 @@
 package Schedulers;
 
 
-import Algorithms.Robot;
+import Simulator.Robot;
 
 import java.util.List;
 
