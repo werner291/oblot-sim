@@ -177,6 +177,10 @@ public class Simulator {
         return positions;
     }
 
+    /**
+     * Returns the robots. If these robots are modified, the simulator is modified as well!
+     * @return the internal robots
+     */
     public Robot[] getRobots() {
         return this.robots;
     }

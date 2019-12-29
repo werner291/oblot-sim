@@ -1,5 +1,6 @@
 package GUI;
 
+import Algorithms.Algorithm;
 import Schedulers.EventType;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -61,6 +62,10 @@ public class FxFXMLController
     private ScrollPane eventList;
     private VBox eventsVBox = new VBox();
 
+    @FXML
+    private ScrollPane algorithmsList;
+    private VBox algorithmsVBox = new VBox();
+
     // The reference of outputText will be injected by the FXML loader
     @FXML
     private Slider dragBarSimulation;
@@ -92,6 +97,7 @@ public class FxFXMLController
     private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
 
     private Simulator simulator; // the simulator that will run the simulation.
+    private Class[] algorithms; // the list of possible algorithms
 
     // Add a public no-args constructor
     public FxFXMLController()
@@ -131,6 +137,10 @@ public class FxFXMLController
         eventsVBox.setSpacing(1);
         eventsVBox.setPadding(new Insets(1));
 
+        algorithmsVBox.setSpacing(1);
+        algorithmsVBox.setPadding(new Insets(1));
+
+        // set the canvas to listen to the size of its parent
         canvasBackground.widthProperty().addListener((ov, oldValue, newValue) -> {
             canvas.setWidth(newValue.doubleValue() - 30);
         });
@@ -201,6 +211,22 @@ public class FxFXMLController
 
     public void setSimulator(Simulator sim) {
         this.simulator = sim;
+    }
+
+    public void setAlgorithms(Class[] algorithms) {
+        // set all algorithms
+        this.algorithms = algorithms;
+        for (Class a : algorithms) {
+            if (!Algorithm.class.isAssignableFrom(a)) { // try to cast algorithm to his subclass
+                System.err.println("Class " + a + " is not a subclass of Algorithm.");
+                continue;
+            }
+            Button algorithmButton = new Button(a.getSimpleName());
+            algorithmButton.prefWidthProperty().bind(algorithmsList.widthProperty());
+            algorithmButton.setOnAction(algorithmButtonHandler);
+            algorithmsVBox.getChildren().add(algorithmButton);
+        }
+        algorithmsList.setContent(algorithmsVBox);
     }
 
     @FXML
@@ -742,5 +768,27 @@ public class FxFXMLController
         EventButton eventButton = (EventButton) event.getSource();
         dragBarSimulation.setValue(eventButton.getTimeStamp());
         event.consume();
+    };
+
+    private EventHandler<ActionEvent> algorithmButtonHandler = event -> {
+        String simpleName = ((Button)event.getSource()).getText();
+        Class algorithmClass = null;
+        for (Class c : algorithms) {
+            if (c.getSimpleName().equals(simpleName)) {
+                algorithmClass = c;
+            }
+        }
+        // cannot give NullPointer if the algorithms array is not changed in between
+        System.out.println("Algorithm will be set to: " + algorithmClass.getName());
+        Robot[] robots = simulator.getRobots();
+        for (Robot r : robots) {
+            try {
+                Algorithm algorithm = (Algorithm)algorithmClass.newInstance();
+                r.setAlgorithm(algorithm);
+            } catch (InstantiationException | IllegalAccessException e) {
+                System.err.println("Algorithm " + algorithmClass + " cannot be instantiated.");
+                e.printStackTrace();
+            }
+        }
     };
 }

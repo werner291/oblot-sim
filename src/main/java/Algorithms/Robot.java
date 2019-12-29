@@ -111,4 +111,12 @@ public class Robot {
     public Robot copy() {
         return new Robot(this.algo, this.pos, this.trans);
     }
+
+    public void setAlgorithm(Algorithm a) {
+        this.algo = a;
+    }
+
+    public void setTransformation(PositionTransformation pt) {
+        this.trans = pt;
+    }
 }

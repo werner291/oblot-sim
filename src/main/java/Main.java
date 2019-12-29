@@ -1,6 +1,4 @@
-import Algorithms.BasicPositionTransformation;
-import Algorithms.GatheringWithMultiplicity;
-import Algorithms.Robot;
+import Algorithms.*;
 import Schedulers.FileScheduler;
 import Schedulers.Scheduler;
 import Simulator.Simulator;
@@ -21,6 +19,8 @@ public class Main{
         Util.Config c = new Util.Config(true, -1);
         Simulator simulator = new Simulator(c, r, s);
 
-        GUI.runGUI(args, simulator);
+        Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class};
+
+        GUI.runGUI(args, simulator, algorithms);
     }
 }
