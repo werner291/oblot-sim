@@ -1,6 +1,7 @@
 package Schedulers;
 
 import Algorithms.Algorithm;
+import PositionTransformations.RotationTransformation;
 import Simulator.Robot;
 import Util.Vector;
 
@@ -34,6 +35,6 @@ public class TestUtil {
                 new Robot(algo,
                         new Vector(2.0 * edgeLen * (Math.random() - 0.5),
                                 2.0 * edgeLen * (Math.random() - 0.5)),
-                        new SameAxisTransformation())).limit(n).toArray();
+                        new RotationTransformation())).limit(n).toArray();
     }
 }

@@ -1,6 +1,7 @@
 import Schedulers.FSyncScheduler;
 import Schedulers.TestUtil;
 import Simulator.Simulator;
+import Simulator.Robot;
 import Util.Config;
 import Util.Vector;
 import org.junit.jupiter.api.Test;

@@ -104,7 +104,7 @@ public class FxFXMLController
     private final double MAX_SCALE = 200; // the maximum scale of the coordinate system
     private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
 
-    private boolean drawCoordinateSystems = true;
+    private boolean drawCoordinateSystems = false;
 
     private Simulator simulator; // the simulator that will run the simulation.
     private Class[] algorithms; // the list of possible algorithms
