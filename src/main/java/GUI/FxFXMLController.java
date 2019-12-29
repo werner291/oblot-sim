@@ -1,6 +1,7 @@
 package GUI;
 
 import Algorithms.Algorithm;
+import PositionTransformations.RotationTransformation;
 import Schedulers.EventType;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -84,6 +85,13 @@ public class FxFXMLController
     @FXML
     private AnchorPane canvasBackground;
 
+    @FXML
+    private CheckMenuItem chiralityAxisButton;
+    @FXML
+    private CheckMenuItem unitLengthAxisButton;
+    @FXML
+    private CheckMenuItem rotationAxisButton;
+
     // parameters for the canvas
     private double viewX = 0; // bottom left coords
     private double viewY = 0;
@@ -95,6 +103,8 @@ public class FxFXMLController
     private double scale = 40; // the current scale of the coordinate system
     private final double MAX_SCALE = 200; // the maximum scale of the coordinate system
     private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
+
+    private boolean drawCoordinateSystems = true;
 
     private Simulator simulator; // the simulator that will run the simulation.
     private Class[] algorithms; // the list of possible algorithms
@@ -665,10 +675,21 @@ public class FxFXMLController
         gc.translate(-viewX, -viewY);
 
         // draw on the coordinate system
-        gc.setStroke(Color.BLACK);
-        gc.setLineWidth(0.05);
         Robot[] robots = simulator.getRobots();
         for (Robot r : robots) {
+            if (drawCoordinateSystems) {
+                Vector up = new Vector(0, 1);
+                Vector right = new Vector(1, 0);
+                Vector upGlobal = r.trans.localToGlobal(up, r.pos);
+                Vector rightGlobal = r.trans.localToGlobal(right, r.pos);
+                gc.setLineWidth(0.05);
+                gc.setStroke(Color.RED);
+                gc.strokeLine(r.pos.x, r.pos.y, upGlobal.x, upGlobal.y);
+                gc.setStroke(Color.GREEN);
+                gc.strokeLine(r.pos.x, r.pos.y, rightGlobal.x, rightGlobal.y);
+            }
+            gc.setStroke(Color.BLACK);
+            gc.setLineWidth(0.05);
             switch (r.state) {
                 case SLEEPING:
                     gc.setFill(Color.WHITE);
@@ -791,4 +812,22 @@ public class FxFXMLController
             }
         }
     };
+
+    public void showAxisTriggered(ActionEvent actionEvent) {
+        this.drawCoordinateSystems = ((CheckMenuItem)actionEvent.getSource()).isSelected();
+        if (drawCoordinateSystems) {
+            System.out.println("Coordinate systems of the robots will be drawn.");
+        } else {
+            System.out.println("Coordinate systems of the robots will not be drawn.");
+        }
+    }
+
+    public void axisChanged(ActionEvent actionEvent) {
+        boolean sameChirality = chiralityAxisButton.isSelected();
+        boolean sameUnitLength = unitLengthAxisButton.isSelected();
+        boolean sameRotation = rotationAxisButton.isSelected();
+        for (Robot r : simulator.getRobots()) {
+            r.trans = new RotationTransformation().randomize(sameChirality, sameUnitLength, sameRotation);
+        }
+    }
 }

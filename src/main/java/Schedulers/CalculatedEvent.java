@@ -1,7 +1,7 @@
 package Schedulers;
 
-import PositionTransformations.BasicPositionTransformation;
 import Algorithms.GoToCoG;
+import PositionTransformations.RotationTransformation;
 import Simulator.Robot;
 import Util.Vector;
 
@@ -97,7 +97,7 @@ public class CalculatedEvent {
                     double y = Double.parseDouble(coordinatesString[1]);
                     Vector position = new Vector(x, y);
                     positions[i] = position;
-                    Robot robot = new Robot(new GoToCoG(), position, new BasicPositionTransformation());
+                    Robot robot = new Robot(new GoToCoG(), position, new RotationTransformation());
                     robots[i] = robot;
                     i++;
                 }

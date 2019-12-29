@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -48,13 +49,11 @@
         </Menu>
             <Menu mnemonicParsing="false" text="Axis">
                <items>
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onFullshared" selected="true" text="Full Shared">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="axisGroup" />
-                     </toggleGroup>
-                  </RadioMenuItem>
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onOrienShared" text="Orientation Shared" toggleGroup="$axisGroup" />
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onNothingShared" text="Nothing Shared" toggleGroup="$axisGroup" />
+                  <CheckMenuItem mnemonicParsing="false" onAction="#showAxisTriggered" text="Show Axis" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <CheckMenuItem fx:id="chiralityAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Chirality Shared" />
+                  <CheckMenuItem fx:id="unitLengthAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Unit Length" />
+                  <CheckMenuItem fx:id="rotationAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Rotation" />
                </items>
             </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -82,7 +81,7 @@
         </AnchorPane>
             <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
                <children>
-                  <Canvas fx:id="canvas" height="547.0" width="400.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled"/>
+                  <Canvas fx:id="canvas" height="547.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled" width="400.0" />
                   <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="0.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
                </children>
             </AnchorPane>

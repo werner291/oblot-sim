@@ -31,7 +31,7 @@ public class Robot {
     /**
      * The transformation object to transform global to local coordinates.
      */
-    private PositionTransformation trans;
+    public PositionTransformation trans;
     /**
      * The algorithm the robot will run.
      */
