@@ -6,6 +6,9 @@ import Simulator.Simulator;
 import Simulator.Robot;
 import GUI.GUI;
 
+import java.io.File;
+import java.net.URISyntaxException;
+
 /**
  * The public class that we will use to start our GUI. This is an example class of how the simulator may be used.
  * This does not contain any logic regarding the simulator whatsoever, but rather sets it up and runs it.
@@ -20,7 +23,12 @@ public class Main{
         for (Robot r : robots) {
             r.trans = new RotationTransformation().randomize(false, false, false);
         }
-        Scheduler s = new FileScheduler("testSchedule", robots);
+        Scheduler s = null;
+        try {
+            s = new FileScheduler(new File(Main.class.getClassLoader().getResource("testSchedule").toURI()), robots);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
         Util.Config c = new Util.Config(true, -1);
         Simulator simulator = new Simulator(c, robots, s);
 
