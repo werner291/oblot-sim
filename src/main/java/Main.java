@@ -1,10 +1,14 @@
 import Algorithms.*;
 import PositionTransformations.RotationTransformation;
+import Schedulers.FSyncScheduler;
 import Schedulers.FileScheduler;
 import Schedulers.Scheduler;
 import Simulator.Simulator;
 import Simulator.Robot;
 import GUI.GUI;
+
+import java.io.File;
+import java.net.URISyntaxException;
 
 /**
  * The public class that we will use to start our GUI. This is an example class of how the simulator may be used.
@@ -16,15 +20,21 @@ public class Main{
     public static void main(String[] args) {
         // We're keeping this
         System.out.println("Most awesome simulator ever.");
-        Robot[] robots = Robot.fromFile("testRobots2", new GatheringWithMultiplicity(), null);
+        Robot[] robots = Robot.fromFile("testRobots2", new GoToCoG(), null);
         for (Robot r : robots) {
             r.trans = new RotationTransformation().randomize(false, false, false);
         }
-        Scheduler s = new FileScheduler("testSchedule", robots);
-        Util.Config c = new Util.Config(true, -1);
+//        Scheduler s = null;
+//        try {
+//            s = new FileScheduler(new File(Main.class.getClassLoader().getResource("testSchedule").toURI()), robots);
+//        } catch (URISyntaxException e) {
+//            e.printStackTrace();
+//        }
+        Scheduler s = new FSyncScheduler();
+        Util.Config c = new Util.Config(true, -1, false);
         Simulator simulator = new Simulator(c, robots, s);
 
-        Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class};
+        Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class, GoToRightMost.class};
 
         GUI.runGUI(args, simulator, algorithms);
     }

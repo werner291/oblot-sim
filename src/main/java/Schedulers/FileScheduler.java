@@ -38,18 +38,15 @@ public class FileScheduler extends Scheduler {
      * Reads a file and stores an ordered array of events. Does this by reading a file and then merging it with the total
      * This is not the most efficient way, as insertion per event would be better. However, this was easier to implement
      * and it will only be done once anyway.
-     * @param fileName the path of the file this scheduler should load
+     *
+     * @param file the file this scheduler should load
      * @param robots the list of robots for which this scheduler needs to load the schedule
      */
-    public FileScheduler(String fileName, Robot[] robots) {
+    public FileScheduler(File file, Robot[] robots) {
+        String filePath = file.getAbsolutePath(); // used for printing
         try {
-
             int lineIndex = 0;
-            URL filePath = getClass().getClassLoader().getResource(fileName);
-            if (filePath == null) {
-                throw new FileNotFoundException();
-            }
-            Scanner scanner = new Scanner(new File(filePath.toURI()));
+            Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) { // while there are still lines
                 if (lineIndex >= robots.length) {
                     throw new IllegalArgumentException(String.format("The amount of lines in the schedule file %s does not match " +
@@ -79,26 +76,14 @@ public class FileScheduler extends Scheduler {
             }
 
 
-        } catch (FileNotFoundException | URISyntaxException e) {
-            System.err.println(String.format("File not found: %s", fileName));
+        } catch (FileNotFoundException e) {
+            System.err.println(String.format("File not found: %s", filePath));
             System.err.println("Does it exists and does it have read access?");
         } catch (NumberFormatException e) {
             System.err.println("The file does not have the correct format.");
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         }
-    }
-
-    /**
-     * Reads a file and stores an ordered array of events. Does this by reading a file and then merging it with the total
-     * This is not the most efficient way, as insertion per event would be better. However, this was easier to implement
-     * and it will only be done once anyway.
-     *
-     * @param file the file this scheduler should load
-     * @param robots the list of robots for which this scheduler needs to load the schedule
-     */
-    public FileScheduler(File file, Robot[] robots) {
-        throw new UnsupportedOperationException("TODO: Implement!");
     }
 
     /**
