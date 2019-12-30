@@ -7,12 +7,19 @@ import java.util.List;
 
 public class FSyncScheduler extends SyncScheduler {
 
-    public FSyncScheduler(double minComputeTime, double maxComputeTime, double minMoveTime, double maxMoveTime, Robot[] robots) {
-        super(minComputeTime, maxComputeTime, minMoveTime, maxMoveTime, robots);
+    /**
+     * creates new Fully sync scheduler
+     * @param minComputeTime min compute time
+     * @param maxComputeTime max compute time
+     * @param minMoveTime min move time
+     * @param maxMoveTime max move time
+     */
+    public FSyncScheduler(double minComputeTime, double maxComputeTime, double minMoveTime, double maxMoveTime) {
+        super(minComputeTime, maxComputeTime, minMoveTime, maxMoveTime);
     }
 
-    public FSyncScheduler(Robot[] robots) {
-        super(robots);
+    public FSyncScheduler() {
+        super();
     }
 
     @Override

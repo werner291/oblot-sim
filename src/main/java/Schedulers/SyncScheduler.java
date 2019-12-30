@@ -17,20 +17,19 @@ public class SyncScheduler extends Scheduler {
 
     Random random;
 
-    public SyncScheduler (Robot[] robots) {
-        random = new Random();
-        this.minComputeTime = 1;
-        this.maxComputeTime = 1;
-
-        this.minMoveTime = 1;
-        this.maxMoveTime = 1 + random.nextInt(5);
-
-        events = new ArrayList<>();
-        computeNextEvent(robots, 0);
+    public SyncScheduler () {
+        this(1, 1, 1, 5);
     }
 
 
-    public SyncScheduler(double minComputeTime, double maxComputeTime, double minMoveTime, double maxMoveTime, Robot[] robots) {
+    /**
+     * creates new SyncScheduler
+     * @param minComputeTime min compute time
+     * @param maxComputeTime max compute time
+     * @param minMoveTime min move time
+     * @param maxMoveTime max move time
+     */
+    public SyncScheduler(double minComputeTime, double maxComputeTime, double minMoveTime, double maxMoveTime) {
         this.minComputeTime = minComputeTime;
         this.maxComputeTime = maxComputeTime;
 
@@ -39,7 +38,6 @@ public class SyncScheduler extends Scheduler {
 
         events = new ArrayList<>();
         random = new Random();
-        computeNextEvent(robots, 0);
     }
 
     void computeNextEvent(Robot[] robots, double t) {
