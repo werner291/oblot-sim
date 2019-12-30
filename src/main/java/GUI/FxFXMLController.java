@@ -537,6 +537,9 @@ public class FxFXMLController
             double startTime = currentEvent.events.get(0).t;
             Vector endPos = nextEvent.positions[robotIndex];
             double endTime = nextEvent.events.get(0).t;
+            // could be that the robot already earlier reached its goal. We want to show this as well in the gui
+            double possiblyEarlierEndtime = Interpolate.getEndTime(startPos, startTime, endPos, robot.speed);
+            endTime = Math.min(endTime, possiblyEarlierEndtime);
 
             switch (currentEvent.events.get(robotIndex).type) {
                 case END_MOVING:
