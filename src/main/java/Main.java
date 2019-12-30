@@ -32,7 +32,7 @@ public class Main{
         Util.Config c = new Util.Config(true, -1);
         Simulator simulator = new Simulator(c, robots, s);
 
-        Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class};
+        Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class, GoToRightMost.class};
 
         GUI.runGUI(args, simulator, algorithms);
     }
