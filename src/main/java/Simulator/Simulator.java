@@ -107,6 +107,7 @@ public class Simulator {
                     // add next end_move to the scheduler
                     double endTime = Interpolate.getEndTime(e.r.pos, currentTime, goal, e.r.speed);
                     Event proposed_end_move = new Event(EventType.END_MOVING, endTime, e.r);
+                    scheduler.addEvent(proposed_end_move);
                     break;
                 case START_MOVING:
                     if (e.r.state != State.COMPUTING) {

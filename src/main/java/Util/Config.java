@@ -5,9 +5,10 @@ package Util;
  */
 public class Config {
 
-    public Config(boolean multiplicity, double visibility) {
+    public Config(boolean multiplicity, double visibility, boolean interuptable) {
         this.multiplicity = multiplicity;
         this.visibility = visibility;
+        this.interuptable = interuptable;
     }
 
     /**
