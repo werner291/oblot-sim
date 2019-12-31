@@ -77,9 +77,12 @@ class SchedulerTest {
         // For each robot, write the schedule to it.
         try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
             for (Robot robot : robots) {
-                for (Event event : schedule.get(robot)) {
+                for (Iterator<Event> iterator = schedule.get(robot).iterator(); iterator.hasNext(); ) {
+                    Event event = iterator.next();
                     writer.print(event.t);
-                    writer.print(",");
+                    if (iterator.hasNext()) {
+                        writer.print(", ");
+                    }
                 }
                 writer.println();
             }
