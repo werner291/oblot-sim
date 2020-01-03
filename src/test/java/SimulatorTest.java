@@ -4,7 +4,9 @@ import Simulator.Simulator;
 import Simulator.Robot;
 import Util.Config;
 import Util.Vector;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.Arrays;
 
@@ -13,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SimulatorTest {
 
     @Test
+    @Timeout(5)
+    @Disabled
     void testGatherAtCOGFSync() {
 
         /*
@@ -30,7 +34,7 @@ class SimulatorTest {
         // Initialize the simulator.
         // Multiplicity doesn't matter, but we set it to true since this is a simpler option.
         // Infinite visibility, since we want things unrestricted.
-        Config config = new Config(true, Double.POSITIVE_INFINITY);
+        Config config = new Config(true, Double.POSITIVE_INFINITY, true);
 
         // Perhaps consider making this a single static method?
         Simulator sim = new Simulator(config, robots, new FSyncScheduler());

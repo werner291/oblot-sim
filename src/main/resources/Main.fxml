@@ -38,13 +38,13 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Scheduler">
                <items>
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onFsync" selected="true" text="Full Sync">
+                  <RadioMenuItem mnemonicParsing="false" onAction="#onFSync" selected="true" text="Full Sync">
                      <toggleGroup>
                         <ToggleGroup fx:id="schedGroup" />
                      </toggleGroup>
                   </RadioMenuItem>
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onSsync" text="Semi Sync" toggleGroup="$schedGroup" />
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onAsync" text="Async" toggleGroup="$schedGroup" />
+                  <RadioMenuItem mnemonicParsing="false" onAction="#onSSync" text="Semi Sync" toggleGroup="$schedGroup" />
+                  <RadioMenuItem mnemonicParsing="false" onAction="#onASync" text="Async" toggleGroup="$schedGroup" />
                </items>
         </Menu>
             <Menu mnemonicParsing="false" text="Axis">
@@ -55,6 +55,11 @@
                   <CheckMenuItem fx:id="unitLengthAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Unit Length" />
                   <CheckMenuItem fx:id="rotationAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Rotation" />
                </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="View">
+              <items>
+                  <CheckMenuItem mnemonicParsing="false" onAction="#onShowSEC" text="Show SEC" />
+              </items>
             </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>

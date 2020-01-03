@@ -2,11 +2,11 @@ package GUI;
 
 import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
-import Schedulers.EventType;
+import Schedulers.*;
+import Util.Circle;
+import Util.SmallestEnclosingCircle;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import Schedulers.CalculatedEvent;
-import Schedulers.Event;
 import Simulator.Simulator;
 import Simulator.Robot;
 import Simulator.State;
@@ -27,8 +27,10 @@ import javafx.scene.transform.Affine;
 import javafx.stage.Popup;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * The controller behind the {@link GUI}. The functions here define what happens when
@@ -92,6 +94,8 @@ public class FxFXMLController
     @FXML
     private CheckMenuItem rotationAxisButton;
 
+    String lastSelectedScheduler;
+
     // parameters for the canvas
     private double viewX = 0; // bottom left coords
     private double viewY = 0;
@@ -105,6 +109,7 @@ public class FxFXMLController
     private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
 
     private boolean drawCoordinateSystems = false;
+    private boolean drawSEC = false;
 
     private Simulator simulator; // the simulator that will run the simulation.
     private Class[] algorithms; // the list of possible algorithms
@@ -261,42 +266,6 @@ public class FxFXMLController
     private void onQuit()
     {
         System.exit(0);
-    }
-
-    @FXML
-    private void onFsync()
-    {
-        System.out.println("Fsync");
-    }
-
-    @FXML
-    private void onSsync()
-    {
-        System.out.println("Ssync");
-    }
-
-    @FXML
-    private void onAsync()
-    {
-        System.out.println("Async");
-    }
-
-    @FXML
-    private void onFullshared()
-    {
-        System.out.println("Full Shared");
-    }
-
-    @FXML
-    private void onOrienShared()
-    {
-        System.out.println("Orientation Shared");
-    }
-
-    @FXML
-    private void onNothingShared()
-    {
-        System.out.println("Nothing Shared");
     }
 
     @FXML
@@ -677,8 +646,20 @@ public class FxFXMLController
         gc.scale(scale, -scale); // second negative to reflect horizontally and draw from the bottom left
         gc.translate(-viewX, -viewY);
 
-        // draw on the coordinate system
         Robot[] robots = simulator.getRobots();
+
+        if (drawSEC) {
+            List<Vector> robotPositions = Arrays.stream(robots).map(r -> r.pos).collect(Collectors.toList());
+            Circle SEC = SmallestEnclosingCircle.makeCircle(robotPositions);
+            gc.setLineWidth(0.05);
+            gc.setStroke(Color.BLACK);
+            gc.strokeOval(SEC.c.x - SEC.r, SEC.c.y - SEC.r, 2 * SEC.r, 2 * SEC.r);
+            gc.setFill(Color.BLACK);
+            double centerR = 0.05;
+            gc.fillOval(SEC.c.x - centerR, SEC.c.y - centerR, 2 * centerR, 2 * centerR);
+        }
+
+        // draw on the coordinate system
         for (Robot r : robots) {
             if (drawCoordinateSystems) {
                 Vector up = new Vector(0, 1);
@@ -831,6 +812,39 @@ public class FxFXMLController
         boolean sameRotation = rotationAxisButton.isSelected();
         for (Robot r : simulator.getRobots()) {
             r.trans = new RotationTransformation().randomize(sameChirality, sameUnitLength, sameRotation);
+        }
+    }
+
+    public void onFSync(ActionEvent actionEvent) {
+        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
+        if (!selectedText.equals(lastSelectedScheduler)) {
+            simulator.setScheduler(new FSyncScheduler());
+            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
+        }
+    }
+
+    public void onSSync(ActionEvent actionEvent) {
+        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
+        if (!selectedText.equals(lastSelectedScheduler)) {
+            simulator.setScheduler(new SSyncScheduler());
+            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
+        }
+    }
+
+    public void onASync(ActionEvent actionEvent) {
+        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
+        if (!selectedText.equals(lastSelectedScheduler)) {
+            simulator.setScheduler(new AsyncScheduler());
+            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
+        }
+    }
+
+    public void onShowSEC(ActionEvent actionEvent) {
+        this.drawSEC = ((CheckMenuItem)actionEvent.getSource()).isSelected();
+        if (drawSEC) {
+            System.out.println("Smallest enclosing circle will be drawn.");
+        } else {
+            System.out.println("Smallest enclosing circle will not be drawn.");
         }
     }
 }
