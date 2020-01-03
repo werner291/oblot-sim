@@ -1,6 +1,7 @@
 package Util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -20,6 +21,8 @@ public class SmallestEnclosingCircle {
      * @return the smallest enclosing circle
      */
     public static Circle makeCircle(List<Vector> P) {
+        //filter duplicates by changing to a set otherwise we do not always have enough when we find three points on the circle
+        P = new ArrayList<>(new HashSet<>(P));
         return makeCircle(P, new ArrayList<>());
     }
 
