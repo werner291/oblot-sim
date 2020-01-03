@@ -1,6 +1,7 @@
 package Schedulers;
 
 import Simulator.Robot;
+import Simulator.State;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -234,6 +235,9 @@ class SchedulerTest {
             for (Event event : events) {
                 // Expect the ordering of event types to be correct.
                 assertEquals(expectedType.get(event.r), event.type);
+                // Events returned by getNextEvent must occur at the same timestep.
+                assertEquals(event.t, events.get(0).t);
+
                 expectedType.compute(event.r, (robot, eventType) -> {
                     assertNotNull(eventType);
                     return EventType.next(eventType);
@@ -243,6 +247,21 @@ class SchedulerTest {
             // Get the timestamp of the first event and make sure it's strictly in the future.
             double eventT = events.get(0).t;
             assertTrue(eventT > t);
+
+            for (Event event : events) {
+                switch (event.type) {
+
+                    case START_COMPUTE:
+                        event.r.state = State.COMPUTING;
+                        break;
+                    case START_MOVING:
+                        event.r.state = State.MOVING;
+                        break;
+                    case END_MOVING:
+                        event.r.state = State.SLEEPING;
+                        break;
+                }
+            }
 
             // Run additional checks that may be relevant to the particular type of scheduler.
             checkNewEvents.accept(robots, events);
