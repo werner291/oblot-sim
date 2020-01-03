@@ -123,7 +123,7 @@ class SchedulerTest {
      */
     @Test
     void testIsSynchronous() {
-        testScheduler(new SyncScheduler(),
+        testScheduler(new SSyncScheduler(),
                 (robots, events1) -> {
                     // Each new set of events must strictly be of the same type.
                     assertAllOfType(events1, events1.get(0).type);

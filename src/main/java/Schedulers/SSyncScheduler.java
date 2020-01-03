@@ -4,9 +4,8 @@ import Simulator.Robot;
 import Simulator.State;
 
 import java.util.*;
-;
 
-public class SyncScheduler extends Scheduler {
+public class SSyncScheduler extends Scheduler {
 
     double minComputeTime;
     double maxComputeTime;
@@ -18,7 +17,7 @@ public class SyncScheduler extends Scheduler {
 
     Random random;
 
-    public SyncScheduler () {
+    public SSyncScheduler() {
         this(1, 1, 1, 5);
     }
 
@@ -30,7 +29,7 @@ public class SyncScheduler extends Scheduler {
      * @param minMoveTime min move time
      * @param maxMoveTime max move time
      */
-    public SyncScheduler(double minComputeTime, double maxComputeTime, double minMoveTime, double maxMoveTime) {
+    public SSyncScheduler(double minComputeTime, double maxComputeTime, double minMoveTime, double maxMoveTime) {
         this.minComputeTime = minComputeTime;
         this.maxComputeTime = maxComputeTime;
 
@@ -46,17 +45,7 @@ public class SyncScheduler extends Scheduler {
         EventType nextType = null;
         for (Robot robot: robots) {
             if (nextType == null || nextType == EventType.START_COMPUTE) {
-                switch (robot.state) {
-                    case SLEEPING:
-                        nextType = EventType.START_COMPUTE;
-                        break;
-                    case COMPUTING:
-                        nextType = EventType.START_MOVING;
-                        break;
-                    case MOVING:
-                        nextType = EventType.END_MOVING;
-                        break;
-                }
+                nextType = getEventType(robot);
             }else if (nextType == EventType.START_MOVING && robot.state == State.MOVING) {
                 throw new IllegalStateException("One robot is moving and one is computing which is not possible in Sync");
             }else if (nextType == EventType.END_MOVING && robot.state == State.COMPUTING) {
@@ -68,15 +57,13 @@ public class SyncScheduler extends Scheduler {
         switch (nextType) {
             case START_COMPUTE:
                 int NROFRobots = random.nextInt(robots.length-1) + 1;
-                List<Robot> clonedRobots = new ArrayList<>(Arrays.asList(robots));
+                List<Robot> chosenRobots = new ArrayList<>(Arrays.asList(robots));
 
-                List<Robot> chosenRobots = new ArrayList<>();
-
-                for (int i = 0; i < NROFRobots; i++) {
-                    int chosenRobot = random.nextInt(clonedRobots.size());
-                    chosenRobots.add(clonedRobots.get(chosenRobot));
-                    clonedRobots.remove(chosenRobot);
+                while (chosenRobots.size() > NROFRobots) {
+                    int chosenRobot = random.nextInt(chosenRobots.size());
+                    chosenRobots.remove(chosenRobot);
                 }
+
                 double computeStart = t + random.nextDouble();
                 for (Robot robot: chosenRobots) {
                     events.add(new Event(nextType, computeStart, robot));
@@ -107,6 +94,24 @@ public class SyncScheduler extends Scheduler {
                 break;
         }
         return events;
+    }
+
+    /**
+     * Get the eventType that a robot needs.
+     * @param robot the robot to check
+     * @return the next event for a specific robot
+     */
+    protected EventType getEventType(Robot robot) {
+        switch (robot.state) {
+            case SLEEPING:
+                return EventType.START_COMPUTE;
+            case COMPUTING:
+                return EventType.START_MOVING;
+            case MOVING:
+                return EventType.END_MOVING;
+            default:
+                throw new IllegalStateException("The state of a robot is not properly initialized.");
+        }
     }
 
     @Override

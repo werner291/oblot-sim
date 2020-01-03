@@ -2,11 +2,9 @@ package GUI;
 
 import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
-import Schedulers.EventType;
+import Schedulers.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import Schedulers.CalculatedEvent;
-import Schedulers.Event;
 import Simulator.Simulator;
 import Simulator.Robot;
 import Simulator.State;
@@ -91,6 +89,8 @@ public class FxFXMLController
     private CheckMenuItem unitLengthAxisButton;
     @FXML
     private CheckMenuItem rotationAxisButton;
+
+    String lastSelectedScheduler;
 
     // parameters for the canvas
     private double viewX = 0; // bottom left coords
@@ -261,42 +261,6 @@ public class FxFXMLController
     private void onQuit()
     {
         System.exit(0);
-    }
-
-    @FXML
-    private void onFsync()
-    {
-        System.out.println("Fsync");
-    }
-
-    @FXML
-    private void onSsync()
-    {
-        System.out.println("Ssync");
-    }
-
-    @FXML
-    private void onAsync()
-    {
-        System.out.println("Async");
-    }
-
-    @FXML
-    private void onFullshared()
-    {
-        System.out.println("Full Shared");
-    }
-
-    @FXML
-    private void onOrienShared()
-    {
-        System.out.println("Orientation Shared");
-    }
-
-    @FXML
-    private void onNothingShared()
-    {
-        System.out.println("Nothing Shared");
     }
 
     @FXML
@@ -833,4 +797,29 @@ public class FxFXMLController
             r.trans = new RotationTransformation().randomize(sameChirality, sameUnitLength, sameRotation);
         }
     }
+
+    public void onFSync(ActionEvent actionEvent) {
+        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
+        if (!selectedText.equals(lastSelectedScheduler)) {
+            simulator.setScheduler(new FSyncScheduler());
+            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
+        }
+    }
+
+    public void onSSync(ActionEvent actionEvent) {
+        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
+        if (!selectedText.equals(lastSelectedScheduler)) {
+            simulator.setScheduler(new SSyncScheduler());
+            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
+        }
+    }
+
+    public void onASync(ActionEvent actionEvent) {
+        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
+        if (!selectedText.equals(lastSelectedScheduler)) {
+            simulator.setScheduler(new AsyncScheduler());
+            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
+        }
+    }
+
 }

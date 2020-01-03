@@ -4,10 +4,9 @@ import Simulator.Robot;
 import Simulator.State;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class FSyncScheduler extends SyncScheduler {
+public class FSyncScheduler extends SSyncScheduler {
 
     /**
      * creates new Fully sync scheduler
@@ -30,19 +29,9 @@ public class FSyncScheduler extends SyncScheduler {
         State currentState = null;
         for (Robot robot: robots) {
             if (nextType == null) {
-                switch (robot.state) {
-                    case SLEEPING:
-                        nextType = EventType.START_COMPUTE;
-                        break;
-                    case COMPUTING:
-                        nextType = EventType.START_MOVING;
-                        break;
-                    case MOVING:
-                        nextType = EventType.END_MOVING;
-                        break;
-                }
+                nextType = getEventType(robot);
                 currentState = robot.state;
-            }else if (currentState != robot.state) {
+            } else if (currentState != robot.state) {
                 throw new IllegalStateException("not all the robots have the same state");
             }
         }

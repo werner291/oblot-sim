@@ -187,4 +187,12 @@ public class Simulator {
     public List<CalculatedEvent> getCalculatedEvents() {
         return this.calculatedEvents;
     }
+
+    /**
+     * Sets the scheduler. Take note that this may cause problems with the interruptability of robots.
+     * @param s The new scheduler
+     */
+    public void setScheduler(Scheduler s) {
+        this.scheduler = s;
+    }
 }
