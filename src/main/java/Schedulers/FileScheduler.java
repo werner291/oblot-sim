@@ -193,7 +193,8 @@ public class FileScheduler extends Scheduler {
         // There can be many events, while the most likely access is in sequential order.
         // Therefore, we maintain the current index and first check if it is the next one.
         // In all other cases, we do a binary search.
-        if (currentIndex == events.length && events[currentIndex-1].t <= t) {
+
+        if (currentIndex == events.length && events[currentIndex - 1].t <= t) {
             return null;
         }
         if (currentIndex == events.length - 1 && events[currentIndex].t <= t) {
@@ -203,19 +204,21 @@ public class FileScheduler extends Scheduler {
         if (currentIndex == 0 && events[currentIndex].t > t) {
             return getSameEvents(currentIndex);
         }
-        // if there are multiple events with the same timestamp, increase currentIndex until the last one
-        while (currentIndex != events.length - 1 && events[currentIndex].t == events[currentIndex+1].t) {
-            currentIndex++;
-        }
 
-        // if we now are at the end of the events, there are no new events anymore.
-        if (currentIndex == events.length - 1) {
-            return null;
-        }
+        if (currentIndex != events.length) {
+            // if there are multiple events with the same timestamp, increase currentIndex until the last one
+            while (currentIndex < events.length - 1 && events[currentIndex].t == events[currentIndex + 1].t) {
+                currentIndex++;
+            }
+            // if we now are at the end of the events, there are no new events anymore.
+            if (currentIndex == events.length - 1) {
+                return null;
+            }
 
-        // check the easy case if the next is the following event
-        if (events[currentIndex].t <= t && events[currentIndex + 1].t > t) {
-            return getSameEvents(++currentIndex);
+            // check the easy case if the next is the following event
+            if (events[currentIndex].t <= t && events[currentIndex + 1].t > t) {
+                return getSameEvents(++currentIndex);
+            }
         }
 
         // If the checks with the currentIndex fail, fall back to binary search
