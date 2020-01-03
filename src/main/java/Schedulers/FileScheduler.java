@@ -55,7 +55,7 @@ public class FileScheduler extends Scheduler {
 
                 String line = scanner.nextLine();
                 // convert to array of timestamps
-                int[] timestamps = Arrays.stream(line.split(", ")).mapToInt(Integer::parseInt).toArray();
+                double[] timestamps = Arrays.stream(line.split(", ")).mapToDouble(Double::parseDouble).toArray();
                 if (!isSorted(timestamps)) {
                     throw new IllegalArgumentException("The timestamps are not in increasing order");
                 }
@@ -91,9 +91,9 @@ public class FileScheduler extends Scheduler {
      * @param array the array of ints
      * @return if the array is sorted
      */
-    private boolean isSorted(int[] array) {
-        int previous = Integer.MIN_VALUE;
-        for (int value : array) {
+    private boolean isSorted(double[] array) {
+        double previous = Double.NEGATIVE_INFINITY;
+        for (double value : array) {
             if (previous > value) {
                 return false;
             }
