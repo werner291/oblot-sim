@@ -5,9 +5,7 @@ import Util.Config;
 import Util.SmallestEnclosingCircle;
 import Util.Vector;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -63,7 +61,8 @@ public class GatheringWithMultiplicity extends Algorithm {
         int NI = (int)Arrays.stream(snapshot).filter(p -> SEC.c.dist(p) < SEC.r - Config.EPSILON).count();
 
         // if this robot is not a leader robot, do nothing. This assumes only 1 leader. Other cases are not implemented.
-        if (!isLeaderRobot(stringOfAngles, orderedPoints, SEC)) return origin;
+        Vector leader = getLeaderRobot(stringOfAngles, orderedPoints, SEC);
+        if (!leader.equals(origin)) return origin;
 
         // the 4 cases
         if (!robotAtCoC) {
@@ -101,29 +100,87 @@ public class GatheringWithMultiplicity extends Algorithm {
     }
 
     /**
-     * Get if this robot is a leader robot from the string of angles
+     * Get the leader robot from the string of angles
      * @param SA the string of angles
      * @param orderedPoints the robots in the same order as in the string of angles.
      *                      Such that SA[0] is the angle between the points[0] and points[1]
      * @param SEC the smallest enclosing circle. A robot can only be a leader if it is not on the SEC
-     * @return true if this robot is a leader robot, false otherwise
+     * @return the leader robot
      */
-    private boolean isLeaderRobot(double[] SA, Vector[] orderedPoints, Circle SEC) {
-        //TODO make this a proper lexicographic ordering instead of just picking the first smallest
-        if (SA.length != orderedPoints.length) {
-            throw new IllegalArgumentException("Lengths of input are not the same.");
+    private Vector getLeaderRobot(double[] SA, Vector[] orderedPoints, Circle SEC) {
+        if(Math.abs(Arrays.stream(SA).sum() - 2 * Math.PI) > Config.EPSILON) {
+            throw new IllegalArgumentException("The sum of the string of angles is not a full circle");
         }
-        int smallestIndex = -1;
-        double smallestAngle = Integer.MAX_VALUE;
-        for (int i = 0; i < SA.length; i++) {
-            if (SA[i] < smallestAngle && !SEC.on(orderedPoints[i])) {
-                smallestAngle = SA[i];
-                smallestIndex = i;
-            } else if (SA[i] == smallestAngle) { // we should do something lexicographically here
-                throw new IllegalStateException(" The edge case with multiple leaders has not been implemented.");
+        LinkedList<Double> SAList = Arrays.stream(SA).boxed().collect(Collectors.toCollection(LinkedList::new));
+        LinkedList<Vector> orderedPointsList = new LinkedList<>(Arrays.asList(orderedPoints));
+        LinkedList<Double> currentSmallest = new LinkedList<>(SAList);
+        ArrayList<Vector> currentSmallestOrderedPoints = new ArrayList<>(orderedPointsList);
+        for (int i = 0; i < SA.length - 1; i++) {
+            // shift both the SA and the orderedPoints
+            SAList.addFirst(SAList.removeLast());
+            orderedPointsList.addFirst(orderedPointsList.removeLast());
+
+            // check normal order
+            int comparison = compare(currentSmallest, SAList);
+            if (comparison < 0) {
+                currentSmallest = new LinkedList<>(SAList);
+                currentSmallestOrderedPoints = new ArrayList<>(orderedPointsList);
+            } else if (comparison == 0) {
+                throw new UnsupportedOperationException("The case with multiple leaders has not yet been implemented");
+            }
+            // check reversed order
+            List<Double> reversedSAList = new ArrayList<>(SAList);
+            Collections.reverse(reversedSAList);
+            LinkedList<Vector> reversedOrderedPoints = new LinkedList<>(orderedPointsList);
+            Collections.reverse(reversedOrderedPoints);
+            // shift the last vertex to the first position. We still want to count from the same vertex
+            reversedOrderedPoints.addFirst(reversedOrderedPoints.removeLast());
+
+            comparison = compare(currentSmallest, reversedSAList);
+            if (comparison < 0) {
+                currentSmallest = new LinkedList<>(reversedSAList);
+                currentSmallestOrderedPoints = new ArrayList<>(reversedOrderedPoints);
+            } else if (comparison == 0) {
+                throw new UnsupportedOperationException("The case with multiple leaders has not yet been implemented");
             }
         }
-        return orderedPoints[smallestIndex].equals(origin);
+        for (int i = 0; i < currentSmallest.size(); i++) {
+            Vector pointToTest = currentSmallestOrderedPoints.get(i);
+            if (!SEC.on(pointToTest)) {
+                // we want to have this one as leader
+                return pointToTest;
+            }
+        }
+        // they are all on the SEC, so just return the first one
+        return currentSmallestOrderedPoints.get(0);
+    }
+
+    /**
+     * Lexicographically compare two lists.
+     * @param a first list
+     * @param b second list
+     * @return 1 if a before b, 0 if a == b, -1 if b before a
+     */
+    private int compare(List<Double> a, List<Double> b) {
+        Iterator<Double> aIterator = a.iterator();
+        Iterator<Double> bIterator = b.iterator();
+        while(aIterator.hasNext() && bIterator.hasNext()) {
+            Double aNext = aIterator.next();
+            Double bNext = bIterator.next();
+            if (aNext < bNext) {
+                return 1;
+            }
+            if (aNext > bNext) {
+                return -1;
+            }
+        }
+        if (!aIterator.hasNext() && !bIterator.hasNext()) { // same size
+            return 0;
+        } else if (!aIterator.hasNext()) { // b longer
+            return 1;
+        } else { // a longer
+            return -1;
+        }
     }
 
     /**
