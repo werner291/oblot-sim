@@ -23,6 +23,11 @@ public class Robot {
      * The current state of this robot.
      */
     public State state;
+
+    /**
+     * The timestamp of the last change in state
+     */
+    public double lastStateChange;
     /**
      * The speed of the robot.
      */
@@ -50,6 +55,7 @@ public class Robot {
         this.trans = trans;
         this.state = State.SLEEPING;
         this.speed = 1.0;
+        this.lastStateChange = 0.0;
     }
 
     /**
