@@ -58,24 +58,18 @@ public class Simulator {
      */
     public void simulateTillTimestamp(double t) {
         // use simulateTillNextEvent until we pass the correct t and interpolate back to the correct t
-        while (scheduler.getNextEvent(robots, currentTime) != null && scheduler.getNextEvent(robots, currentTime).get(0).t < t) {
+        List<Event> events = scheduler.getNextEvent(robots, currentTime);
+        while (events != null && events.get(0).t < t) {
             //this changes the current time
-            simulateTillNextEvent();
+            simulateEvents(events);
+            events = scheduler.getNextEvent(robots, currentTime);
         }
         interpolateRobots(currentTime, t);
         currentTime = t;
     }
 
 
-
-    /**
-     * Simulate the robots until the next event that will be requested from the scheduler.
-     * It could be the case that there are no events anymore. In this case, the simulator will do nothing,
-     * as all information is already known
-     */
-    public void simulateTillNextEvent() {
-        List<Event> nextEvents = scheduler.getNextEvent(robots, currentTime);
-
+    private void simulateEvents(List<Event> nextEvents) {
         if (nextEvents == null) {
             return;
         }
@@ -122,10 +116,25 @@ public class Simulator {
                     e.r.state = State.SLEEPING;
                     break;
             }
+            e.r.lastStateChange = e.t;
         }
         Vector[] positions = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
         CalculatedEvent calculatedEvent = new CalculatedEvent(nextEvents, positions, goals);
         calculatedEvents.add(calculatedEvent);
+    }
+
+
+    /**
+     * Simulate the robots until the next event that will be requested from the scheduler.
+     * It could be the case that there are no events anymore. In this case, the simulator will do nothing,
+     * as all information is already known
+     */
+    public void simulateTillNextEvent() {
+        List<Event> nextEvents = scheduler.getNextEvent(robots, currentTime);
+
+
+        simulateEvents(nextEvents);
+
     }
 
     /**
