@@ -56,6 +56,11 @@
                   <CheckMenuItem fx:id="rotationAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Rotation" />
                </items>
             </Menu>
+            <Menu mnemonicParsing="false" text="View">
+              <items>
+                  <CheckMenuItem mnemonicParsing="false" onAction="#onShowSEC" text="Show SEC" />
+              </items>
+            </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
             <MenuItem mnemonicParsing="false" onAction="#onGettingStarted" text="Getting Started" />
