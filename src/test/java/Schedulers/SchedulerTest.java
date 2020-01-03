@@ -50,7 +50,8 @@ class SchedulerTest {
 
             // Run the regular scheduler test as well, using a new instance of the scheduler since running this test
             // adds movement stop events to the schedule.
-            SchedulerTest.testScheduler(new FileScheduler(file, robots), (robots1, events) -> { /* No additional checks. */ });
+            SchedulerTest.testScheduler(new FileScheduler(file, robots), (robots1, events) -> { /* No additional checks. */ },
+                    robots);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -134,7 +135,7 @@ class SchedulerTest {
                 (robots, events1) -> {
                     // Each new set of events must strictly be of the same type.
                     assertAllOfType(events1, events1.get(0).type);
-                }
+                }, TestUtil.generateRobotCloud(TestUtil.GO_TO_COG, 10.0, 50)
         );
     }
 
@@ -150,7 +151,7 @@ class SchedulerTest {
                     assertAllOfType(events1, events1.get(0).type);
                     // Must come with exactly one event for each robot under FSYNC
                     assertOneEventForEachRobot(robots, events1);
-                }
+                }, TestUtil.generateRobotCloud(TestUtil.GO_TO_COG, 10.0, 50)
         );
     }
 
@@ -217,14 +218,12 @@ class SchedulerTest {
      *
      * @param scheduler      The scheduler to test.
      * @param checkNewEvents A callback that can be used to check additional things about individual batches of events.
+     * @param robots         The set of robots to test the scheduler with.
      */
-    static void testScheduler(Scheduler scheduler, BiConsumer<Robot[], List<Event>> checkNewEvents) {
+    static void testScheduler(Scheduler scheduler, BiConsumer<Robot[], List<Event>> checkNewEvents, Robot[] robots) {
 
         // Initialize the rng with a seed to make tests reproducible.
         Random r = new Random(1337);
-
-        // The robots given here are just a simple cloud of 50 robots.
-        Robot[] robots = TestUtil.generateRobotCloud(TestUtil.GO_TO_COG, 10.0, 50);
 
         // Start at time 0.
         double t = 0.0;
