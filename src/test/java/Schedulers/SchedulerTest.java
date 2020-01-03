@@ -62,15 +62,21 @@ class SchedulerTest {
         // Ask the scheduler which events are next.
         List<Event> events = scheduler.getNextEvent(robots, sampleT);
 
-        for (Event event : events) {
-            // In the schedule, for the given robot, find the first event with a timestamp strictly greater
-            // than the sample time.
-            //noinspection OptionalGetWithoutIsPresent Throwing an exception here is fine since it'll fail like the test like it should.
-            Event expected = schedule.get(event.r).tailSet(event).stream().filter(event1 -> event1.t > sampleT).findFirst().get();
+        if (events == null) {
+            for (Robot robot : robots) {
+                assertTrue( schedule.get(robot).last().t <= sampleT);
+            }
+        } else {
+            for (Event event : events) {
+                // In the schedule, for the given robot, find the first event with a timestamp strictly greater
+                // than the sample time.
+                //noinspection OptionalGetWithoutIsPresent Throwing an exception here is fine since it'll fail like the test like it should.
+                Event expected = schedule.get(event.r).tailSet(event).stream().filter(event1 -> event1.t > sampleT).findFirst().get();
 
-            // We should expect the event in the schedule to match with the event from the FileScheduler.
-            // We do inexact comparison to account for rounding errors while enconding/decoding.
-            assertTrue(Math.abs(event.t - expected.t) < 0.000001);
+                // We should expect the event in the schedule to match with the event from the FileScheduler.
+                // We do inexact comparison to account for rounding errors while enconding/decoding.
+                assertTrue(Math.abs(event.t - expected.t) < 0.000001);
+            }
         }
     }
 
