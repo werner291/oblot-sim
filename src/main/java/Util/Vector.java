@@ -236,10 +236,14 @@ public class Vector {
         if (obj instanceof Vector) {
             Vector other = (Vector) obj;
             // equality with floating point correction
-            return Math.abs(this.x - other.x) < Config.EPSILON && Math.abs(this.y - other.y) < Config.EPSILON;
+            return equalsWithinEpsilon(other, Config.EPSILON);
         } else {
             return false;
         }
+    }
+
+    public boolean equalsWithinEpsilon(Vector other, double epsilon) {
+        return Math.abs(this.x - other.x) < epsilon && Math.abs(this.y - other.y) < epsilon;
     }
 
     @Override

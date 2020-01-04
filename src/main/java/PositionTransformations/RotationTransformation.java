@@ -27,7 +27,7 @@ public class RotationTransformation extends PositionTransformation {
             throw new IllegalArgumentException("unitLength should be strictly greater than 0");
         }
         if (rotation >= Math.PI || rotation < -Math.PI) {
-            throw new IllegalArgumentException("rotation ("+rotation+") should be in the range (-pi, pi]");
+            throw new IllegalArgumentException("rotation ("+rotation+") should be in the range [-pi, pi)");
         }
         this.unitLength = unitLength;
         this.rotation = rotation;
