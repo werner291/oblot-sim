@@ -3,10 +3,7 @@ package Schedulers;
 import Simulator.Robot;
 import Simulator.State;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class AsyncScheduler extends Scheduler {
 
@@ -14,8 +11,7 @@ public class AsyncScheduler extends Scheduler {
     double maxComputeTime;
     double minMoveTime;
     double maxMoveTime;
-    double nextEndMoving = 0;
-    Robot nextEndMovingRobot = null;
+    Map<Robot, Double> endMovingTimes;
 
 
     Random random;
@@ -41,6 +37,9 @@ public class AsyncScheduler extends Scheduler {
 
 
         random = new Random();
+
+        endMovingTimes = new HashMap<>();
+
     }
 
     private EventType getNextEventType (Robot robot) {
@@ -86,6 +85,20 @@ public class AsyncScheduler extends Scheduler {
             return events;
         }
 
+        boolean forcedEvent = false;
+        for(Robot robot: endMovingTimes.keySet()) {
+            if (endMovingTimes.get(robot) < earliestNextEventTime) {
+                earliestNextEventTime = endMovingTimes.get(robot);
+                earliestNextEventRobot = robot;
+                forcedEvent = true;
+            }
+        }
+
+        if (forcedEvent) {
+            events.add(new Event(EventType.END_MOVING, earliestNextEventTime, earliestNextEventRobot));
+            return events;
+        }
+
         List<Robot> availableRobots = new ArrayList<>();
         for (Robot robot: robots) {
             switch (robot.state) {
@@ -98,7 +111,7 @@ public class AsyncScheduler extends Scheduler {
                     }
                     break;
                 case MOVING:
-                    if (robot.lastStateChange + minMoveTime < t) {
+                    if (robot.lastStateChange + minMoveTime < t && !endMovingTimes.containsKey(robot)) {
                         availableRobots.add(robot);
                     }
                     break;
@@ -114,5 +127,12 @@ public class AsyncScheduler extends Scheduler {
 
     @Override
     public void addEvent(Event e) {
+        if (e.type==EventType.END_MOVING) {
+            if (!endMovingTimes.containsKey(e.r)) {
+                endMovingTimes.put(e.r, e.t);
+            }else if (e.t > endMovingTimes.get(e.r)) {
+                endMovingTimes.put(e.r, e.t);
+            }
+        }
     }
 }
