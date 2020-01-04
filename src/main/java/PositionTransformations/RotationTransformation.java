@@ -53,7 +53,7 @@ public class RotationTransformation extends PositionTransformation {
 
     @Override
     public Vector localToGlobal(Vector p, Vector origin) {
-        Vector newP = p;
+        Vector newP = new Vector(p);
         if (chirality) {
             newP.x = -newP.x;
         }
