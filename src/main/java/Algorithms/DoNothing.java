@@ -1,5 +1,7 @@
 package Algorithms;
 
+import RobotPaths.LinearPath;
+import RobotPaths.RobotPath;
 import Util.Vector;
 
 /**
@@ -8,7 +10,7 @@ import Util.Vector;
 public class DoNothing extends Algorithm {
 
     @Override
-    public Vector doAlgorithm(Vector[] snapshot) {
-        return origin;
+    public RobotPath doAlgorithm(Vector[] snapshot) {
+        return new LinearPath(origin);
     }
 }

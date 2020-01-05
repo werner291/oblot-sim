@@ -57,7 +57,7 @@ public class FSyncScheduler extends SSyncScheduler {
                 double endTime;
                 if (nextEndMoving > t) {
                     endTime = nextEndMoving;
-                }else {
+                } else {
                     endTime = t + minMoveTime + (maxMoveTime - minMoveTime) * random.nextDouble();;
                 }
 

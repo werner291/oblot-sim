@@ -1,5 +1,6 @@
 package Algorithms;
 
+import RobotPaths.RobotPath;
 import Simulator.Robot;
 import Util.Vector;
 
@@ -17,5 +18,5 @@ public abstract class Algorithm {
      *                 system of the robot
      * @return The position in local space the robot wants to move to
      */
-    public abstract Vector doAlgorithm(Vector[] snapshot);
+    public abstract RobotPath doAlgorithm(Vector[] snapshot);
 }

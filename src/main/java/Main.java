@@ -21,7 +21,7 @@ public class Main{
     public static void main(String[] args) {
         // We're keeping this
         System.out.println("Most awesome simulator ever.");
-        Robot[] robots = Robot.fromFile("testRobots2", new GatheringWithMultiplicity(), null);
+        Robot[] robots = Robot.fromFile("testRobots2", new MoveAlongSEC(), null);
         for (Robot r : robots) {
             r.trans = new RotationTransformation().randomize(false, false, false);
         }
@@ -31,8 +31,8 @@ public class Main{
 //        } catch (URISyntaxException e) {
 //            e.printStackTrace();
 //        }
-        Scheduler s = new FSyncScheduler();
-        Util.Config c = new Util.Config(true, -1, false);
+        Scheduler s = new FSyncScheduler(1, 1, 1, 1);
+        Util.Config c = new Util.Config(true, -1, true);
         Simulator simulator = new Simulator(c, robots, s);
 
         Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class, GoToRightMost.class};

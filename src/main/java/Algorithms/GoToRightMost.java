@@ -1,5 +1,7 @@
 package Algorithms;
 
+import RobotPaths.LinearPath;
+import RobotPaths.RobotPath;
 import Util.Vector;
 
 import java.util.Arrays;
@@ -9,7 +11,7 @@ import java.util.Arrays;
  */
 public class GoToRightMost extends Algorithm {
     @Override
-    public Vector doAlgorithm(Vector[] snapshot) {
-        return Arrays.stream(snapshot).max((a, b) -> Double.compare(a.x, b.x)).get();
+    public RobotPath doAlgorithm(Vector[] snapshot) {
+        return new LinearPath(Arrays.stream(snapshot).max((a, b) -> Double.compare(a.x, b.x)).get());
     }
 }

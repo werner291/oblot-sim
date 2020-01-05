@@ -2,6 +2,7 @@ package Simulator;
 
 import Algorithms.Algorithm;
 import PositionTransformations.PositionTransformation;
+import RobotPaths.RobotPath;
 import Util.Vector;
 
 import java.io.File;
@@ -63,10 +64,11 @@ public class Robot {
      * @param snapshot a snapshot of the positions of the robots at a certain timestamp in the global coordinate system
      * @return A list of positions the robot wants to go to.
      */
-    public Vector calculate(Vector[] snapshot) {
+    public RobotPath calculate(Vector[] snapshot) {
         Vector[] localSnapshot = trans.globalToLocal(snapshot, pos);
-        Vector calculatedPosition = algo.doAlgorithm(localSnapshot);
-        return trans.localToGlobal(calculatedPosition, pos);
+        RobotPath calculatedPath = algo.doAlgorithm(localSnapshot);
+        calculatedPath.convertFromLocalToGlobal(this.trans, this.pos);
+        return calculatedPath;
     }
 
     @Override

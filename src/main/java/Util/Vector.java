@@ -210,6 +210,27 @@ public class Vector {
     }
 
     /**
+     * Rotate this vector anticlockwise around vector o.
+     * @param a the angle to rotate with, in radians.
+     * @param o the vector to rotate around
+     * @return a new rotated vector
+     */
+    public Vector rotate(double a, Vector o) {
+        return Vector.rotate(this, a, o);
+    }
+
+    /**
+     * Rotate Vector v anticlockwise around vector o with a degrees.
+     * @param v the vector to rotate
+     * @param a the angle to rotate
+     * @param o the vector to rotate around
+     * @return the rotated vector
+     */
+    public static Vector rotate(Vector v, double a, Vector o) {
+        return v.sub(o).rotate(a).add(o);
+    }
+
+    /**
      * Calculates the cross product or determinant of two vectors
      * @param a the vector to calculate the cross product with
      * @return the determinant of this and a

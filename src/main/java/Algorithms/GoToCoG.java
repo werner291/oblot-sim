@@ -1,5 +1,7 @@
 package Algorithms;
 
+import RobotPaths.LinearPath;
+import RobotPaths.RobotPath;
 import Util.Vector;
 
 /**
@@ -7,11 +9,11 @@ import Util.Vector;
  */
 public class GoToCoG extends Algorithm {
     @Override
-    public Vector doAlgorithm(Vector[] snapshot) {
+    public RobotPath doAlgorithm(Vector[] snapshot) {
         Vector total = new Vector(0, 0);
         for (Vector v : snapshot) {
             total = total.add(v);
         }
-        return new Vector(total.x / snapshot.length, total.y / snapshot.length);
+        return new LinearPath(new Vector(total.x / snapshot.length, total.y / snapshot.length));
     }
 }

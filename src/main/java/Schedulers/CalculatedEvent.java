@@ -2,6 +2,8 @@ package Schedulers;
 
 import Algorithms.GoToCoG;
 import PositionTransformations.RotationTransformation;
+import RobotPaths.LinearPath;
+import RobotPaths.RobotPath;
 import Simulator.Robot;
 import Util.Vector;
 
@@ -31,18 +33,17 @@ public class CalculatedEvent {
     public Vector[] positions;
 
     /**
-     * The position the robot wants to go to. If the robot is not moving,
-     * this will be the same as {@link CalculatedEvent#positions}
+     * The paths the robots are currently following.
      */
-    public Vector[] goals;
+    public RobotPath[] robotPaths;
 
-    public CalculatedEvent(List<Event> events, Vector[] positions, Vector[] goals) {
+    public CalculatedEvent(List<Event> events, Vector[] positions, RobotPath[] paths) {
         if (events.isEmpty()) {
             throw new IllegalArgumentException("Events cannot be empty");
         }
         this.events = events;
         this.positions = positions;
-        this.goals = goals;
+        this.robotPaths = paths;
     }
 
     /**
@@ -65,8 +66,8 @@ public class CalculatedEvent {
                 fileWriter.write(positions.toString().trim() + "\n");
 
                 StringBuilder goals = new StringBuilder();
-                for (Vector goal: calculatedEvent.goals) {
-                    goals.append(goal.x).append(",").append(goal.y).append(" ");
+                for (RobotPath path: calculatedEvent.robotPaths) {
+                    goals.append(path.end.x).append(",").append(path.end.y).append(" ");
                 }
                 fileWriter.write(goals.toString().trim()+ "\n");
 
@@ -101,29 +102,25 @@ public class CalculatedEvent {
                 String[] positionStrings = positionsString.split(" ");
                 Vector[] positions = new Vector[NROF_ROBOTS];
                 Robot[] robots = new Robot[NROF_ROBOTS];
-                int i = 0;
-                for (String positionString: positionStrings) {
-                    String[] coordinatesString = positionString.split(",");
+                for (int i = 0; i < positionStrings.length; i++) {
+                    String[] coordinatesString = positionStrings[i].split(",");
                     double x = Double.parseDouble(coordinatesString[0]);
                     double y = Double.parseDouble(coordinatesString[1]);
                     Vector position = new Vector(x, y);
                     positions[i] = position;
                     Robot robot = new Robot(new GoToCoG(), position, new RotationTransformation());
                     robots[i] = robot;
-                    i++;
                 }
 
                 String goalsString = scanner.nextLine();
                 String[] goalStrings = goalsString.split(" ");
                 Vector[] goals = new Vector[NROF_ROBOTS];
-                int j = 0;
-                for (String goalString: goalStrings) {
-                    String[] coordinatesString = goalString.split(",");
+                for (int i = 0; i < goalStrings.length; i++) {
+                    String[] coordinatesString = goalStrings[i].split(",");
                     double x = Double.parseDouble(coordinatesString[0]);
                     double y = Double.parseDouble(coordinatesString[1]);
                     Vector goal = new Vector(x, y);
-                    goals[j] = goal;
-                    j++;
+                    goals[i] = goal;
                 }
 
                 double timestamp = Double.parseDouble(scanner.nextLine());
@@ -140,7 +137,11 @@ public class CalculatedEvent {
                     events.add(event);
                 }
                 scanner.nextLine();
-                CalculatedEvent calculatedEvent = new CalculatedEvent(events, positions, goals);
+                RobotPath[] robotPaths = new RobotPath[positions.length];
+                for (int i = 0; i < positions.length; i++) {
+                    robotPaths[i] = new LinearPath(positions[i], goals[i]);
+                }
+                CalculatedEvent calculatedEvent = new CalculatedEvent(events, positions, robotPaths);
                 calculatedEvents.add(calculatedEvent);
             }
 
@@ -165,6 +166,6 @@ public class CalculatedEvent {
             positionsCopy[i] = new Vector(this.positions[i]);
             i++;
         }
-        return new CalculatedEvent(eventsCopy, positionsCopy, this.goals);
+        return new CalculatedEvent(eventsCopy, positionsCopy, this.robotPaths);
     }
 }
