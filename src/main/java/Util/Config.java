@@ -27,5 +27,5 @@ public class Config {
     /**
      * If two floats differ less than this value, they are considered to be equal.
      */
-    public static final double EPSILON = 1e-14;
+    public static final double EPSILON = 1e-13;
 }

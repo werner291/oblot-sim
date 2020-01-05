@@ -94,8 +94,6 @@ public class FxFXMLController
     @FXML
     private CheckMenuItem rotationAxisButton;
 
-    String lastSelectedScheduler;
-
     // parameters for the canvas
     private double viewX = 0; // bottom left coords
     private double viewY = 0;
@@ -108,8 +106,11 @@ public class FxFXMLController
     private final double MAX_SCALE = 200; // the maximum scale of the coordinate system
     private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
 
+    private String lastSelectedScheduler;
+
     private boolean drawCoordinateSystems = false;
     private boolean drawSEC = false;
+    private boolean drawRadii = false;
 
     private Simulator simulator; // the simulator that will run the simulation.
     private Class[] algorithms; // the list of possible algorithms
@@ -648,15 +649,27 @@ public class FxFXMLController
 
         Robot[] robots = simulator.getRobots();
 
-        if (drawSEC) {
+        Circle SEC = null;
+        if (drawSEC || drawRadii) {
             List<Vector> robotPositions = Arrays.stream(robots).map(r -> r.pos).collect(Collectors.toList());
-            Circle SEC = SmallestEnclosingCircle.makeCircle(robotPositions);
+            SEC = SmallestEnclosingCircle.makeCircle(robotPositions);
+        }
+        if (drawSEC) {
             gc.setLineWidth(0.05);
             gc.setStroke(Color.BLACK);
             gc.strokeOval(SEC.c.x - SEC.r, SEC.c.y - SEC.r, 2 * SEC.r, 2 * SEC.r);
             gc.setFill(Color.BLACK);
             double centerR = 0.05;
             gc.fillOval(SEC.c.x - centerR, SEC.c.y - centerR, 2 * centerR, 2 * centerR);
+        }
+        if (drawRadii) {
+            for (Robot r : robots) {
+                if (r.pos.equals(SEC.c)) continue;
+                gc.setLineWidth(0.03);
+                gc.setStroke(Color.BLACK);
+                Vector onCircle = drawSEC ? SEC.getPointOnCircle(r.pos) : r.pos;
+                gc.strokeLine(onCircle.x, onCircle.y, SEC.c.x, SEC.c.y);
+            }
         }
 
         // draw on the coordinate system
@@ -818,6 +831,7 @@ public class FxFXMLController
     public void onFSync(ActionEvent actionEvent) {
         String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
         if (!selectedText.equals(lastSelectedScheduler)) {
+            lastSelectedScheduler = selectedText;
             simulator.setScheduler(new FSyncScheduler());
             System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
         }
@@ -826,6 +840,7 @@ public class FxFXMLController
     public void onSSync(ActionEvent actionEvent) {
         String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
         if (!selectedText.equals(lastSelectedScheduler)) {
+            lastSelectedScheduler = selectedText;
             simulator.setScheduler(new SSyncScheduler());
             System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
         }
@@ -834,6 +849,7 @@ public class FxFXMLController
     public void onASync(ActionEvent actionEvent) {
         String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
         if (!selectedText.equals(lastSelectedScheduler)) {
+            lastSelectedScheduler = selectedText;
             simulator.setScheduler(new AsyncScheduler());
             System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
         }
@@ -845,6 +861,16 @@ public class FxFXMLController
             System.out.println("Smallest enclosing circle will be drawn.");
         } else {
             System.out.println("Smallest enclosing circle will not be drawn.");
+        }
+    }
+
+    public void onShowRadii(ActionEvent actionEvent) {
+        this.drawRadii = ((CheckMenuItem)actionEvent.getSource()).isSelected();
+        if (drawRadii) {
+            System.out.println("Radii to center of SEC will be shown");
+        } else {
+            System.out.println("Radii to center of SEC will not be shown");
+            System.out.println("Radii to center of SEC will not be shown");
         }
     }
 }

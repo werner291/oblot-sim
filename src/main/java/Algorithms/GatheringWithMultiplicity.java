@@ -68,7 +68,7 @@ public class GatheringWithMultiplicity extends Algorithm {
         if (!robotAtCoC) {
             if (!SAmixed) {
                 if (NI > 1) {
-                    return getPointOnSec(SEC, origin); // we are always looking from the perspective of the current robot
+                    return SEC.getPointOnCircle(origin); // we are always looking from the perspective of the current robot
                 } else { // NI <= 1
                     return SEC.c;
                 }
@@ -83,20 +83,6 @@ public class GatheringWithMultiplicity extends Algorithm {
                 return SEC.c;
             }
         }
-    }
-
-    /**
-     * Get the point on the SEC that is closest to r
-     * @param SEC the smallest enclosing circle
-     * @param r the robot to check for
-     * @return the point on SEC that is closest to r
-     */
-    private Vector getPointOnSec(Circle SEC, Vector r) {
-        Vector CtoR = r.sub(SEC.c);
-        double len = CtoR.len();
-        double factor = SEC.r / len;
-        Vector CtoRCorrectLength = CtoR.mult(factor);
-        return CtoRCorrectLength.add(SEC.c);
     }
 
     /**

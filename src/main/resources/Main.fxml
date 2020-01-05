@@ -59,6 +59,7 @@
             <Menu mnemonicParsing="false" text="View">
               <items>
                   <CheckMenuItem mnemonicParsing="false" onAction="#onShowSEC" text="Show SEC" />
+                  <CheckMenuItem mnemonicParsing="false" onAction="#onShowRadii" text="Show Radii" />
               </items>
             </Menu>
         <Menu mnemonicParsing="false" text="Help">
