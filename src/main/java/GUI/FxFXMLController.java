@@ -547,7 +547,7 @@ public class FxFXMLController
                 robot.pos = endPos;
             } else {
                 if (robot.state == State.MOVING) {
-                    robot.pos = currentPath.interpolate(startTime, endTime, timestamp);
+                    robot.pos = currentPath.interpolate(startTime, possiblyEarlierEndtime, timestamp);
                 } else {
                     robot.pos = currentPath.start;
                 }
