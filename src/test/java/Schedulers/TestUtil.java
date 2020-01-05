@@ -2,6 +2,8 @@ package Schedulers;
 
 import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
+import RobotPaths.LinearPath;
+import RobotPaths.RobotPath;
 import Simulator.Robot;
 import Util.Vector;
 
@@ -14,9 +16,9 @@ public class TestUtil {
      */
     public static final Algorithm GO_TO_COG = new Algorithm() {
         @Override
-        public Vector doAlgorithm(Vector[] snapshot) {
+        public RobotPath doAlgorithm(Vector[] snapshot) {
             //noinspection OptionalGetWithoutIsPresent (We know the robot itself is present, so the COG is defined)
-            return Arrays.stream(snapshot).reduce((vA, vB) -> vA.add(vB)).get().mult(1 / (double) snapshot.length);
+            return new LinearPath(Arrays.stream(snapshot).reduce((vA, vB) -> vA.add(vB)).get().mult(1 / (double) snapshot.length));
         }
     };
 
@@ -25,16 +27,19 @@ public class TestUtil {
      */
     public static final Algorithm DO_NOTHING = new Algorithm() {
         @Override
-        public Vector doAlgorithm(Vector[] snapshot) {
-            return new Vector(0.0,0.0);
+        public RobotPath doAlgorithm(Vector[] snapshot) {
+            return new LinearPath(new Vector(0.0,0.0));
         }
     };
 
     public static Robot[] generateRobotCloud(Algorithm algo, double edgeLen, int n) {
-        return Stream.generate(() ->
-                new Robot(algo,
-                        new Vector(2.0 * edgeLen * (Math.random() - 0.5),
+        Robot[] robots = new Robot[n];
+        for (int i = 0; i < robots.length; i++) {
+            robots[i] = new Robot(i, algo,
+                                new Vector(2.0 * edgeLen * (Math.random() - 0.5),
                                 2.0 * edgeLen * (Math.random() - 0.5)),
-                        new RotationTransformation())).limit(n).toArray(Robot[]::new);
+                                new RotationTransformation());
+        }
+        return robots;
     }
 }
