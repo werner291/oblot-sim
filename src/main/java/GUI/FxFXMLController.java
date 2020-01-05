@@ -26,7 +26,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.stage.Popup;
 
+import java.net.CacheRequest;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -293,11 +295,24 @@ public class FxFXMLController
 
     /**
      * Called whenever the Next Event button is pressed
+     * If a user presses next whilst browsing history, clear the stack of calcevents and reset the sim back to that time
+     * So the simulation is done again from the nextevent onwards @TODO Allow user to start simulation from generic timstamp
      */
     @FXML
     private void nextSimulation() {
-        if (dragBarSimulation.getValue()+1 <= dragBarSimulation.getMax()) {
-            dragBarSimulation.setValue(dragBarSimulation.getValue()+1);
+        if (dragBarSimulation.getValue() < dragBarSimulation.getMax()) {
+            double localTimeStamp = dragBarSimulation.getValue();
+            CalculatedEvent[] events = gatherRecentEvents(localTimeStamp);
+            if (events != null && events[1] != null) {
+                recomputeRobots(localTimeStamp);
+                CalculatedEvent latestEvent = events[1];
+                List<CalculatedEvent> newList = removeInvalidCalcEvents(simulator.calculatedEvents, latestEvent);
+                simulator.setState(localRobots, newList, localTimeStamp);
+                dragBarSimulation.setMax(localTimeStamp);
+            }
+            dragBarSimulation.setValue(dragBarSimulation.getMax());
+            last_size_calc_events = 0;
+            simulateNextEvent();
         } else if (dragBarSimulation.getValue() != dragBarSimulation.getMax()) {
             dragBarSimulation.setValue(dragBarSimulation.getMax());
         } else {
@@ -309,11 +324,14 @@ public class FxFXMLController
     }
 
     /**
-     * Returns whether or not every robot can return
-     * @param calculatedEvents list of all events until now, used to check
-     * @return if the robots have all reached their goal
+     * Returns whether or not every robot has reached their goal
+     * @param calculatedEvents list of all events until now, used to check if the last event made the robots reach their goals
+     * @return if the robots have all reached their goal then return true
      */
     private boolean checkIsDoneSimulating(List<CalculatedEvent> calculatedEvents) {
+        if (calculatedEvents.size() == 0)
+            throw new IllegalArgumentException("Next event was requested, however no event was added to the calculatedEvents list");
+
         CalculatedEvent lastEvent = calculatedEvents.get(calculatedEvents.size()-1);
 
         for (int i = 0; i < lastEvent.events.size(); i++) {
@@ -328,7 +346,7 @@ public class FxFXMLController
      * @return true if the next event exists, false if it does not
      */
     private boolean simulateNextEvent() {
-//        System.out.println("Next event");
+        // Start simulating the next event
         hideWarningPopUp();
 
         // Compute next events
@@ -352,13 +370,15 @@ public class FxFXMLController
         }
         last_size_calc_events = calculatedEvents.size();
 
-        List<Event> recentEvents = calculatedEvents.get((simulator.getCalculatedEvents().size()-1)).events;
+        List<Event> allEvents = new ArrayList<>();
+        calculatedEvents.forEach(e -> allEvents.addAll(e.events));
         progressBarSimulation.setProgress(50);
 
         // Add recent events to Vbox containing all events
         double recentTimeStamp = 0;
         int eventIndex = 1;
-        for (Event event : recentEvents) {
+        eventsVBox = new VBox();
+        for (Event event : allEvents) {
             eventsVBox.getChildren().add(createEventButton(eventIndex, event.type.toString(), event.t));
             recentTimeStamp = event.t;
             eventIndex++;
@@ -372,6 +392,17 @@ public class FxFXMLController
         progressBarSimulation.setProgress(100);
 
         return true;
+    }
+
+    private List<CalculatedEvent> removeInvalidCalcEvents(List<CalculatedEvent> calculatedEvents, CalculatedEvent latestEvent) {
+        List<CalculatedEvent> tempCalcEvents = new ArrayList<>();
+
+        for (CalculatedEvent calculatedEvent : calculatedEvents) {
+            tempCalcEvents.add(calculatedEvent);
+            if (calculatedEvent.events.get(0).t == (latestEvent.events.get(0).t)) break;
+        }
+
+        return tempCalcEvents;
     }
 
     /**
