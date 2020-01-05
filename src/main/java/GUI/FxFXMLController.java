@@ -748,23 +748,19 @@ public class FxFXMLController
         if (scale < MAX_SCALE) { // prevent scrolling further
             double portHeight = canvas.getHeight();
 
-            Vector canvasCoord = new Vector(mouseX, mouseY);
-            canvasCoord = canvasCoord.sub(new Vector(0, portHeight - 1));
-            canvasCoord.x /= scale;
-            canvasCoord.y /= -scale;
-            canvasCoord = canvasCoord.sub(new Vector(-viewX, -viewY));
+            // calculate canvas coord
+            double xCoord = mouseX / scale + viewX;
+            double yCoord = ((mouseY - (portHeight - 1)) / -scale) + viewY;
 
             scale *= 1.5;
 
-            Vector newCanvasCoord = new Vector(mouseX, mouseY);
-            newCanvasCoord = newCanvasCoord.sub(new Vector(0, portHeight - 1));
-            newCanvasCoord.x /= scale;
-            newCanvasCoord.y /= -scale;
-            newCanvasCoord = newCanvasCoord.sub(new Vector(-viewX, -viewY));
+            // calculate new canvas coord
+            double xCoordNew = mouseX / scale + viewX;
+            double yCoordNew = ((mouseY - (portHeight - 1)) / -scale) + viewY;
 
-            Vector diff = canvasCoord.sub(newCanvasCoord);
-            viewX += diff.x;
-            viewY += diff.y;
+            // the difference should be added to the bottom left of the view
+            viewX += xCoord - xCoordNew;
+            viewY += yCoord - yCoordNew;
         }
     }
 
@@ -777,23 +773,19 @@ public class FxFXMLController
         if (scale > MIN_SCALE) {
             double portHeight = canvas.getHeight();
 
-            Vector canvasCoord = new Vector(mouseX, mouseY);
-            canvasCoord = canvasCoord.sub(new Vector(0, portHeight - 1));
-            canvasCoord.x /= scale;
-            canvasCoord.y /= -scale;
-            canvasCoord = canvasCoord.sub(new Vector(-viewX, -viewY));
+            // calculate canvas coord
+            double xCoord = mouseX / scale + viewX;
+            double yCoord = ((mouseY - (portHeight - 1)) / -scale) + viewY;
 
             scale /= 1.5;
 
-            Vector newCanvasCoord = new Vector(mouseX, mouseY);
-            newCanvasCoord = newCanvasCoord.sub(new Vector(0, portHeight - 1));
-            newCanvasCoord.x /= scale;
-            newCanvasCoord.y /= -scale;
-            newCanvasCoord = newCanvasCoord.sub(new Vector(-viewX, -viewY));
+            // calculate new canvas coord
+            double xCoordNew = mouseX / scale + viewX;
+            double yCoordNew = ((mouseY - (portHeight - 1)) / -scale) + viewY;
 
-            Vector diff = canvasCoord.sub(newCanvasCoord);
-            viewX += diff.x;
-            viewY += diff.y;
+            // the difference should be added to the bottom left of the view
+            viewX += xCoord - xCoordNew;
+            viewY += yCoord - yCoordNew;
         }
     }
 
