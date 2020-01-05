@@ -1,9 +1,10 @@
 package Simulator;
 
+import RobotPaths.LinearPath;
+import RobotPaths.RobotPath;
 import Schedulers.CalculatedEvent;
 import Schedulers.EventType;
 import Util.Config;
-import Util.Interpolate;
 import Util.Vector;
 import Schedulers.Event;
 import Schedulers.Scheduler;
@@ -76,13 +77,13 @@ public class Simulator {
             return;
         }
 
-        Vector[] goals;
+        RobotPath[] robotPaths;
 
         if (!calculatedEvents.isEmpty()) {
-            goals = calculatedEvents.get(calculatedEvents.size()-1).goals;
+            robotPaths = calculatedEvents.get(calculatedEvents.size()-1).robotPaths;
         } else {
-            //set the goals to the current position of the robots
-            goals = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
+            //set the robotPaths to the current position of the robots
+            robotPaths = Arrays.stream(robots).map(robot -> new LinearPath(robot.pos, robot.pos)).toArray(RobotPath[]::new);
         }
 
         double previousTime = currentTime;
@@ -96,9 +97,9 @@ public class Simulator {
                     if (e.r.state != State.SLEEPING) {
                         throw new IllegalStateException("Scheduled event has a wrong type: " + e.r.state + " Should be " + State.SLEEPING);
                     }
-                    Vector goal = e.r.calculate(getSnapshot(e.r));
+                    RobotPath path = e.r.calculate(getSnapshot(e.r));
                     int index = Arrays.asList(robots).indexOf(e.r);
-                    goals[index] = goal;
+                    robotPaths[index] = path;
                     e.r.state = State.COMPUTING;
                     break;
                 case START_MOVING:
@@ -106,10 +107,10 @@ public class Simulator {
                         throw new IllegalStateException("Scheduled event has a wrong type: " + e.r.state + " Should be " + State.COMPUTING);
                     }
                     e.r.state = State.MOVING;
-                    goal = goals[Arrays.asList(robots).indexOf(e.r)];
+                    path = robotPaths[Arrays.asList(robots).indexOf(e.r)];
                     if (!config.interuptable) {
                         // add next end_move to the scheduler
-                        double endTime = Interpolate.getEndTime(e.r.pos, currentTime, goal, e.r.speed);
+                        double endTime = path.getEndTime(currentTime, e.r.speed);
                         Event proposed_end_move = new Event(EventType.END_MOVING, endTime, e.r);
                         scheduler.addEvent(proposed_end_move);
                     }
@@ -124,7 +125,7 @@ public class Simulator {
             e.r.lastStateChange = e.t;
         }
         Vector[] positions = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
-        CalculatedEvent calculatedEvent = new CalculatedEvent(nextEvents, positions, goals);
+        CalculatedEvent calculatedEvent = new CalculatedEvent(nextEvents, positions, robotPaths);
         calculatedEvents.add(calculatedEvent);
     }
 
@@ -148,25 +149,24 @@ public class Simulator {
      * @param interpolateTime The time until they want to move
      */
     public void interpolateRobots(double startTime, double interpolateTime) {
-        Vector[] goals;
+        RobotPath[] robotPaths;
         if (!calculatedEvents.isEmpty()) {
-            goals = calculatedEvents.get(calculatedEvents.size()-1).goals;
+            robotPaths = calculatedEvents.get(calculatedEvents.size()-1).robotPaths;
         } else {
-            //set the goals to the current position of the robots
-            goals = Arrays.stream(robots).map(robot -> robot.pos).toArray(Vector[]::new);
+            //set the robotPaths to the current position of the robots
+            robotPaths = Arrays.stream(robots).map(robot -> new LinearPath(robot.pos, robot.pos)).toArray(RobotPath[]::new);
 
         }
 
         for (int i = 0; i < robots.length; i++) {
             Robot robot = robots[i];
             if (robot.state == State.MOVING) {
-                Vector position = robot.pos;
-                Vector goal = goals[i];
-                double endTime = Interpolate.getEndTime(position, startTime, goal, robot.speed);
+                RobotPath robotPath = robotPaths[i];
+                double endTime = robotPath.getEndTime(startTime, robot.speed);
                 if (endTime < interpolateTime) {
-                    robot.pos = goal;
+                    robot.pos = robotPath.end;
                 } else {
-                    robot.pos = Interpolate.linearInterpolate(position, startTime, goal, endTime, interpolateTime);
+                    robot.pos = robotPath.interpolate(startTime, endTime, interpolateTime);
                 }
             }
         }

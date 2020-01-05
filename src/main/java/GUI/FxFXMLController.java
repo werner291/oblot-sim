@@ -2,6 +2,7 @@ package GUI;
 
 import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
+import RobotPaths.RobotPath;
 import Schedulers.*;
 import Util.Circle;
 import Util.SmallestEnclosingCircle;
@@ -10,7 +11,6 @@ import javafx.event.EventHandler;
 import Simulator.Simulator;
 import Simulator.Robot;
 import Simulator.State;
-import Util.Interpolate;
 import Util.Vector;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
@@ -313,12 +313,11 @@ public class FxFXMLController
      * @param calculatedEvents list of all events until now, used to check
      * @return if the robots have all reached their goal
      */
-
     private boolean checkIsDoneSimulating(List<CalculatedEvent> calculatedEvents) {
         CalculatedEvent lastEvent = calculatedEvents.get(calculatedEvents.size()-1);
 
         for (int i = 0; i < lastEvent.events.size(); i++) {
-            if (lastEvent.positions[i] != lastEvent.goals[i]) return false;
+            if (lastEvent.positions[i] != lastEvent.robotPaths[i].end) return false;
         }
 
         return true;
@@ -452,7 +451,6 @@ public class FxFXMLController
         CalculatedEvent currentEvent = eventsFound[0];
         CalculatedEvent nextEvent = eventsFound[1];
 
-        Robot[] robots = localRobots;
         if (currentEvent == null) { // If the next event is the first event, make up the prev event as sleeping until the first event.
             currentEvent = nextEvent.copyDeep();
             for (Event event : currentEvent.events) {
@@ -470,7 +468,7 @@ public class FxFXMLController
                 Robot robot = localRobots[robotIndexTemp];
 
                 Event nextRobotEvent = nextEvent.events.get(robotIndexTemp);
-                Vector nextRobotGoal = nextEvent.goals[robotIndexTemp];
+                RobotPath nextRobotPath = nextEvent.robotPaths[robotIndexTemp];
 
                 // If no more calculatedevents came up and we haven't finished padding till all robots stop do this
                 if (!isDoneSimulating && isScheduleDone && !paddedLastEvent) {
@@ -478,8 +476,8 @@ public class FxFXMLController
                     // If robots have started moving then finish the movement to their goal and calculate how much time this takes. TODO: Make sure this takes the current scheduler into account
                     if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.START_MOVING)) {
                         nextRobotEvent.type = EventType.END_MOVING;
-                        nextEvent.positions[robotIndexTemp] = nextRobotGoal;
-                        double endTime = Interpolate.getEndTime(robot.pos, nextRobotEvent.t, nextRobotGoal, robot.speed);
+                        nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
+                        double endTime = nextRobotPath.getEndTime(nextRobotEvent.t, robot.speed);
                         if (endTime > maxEndTime) maxEndTime = endTime;
                     }
 
@@ -493,7 +491,7 @@ public class FxFXMLController
                     if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.END_MOVING)) {
                         nextRobotEvent.type = EventType.START_COMPUTE;
                         nextRobotEvent.t = nextRobotEvent.t + 1;
-                        nextEvent.positions[robotIndexTemp] = nextRobotGoal;
+                        nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
                     }
 
                     if (eventIndex == nextEvent.events.size()-1) {
@@ -515,7 +513,6 @@ public class FxFXMLController
                 }
                 eventIndex++;
             }
-
         }
 
         // Change robots for the draw function
@@ -523,12 +520,12 @@ public class FxFXMLController
             int robotIndex = getRobotIndex(nextRobotEvent.r);
             Robot robot = localRobots[robotIndex];
 
-            Vector startPos = currentEvent.positions[robotIndex];
             double startTime = currentEvent.events.get(0).t;
             Vector endPos = nextEvent.positions[robotIndex];
             double endTime = nextEvent.events.get(0).t;
+            RobotPath currentPath = currentEvent.robotPaths[robotIndex];
             // could be that the robot already earlier reached its goal. We want to show this as well in the gui
-            double possiblyEarlierEndtime = Interpolate.getEndTime(startPos, startTime, endPos, robot.speed);
+            double possiblyEarlierEndtime = currentPath.getEndTime(startTime, robot.speed);
             endTime = Math.min(endTime, possiblyEarlierEndtime);
 
             switch (currentEvent.events.get(robotIndex).type) {
@@ -548,7 +545,11 @@ public class FxFXMLController
             } else if (endTime < timestamp) {
                 robot.pos = endPos;
             } else {
-                robot.pos = Interpolate.linearInterpolate(startPos, startTime, endPos, endTime, timestamp);
+                if (robot.state == State.MOVING) {
+                    robot.pos = currentPath.interpolate(startTime, possiblyEarlierEndtime, timestamp);
+                } else {
+                    robot.pos = currentPath.start;
+                }
             }
         }
     }

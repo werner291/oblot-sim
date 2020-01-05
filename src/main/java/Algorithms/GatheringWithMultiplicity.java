@@ -1,5 +1,7 @@
 package Algorithms;
 
+import RobotPaths.LinearPath;
+import RobotPaths.RobotPath;
 import Util.Circle;
 import Util.Config;
 import Util.SmallestEnclosingCircle;
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public class GatheringWithMultiplicity extends Algorithm {
     @Override
-    public Vector doAlgorithm(Vector[] snapshot) {
+    public RobotPath doAlgorithm(Vector[] snapshot) {
         if (snapshot.length == 2) {
             throw new IllegalArgumentException("Does not support 2 robots");
         }
@@ -31,13 +33,13 @@ public class GatheringWithMultiplicity extends Algorithm {
             if (densePoints.length > 1) {
                 throw new IllegalStateException("Multiple dense points with density: " + maxFreq);
             } else {
-                return densePoints[0];
+                return new LinearPath(densePoints[0]);
             }
         }
 
         Vector CoB = centerOfBiangularity(snapshot);
         if (CoB != null) { // if the configuration is biangular, go to the center of biangularity
-            return CoB;
+            return new LinearPath(CoB);
         }
         // there is no dense point, so do the angle thingy.
         // first check if there is a robot at the CoC
@@ -62,25 +64,25 @@ public class GatheringWithMultiplicity extends Algorithm {
 
         // if this robot is not a leader robot, do nothing. This assumes only 1 leader. Other cases are not implemented.
         Vector leader = getLeaderRobot(stringOfAngles, orderedPoints, SEC);
-        if (!leader.equals(origin)) return origin;
+        if (!leader.equals(origin)) return new LinearPath(origin);
 
         // the 4 cases
         if (!robotAtCoC) {
             if (!SAmixed) {
                 if (NI > 1) {
-                    return SEC.getPointOnCircle(origin); // we are always looking from the perspective of the current robot
+                    return new LinearPath(SEC.getPointOnCircle(origin)); // we are always looking from the perspective of the current robot
                 } else { // NI <= 1
-                    return SEC.c;
+                    return new LinearPath(SEC.c);
                 }
             } else {
                 // pick a random one to go to
-                return snapshot[0].equals(origin) ? snapshot[1] : snapshot[0];
+                return new LinearPath(snapshot[0].equals(origin) ? snapshot[1] : snapshot[0]);
             }
         } else {
             if (!SAmixed) {
-                return snapshot[0].equals(origin) ? snapshot[1] : snapshot[0];
+                return new LinearPath(snapshot[0].equals(origin) ? snapshot[1] : snapshot[0]);
             } else {
-                return SEC.c;
+                return new LinearPath(SEC.c);
             }
         }
     }
