@@ -72,7 +72,7 @@ public class CircularPath extends RobotPath {
     @Override
     public double getLength() {
         double totalLength = 2 * Math.PI * end.dist(center);
-        double fraction = angle / 2 * Math.PI;
+        double fraction = angle / (2 * Math.PI);
         return totalLength * fraction;
     }
 
@@ -81,12 +81,22 @@ public class CircularPath extends RobotPath {
         Vector newStart = trans.localToGlobal(start, origin);
         Vector newEnd = trans.localToGlobal(end, origin);
         Vector newCenter = trans.localToGlobal(center, origin);
-        // the angle should still be the same after conversion
-        if (Math.abs(angle - calculateAngle(newStart, newCenter, newEnd)) > Config.EPSILON) {
-            throw new IllegalStateException("Conversion has gone wrong. Angle before and after are different");
+        double newAngle = calculateAngle(newStart, newCenter, newEnd);
+        // the new angle and the old angle should be the same (+- 2PI)
+        if (angle < 0 && newAngle > 0) {
+            if (Math.abs(angle + 2 * Math.PI - newAngle) > Config.EPSILON) {
+                throw new IllegalStateException("Conversion has gone wrong. Angle before and after are different");
+            }
+        } else if (angle > 0 && newAngle < 0) {
+            if (Math.abs(angle - 2 * Math.PI - newAngle) > Config.EPSILON) {
+                throw new IllegalStateException("Conversion has gone wrong. Angle before and after are different");
+            }
+        } else if (Math.abs(angle - calculateAngle(newStart, newCenter, newEnd)) > Config.EPSILON) {
+                throw new IllegalStateException("Conversion has gone wrong. Angle before and after are different");
         }
         start = newStart;
         end = newEnd;
         center = newCenter;
-    }
+        }
+        // the angle should still be the same after conversion
 }
