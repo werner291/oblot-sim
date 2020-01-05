@@ -211,6 +211,18 @@ public class Simulator {
     }
 
     /**
+     * Set the complete state of the simulator
+     * @param robots the robots
+     * @param calculatedEvents the calculated events
+     * @param time the time
+     */
+    public void setState(Robot[] robots, List<CalculatedEvent> calculatedEvents, double time) {
+        this.robots = robots;
+        this.calculatedEvents = calculatedEvents;
+        this.currentTime = time;
+    }
+
+    /**
      * Sets the scheduler. Take note that this may cause problems with the interruptability of robots.
      * @param s The new scheduler
      */
