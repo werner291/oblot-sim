@@ -638,6 +638,20 @@ public class FxFXMLController
             lineY += LINE_SEP;
         }
 
+        // draw legend for the coordinate system
+        if (drawCoordinateSystems) {
+            Vector center = new Vector(50, 100);
+            Vector right = new Vector(100, 100);
+            Vector up = new Vector(50, 50);
+            gc.setLineWidth(2.5);
+            gc.setStroke(Color.RED);
+            gc.strokeLine(center.x, center.y, up.x, up.y);
+            gc.strokeText("y", up.x + 5, up.y);
+            gc.setStroke(Color.GREEN);
+            gc.strokeLine(center.x, center.y, right.x, right.y);
+            gc.strokeText("x", right.x, right.y - 5);
+        }
+
         Affine tOld = gc.getTransform();
         Affine t = new Affine();
         // set the transform to a new transform
