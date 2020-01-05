@@ -12,6 +12,8 @@ import Schedulers.Scheduler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The main simulator. Works by extracting an event list of the schedule,
@@ -193,11 +195,31 @@ public class Simulator {
      * @return the internal robots
      */
     public Robot[] getRobots() {
-        return this.robots;
+        Robot[] copy = new Robot[this.robots.length];
+        for (int i = 0; i < robots.length; i++) {
+            copy[i] = robots[i].copy();
+        }
+        return copy;
     }
 
+    /**
+     * Returns the list of calculated events
+     * @return the list of calculated events
+     */
     public List<CalculatedEvent> getCalculatedEvents() {
-        return this.calculatedEvents;
+        return this.calculatedEvents.stream().map(CalculatedEvent::copyDeep).collect(Collectors.toList());
+    }
+
+    /**
+     * Set the complete state of the simulator
+     * @param robots the robots
+     * @param calculatedEvents the calculated events
+     * @param time the time
+     */
+    public void setState(Robot[] robots, List<CalculatedEvent> calculatedEvents, double time) {
+        this.robots = robots;
+        this.calculatedEvents = calculatedEvents;
+        this.currentTime = time;
     }
 
     /**

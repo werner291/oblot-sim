@@ -115,6 +115,8 @@ public class FxFXMLController
     private Simulator simulator; // the simulator that will run the simulation.
     private Class[] algorithms; // the list of possible algorithms
 
+    private Robot[] localRobots;
+
     // Add a public no-args constructor
     public FxFXMLController()
     {
@@ -197,8 +199,9 @@ public class FxFXMLController
                 isPaused = true;
                 playButton.setText("Play");
             }
+            return;
         }
-        List<Event> recentEvents = calculatedEvents.get((simulator.getCalculatedEvents().size()-1)).events;
+        List<Event> recentEvents = calculatedEvents.get((calculatedEvents.size()-1)).events;
 
         // Add recent events to Vbox containing all events
         double recentTimeStamp = 0;
@@ -227,6 +230,7 @@ public class FxFXMLController
 
     public void setSimulator(Simulator sim) {
         this.simulator = sim;
+        localRobots = simulator.getRobots();
     }
 
     public void setAlgorithms(Class[] algorithms) {
@@ -417,8 +421,20 @@ public class FxFXMLController
         return eventButton;
     }
 
-    private CalculatedEvent getLastEvent() {
-        return null;
+    /**
+     * Return the index number of a robot robotToMatch
+     * @param robotToMatch, robot to find the correct index number for to match CalculatedEvent.positions/goals with
+     * @return index used to retrieve the position and goals of a robot with
+     */
+    private int getRobotIndex(Robot robotToMatch){
+        int robotIndex = 0;
+
+        for (Robot robot : localRobots) {
+            if (robotToMatch.equals(robot)) return robotIndex;
+            robotIndex++;
+        }
+
+        return robotIndex;
     }
 
     /**
@@ -427,9 +443,6 @@ public class FxFXMLController
      */
 
     private void recomputeRobots(double timestamp) {
-
-        // Select the Last event at the given timestep in the simulation
-
         // Gather the most recent and the next event if available
         CalculatedEvent[] eventsFound = gatherRecentEvents(timestamp);
         // If neither can be found nothing has been simulated yet don't recompute their positions
@@ -439,7 +452,7 @@ public class FxFXMLController
         CalculatedEvent currentEvent = eventsFound[0];
         CalculatedEvent nextEvent = eventsFound[1];
 
-        Robot[] robots = simulator.getRobots();
+        Robot[] robots = localRobots;
         if (currentEvent == null) { // If the next event is the first event, make up the prev event as sleeping until the first event.
             currentEvent = nextEvent.copyDeep();
             for (Event event : currentEvent.events) {
@@ -449,9 +462,13 @@ public class FxFXMLController
         }
         if (nextEvent == null) { // If the last event is the prev event, make up the next event until sleep.
             nextEvent = currentEvent.copyDeep();
-            int robotIndexTemp = 0;
             double maxEndTime = currentEvent.events.get(0).t + 1;
-            for (Robot robot : robots) {
+
+            int eventIndex = 0;
+            for (Event robotEvent : nextEvent.events) {
+                int robotIndexTemp = getRobotIndex(robotEvent.r);
+                Robot robot = localRobots[robotIndexTemp];
+
                 Event nextRobotEvent = nextEvent.events.get(robotIndexTemp);
                 RobotPath nextRobotPath = nextEvent.robotPaths[robotIndexTemp];
 
@@ -479,7 +496,7 @@ public class FxFXMLController
                         nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
                     }
 
-                    if (robotIndexTemp == robots.length-1) {
+                    if (eventIndex == nextEvent.events.size()-1) {
                         dragBarSimulation.setMax(maxEndTime);
                         dragBarSimulation.setValue(maxEndTime);
 
@@ -496,13 +513,16 @@ public class FxFXMLController
                         }
                     }
                 }
-                robotIndexTemp++;
+                eventIndex++;
             }
         }
 
         // Change robots for the draw function
-        int robotIndex = 0;
-        for (Robot robot : robots) {
+        for (Event nextRobotEvent : nextEvent.events) {
+            int robotIndex = getRobotIndex(nextRobotEvent.r);
+            Robot robot = localRobots[robotIndex];
+
+            Vector startPos = currentEvent.positions[robotIndex];
             double startTime = currentEvent.events.get(0).t;
             Vector endPos = nextEvent.positions[robotIndex];
             double endTime = nextEvent.events.get(0).t;
@@ -534,8 +554,6 @@ public class FxFXMLController
                     robot.pos = currentPath.start;
                 }
             }
-
-            robotIndex++;
         }
     }
 
@@ -665,7 +683,7 @@ public class FxFXMLController
         gc.scale(scale, -scale); // second negative to reflect horizontally and draw from the bottom left
         gc.translate(-viewX, -viewY);
 
-        Robot[] robots = simulator.getRobots();
+        Robot[] robots = localRobots;
 
         Circle SEC = null;
         if (drawSEC || drawRadii) {
@@ -816,7 +834,7 @@ public class FxFXMLController
         }
         // cannot give NullPointer if the algorithms array is not changed in between
         System.out.println("Algorithm will be set to: " + algorithmClass.getName());
-        Robot[] robots = simulator.getRobots();
+        Robot[] robots = localRobots;
         for (Robot r : robots) {
             try {
                 Algorithm algorithm = (Algorithm)algorithmClass.newInstance();
@@ -841,7 +859,7 @@ public class FxFXMLController
         boolean sameChirality = chiralityAxisButton.isSelected();
         boolean sameUnitLength = unitLengthAxisButton.isSelected();
         boolean sameRotation = rotationAxisButton.isSelected();
-        for (Robot r : simulator.getRobots()) {
+        for (Robot r : localRobots) {
             r.trans = new RotationTransformation().randomize(sameChirality, sameUnitLength, sameRotation);
         }
     }

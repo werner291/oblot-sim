@@ -108,7 +108,7 @@ public class CalculatedEvent {
                     double y = Double.parseDouble(coordinatesString[1]);
                     Vector position = new Vector(x, y);
                     positions[i] = position;
-                    Robot robot = new Robot(new GoToCoG(), position, new RotationTransformation());
+                    Robot robot = new Robot(i, new GoToCoG(), position, new RotationTransformation());
                     robots[i] = robot;
                 }
 

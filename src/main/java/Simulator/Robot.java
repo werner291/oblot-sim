@@ -17,6 +17,11 @@ import java.util.Scanner;
 public class Robot {
 
     /**
+     * The id of the robot
+     */
+    private int id;
+
+    /**
      * The current position of the robot.
      */
     public Vector pos;
@@ -50,7 +55,8 @@ public class Robot {
      * @param startPos the starting position of the robot
      * @param trans the transformation the robot will use to convert to local coordinates
      */
-    public Robot(Algorithm algo, Vector startPos, PositionTransformation trans) {
+    public Robot(int id, Algorithm algo, Vector startPos, PositionTransformation trans) {
+        this.id = id;
         this.algo = algo;
         this.pos = startPos;
         this.trans = trans;
@@ -105,7 +111,7 @@ public class Robot {
                 double x = Double.parseDouble(coordsString[0]);
                 double y = Double.parseDouble(coordsString[1]);
                 Vector pos = new Vector(x, y);
-                robots[i] = new Robot(algo, pos, t);
+                robots[i] = new Robot(i, algo, pos, t);
                 i++;
             }
             return robots;
@@ -119,7 +125,7 @@ public class Robot {
     }
 
     public Robot copy() {
-        return new Robot(this.algo, this.pos, this.trans);
+        return new Robot(this.id, this.algo, this.pos, this.trans);
     }
 
     public void setAlgorithm(Algorithm a) {
@@ -128,5 +134,23 @@ public class Robot {
 
     public void setTransformation(PositionTransformation pt) {
         this.trans = pt;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof Robot) {
+            Robot other = (Robot) obj;
+            return this.id == other.id;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
     }
 }
