@@ -36,6 +36,9 @@ public class CircularPath extends RobotPath {
         if (!clockwise && angle > 0) {
             angle = 2*Math.PI - angle;
         }
+        while (angle <= -Math.PI) {
+            angle += 2 * Math.PI;
+        }
         while (angle > Math.PI) {
             angle -= 2 * Math.PI;
         }
@@ -58,7 +61,7 @@ public class CircularPath extends RobotPath {
             throw new IllegalArgumentException("the timestamp to interpolate to should lie strictly in" +
                     "between the start and end timestamps");
         }
-        double fractionToMove = (t - tStart) / (tEnd - tStart); // how much of that vector should be traversed
+        double fractionToMove = (t - tStart) / (tEnd - tStart); // The fraction of the total path that should be traversed
         double angleToMove = angle * fractionToMove;
         if (!clockwise) {
             angleToMove = -angleToMove;

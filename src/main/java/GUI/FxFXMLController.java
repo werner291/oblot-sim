@@ -313,7 +313,6 @@ public class FxFXMLController
      * @param calculatedEvents list of all events until now, used to check
      * @return if the robots have all reached their goal
      */
-
     private boolean checkIsDoneSimulating(List<CalculatedEvent> calculatedEvents) {
         CalculatedEvent lastEvent = calculatedEvents.get(calculatedEvents.size()-1);
 

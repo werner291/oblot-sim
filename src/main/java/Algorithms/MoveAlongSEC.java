@@ -15,7 +15,7 @@ public class MoveAlongSEC extends Algorithm {
         Circle SEC = SmallestEnclosingCircle.makeCircle(Arrays.asList(snapshot));
         if (SEC.on(origin)) {
             Vector toCenter = SEC.c.sub(origin);
-            return new CircularPath(origin, SEC.c, origin.add(toCenter).add(toCenter), true);
+            return new CircularPath(origin, SEC.c, origin.add(toCenter).add(toCenter), false);
         } else {
             return new LinearPath(SEC.getPointOnCircle(origin));
         }

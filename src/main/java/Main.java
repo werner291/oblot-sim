@@ -7,6 +7,7 @@ import Schedulers.Scheduler;
 import Simulator.Simulator;
 import Simulator.Robot;
 import GUI.GUI;
+import Util.Vector;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -21,7 +22,7 @@ public class Main{
     public static void main(String[] args) {
         // We're keeping this
         System.out.println("Most awesome simulator ever.");
-        Robot[] robots = Robot.fromFile("testRobots2", new GoToCoG(), null);
+        Robot[] robots = Robot.fromFile("testRobots2", new MoveAlongSEC(), null);
         for (Robot r : robots) {
             r.trans = new RotationTransformation().randomize(false, false, false);
         }
