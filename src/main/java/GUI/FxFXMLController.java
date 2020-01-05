@@ -194,7 +194,14 @@ public class FxFXMLController
     private void playDragBar() {
         // Get list of computed events
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
-        List<Event> recentEvents = calculatedEvents.get((simulator.getCalculatedEvents().size()-1)).events;
+        if (calculatedEvents.size() == 0) {
+            if (!simulateNextEvent()) {
+                isPaused = true;
+                playButton.setText("Play");
+            }
+            return;
+        }
+        List<Event> recentEvents = calculatedEvents.get((calculatedEvents.size()-1)).events;
 
         // Add recent events to Vbox containing all events
         double recentTimeStamp = 0;
