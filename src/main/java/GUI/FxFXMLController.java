@@ -452,7 +452,6 @@ public class FxFXMLController
         CalculatedEvent currentEvent = eventsFound[0];
         CalculatedEvent nextEvent = eventsFound[1];
 
-        Robot[] robots = localRobots;
         if (currentEvent == null) { // If the next event is the first event, make up the prev event as sleeping until the first event.
             currentEvent = nextEvent.copyDeep();
             for (Event event : currentEvent.events) {
@@ -522,7 +521,6 @@ public class FxFXMLController
             int robotIndex = getRobotIndex(nextRobotEvent.r);
             Robot robot = localRobots[robotIndex];
 
-            Vector startPos = currentEvent.positions[robotIndex];
             double startTime = currentEvent.events.get(0).t;
             Vector endPos = nextEvent.positions[robotIndex];
             double endTime = nextEvent.events.get(0).t;
