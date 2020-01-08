@@ -61,6 +61,9 @@ public class CombinedPath extends RobotPath {
                 sum += normalizedLengths[i];
             }
         }
+        if (currentPath == null) {
+            throw new IllegalStateException("The found path is null. This can only happen if the input timestamps are wrong somehow.");
+        }
         // now sum is the fraction of the path where this path starts
         double moveTime = tEnd - tStart;
         double startTime = tStart + sum * moveTime;
