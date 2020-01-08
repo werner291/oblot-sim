@@ -888,6 +888,7 @@ public class FxFXMLController
                 e.printStackTrace();
             }
         }
+        simulator.setState(robots);
     };
 
     public void showAxisTriggered(ActionEvent actionEvent) {

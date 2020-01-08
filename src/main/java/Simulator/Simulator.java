@@ -223,6 +223,14 @@ public class Simulator {
     }
 
     /**
+     * Set only the robots to a different set of robots, but not the calculatedEvents nor the timestamp
+     * @param robots the new robots
+     */
+    public void setState(Robot[] robots) {
+        this.robots = robots;
+    }
+
+    /**
      * Sets the scheduler. Take note that this may cause problems with the interruptability of robots.
      * @param s The new scheduler
      */
