@@ -54,6 +54,9 @@ public class Circle {
      * @return the point on this circle that is closest to r
      */
     public Vector getPointOnCircle(Vector p) {
+        if (on(p)) {
+            return p;
+        }
         Vector CtoR = p.sub(c);
         double len = CtoR.len();
         double factor = r / len;

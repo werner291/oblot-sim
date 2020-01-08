@@ -80,7 +80,9 @@ public class Simulator {
         RobotPath[] robotPaths;
 
         if (!calculatedEvents.isEmpty()) {
-            robotPaths = calculatedEvents.get(calculatedEvents.size()-1).robotPaths;
+            RobotPath[] oldRobotPaths = calculatedEvents.get(calculatedEvents.size()-1).robotPaths;
+            robotPaths = new RobotPath[oldRobotPaths.length];
+            System.arraycopy(oldRobotPaths, 0, robotPaths, 0, robotPaths.length);
         } else {
             //set the robotPaths to the current position of the robots
             robotPaths = Arrays.stream(robots).map(robot -> new LinearPath(robot.pos, robot.pos)).toArray(RobotPath[]::new);
