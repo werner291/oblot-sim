@@ -23,6 +23,7 @@ public class CombinedPath extends RobotPath {
                 throw new IllegalArgumentException("The end of some path does not match the start of the next");
             }
         }
+        this.paths = paths;
     }
 
     @Override
@@ -50,19 +51,19 @@ public class CombinedPath extends RobotPath {
         RobotPath currentPath = null;
         double currentNormalizedPathLength = 0;
         double sum = 0;
-        for (int i = 0; i < normalizedLengths.length; i++) {
+        for (int i = 0; i < normalizedLengths.length + 1; i++) {
             if (fractionToMove < sum) {
-                currentPath = paths.get(i);
+                currentPath = paths.get(i - 1);
                 sum -= normalizedLengths[i - 1];
-                currentNormalizedPathLength = normalizedLengths[i];
+                currentNormalizedPathLength = normalizedLengths[i - 1];
+                break;
             } else {
                 sum += normalizedLengths[i];
             }
         }
         // now sum is the fraction of the path where this path starts
-        fractionToMove = fractionToMove - sum;
         double moveTime = tEnd - tStart;
-        double startTime = tStart + (fractionToMove * moveTime);
+        double startTime = tStart + sum * moveTime;
         double endTime = tStart + (currentNormalizedPathLength * moveTime);
         return currentPath.interpolate(startTime, endTime, t);
     }
@@ -74,6 +75,8 @@ public class CombinedPath extends RobotPath {
 
     @Override
     public void convertFromLocalToGlobal(PositionTransformation trans, Vector origin) {
+        this.start = trans.localToGlobal(this.start, origin);
+        this.end = trans.localToGlobal(this.end, origin);
         for (RobotPath p : paths) {
             p.convertFromLocalToGlobal(trans, origin);
         }
