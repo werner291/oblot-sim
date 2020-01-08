@@ -576,10 +576,21 @@ public class FxFXMLController
             } else if (endTime < timestamp) {
                 robot.pos = endPos;
             } else {
+                switch (robot.state) {
+                    case MOVING:
+                        robot.pos = currentPath.interpolate(startTime, possiblyEarlierEndtime, timestamp);
+                        break;
+                    case COMPUTING:
+                        robot.pos = currentPath.start;
+                        break;
+                    case SLEEPING:
+                        robot.pos = currentPath.end;
+                        break;
+                }
                 if (robot.state == State.MOVING) {
                     robot.pos = currentPath.interpolate(startTime, possiblyEarlierEndtime, timestamp);
                 } else {
-                    robot.pos = currentPath.start;
+                    robot.pos = nextEvent.positions[robotIndex];
                 }
             }
         }
