@@ -55,13 +55,13 @@ public class CalculatedEvent {
 
     /**
      * Puts all the events in the history into a file which could be loaded into the simulator at a later time
-     * @param absolutePath Path to the file in which the events needs to be written
+     * @param file The file in which the events needs to be written
      * @param calculatedEvents List of events that needs to be in the file
      * @param robots Array of robots that are used in the events
      */
-    public static void toFile(String absolutePath, List<CalculatedEvent> calculatedEvents, Robot[] robots) {
+    public static void toFile(File file, List<CalculatedEvent> calculatedEvents, Robot[] robots) {
         try {
-            FileWriter fileWriter = new FileWriter(absolutePath);
+            FileWriter fileWriter = new FileWriter(file);
             System.out.println(calculatedEvents.get(0).positions.length);
             fileWriter.write(Integer.toString(calculatedEvents.get(0).positions.length) + "\n");
 
@@ -90,19 +90,19 @@ public class CalculatedEvent {
             fileWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("path cannot be opened: " + absolutePath);
+            System.err.println("path cannot be opened: " + file.getPath());
         }
     }
 
     /**
      * puts the events from the file into a list of calculatedEvent objects
-     * @param absolutePath absolute path to the file to read from
+     * @param file absolute path to the file to read from
      * @return the event history in a List of CalculatedEvent objects
      */
-    public static List<CalculatedEvent> fromFile(String absolutePath) {
+    public static List<CalculatedEvent> fromFile(File file) {
         List<CalculatedEvent> calculatedEvents = new ArrayList<>();
         try {
-            Scanner scanner = new Scanner(new File(absolutePath));
+            Scanner scanner = new Scanner(file);
             int NROF_ROBOTS = Integer.parseInt(scanner.nextLine());
             while (scanner.hasNext()) {
                 String positionsString = scanner.nextLine();
@@ -154,7 +154,7 @@ public class CalculatedEvent {
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            System.err.println(String.format("File not found: %s", absolutePath));
+            System.err.println(String.format("File not found: %s", file.getPath()));
             System.err.println("Does it exists and does it have read access?");
         }catch (NumberFormatException e) {
             System.err.println("wrong format in file" + e.getMessage());

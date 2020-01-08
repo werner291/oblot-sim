@@ -28,6 +28,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -252,18 +253,42 @@ public class FxFXMLController
     @FXML
     private void onSaveRun()
     {
-        System.out.println("Save");
+        final FileChooser fc = new FileChooser();
+
+        File file = fc.showSaveDialog(null);
+        if (file != null) {
+            CalculatedEvent.toFile(file, simulator.getCalculatedEvents(), localRobots);
+        }
     }
 
     @FXML
     private void onSaveRobots()
     {
-        System.out.println("Save");
+        final FileChooser fc = new FileChooser();
+
+        File file = fc.showSaveDialog(null);
+        if (file != null) {
+            try {
+                Robot.toFile(file, localRobots);
+            } catch (FileNotFoundException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+                e.printStackTrace();
+            }
+        }
     }
 
     @FXML
     private void onLoadRun()
     {
+        final FileChooser fc = new FileChooser();
+        File file = fc.showOpenDialog(null);
+        if (file != null) {
+            List<CalculatedEvent> events = CalculatedEvent.fromFile(file);
+            simulator.setState(simulator.robots, events, 0.0);
+            dragBarSimulation.setMax(events.get(events.size()-1).getTimestamp());
+            dragBarSimulation.setValue(events.get(events.size()-1).getTimestamp());
+            regenerateEventList(simulator.getCalculatedEvents());
+        }
         System.out.println("Load");
     }
 
@@ -310,6 +335,7 @@ public class FxFXMLController
             /*empty*/
             simulator.setState(robots, List.of(/*empty*/), 0.0);
             this.localRobots = simulator.getRobots();
+            regenerateEventList(simulator.getCalculatedEvents());
         }
     }
 
@@ -420,28 +446,31 @@ public class FxFXMLController
         }
         last_size_calc_events = calculatedEvents.size();
 
+
+        regenerateEventList(calculatedEvents);
+
+        double recentTimeStamp = calculatedEvents.get(calculatedEvents.size()-1).getTimestamp();
+        progressBarSimulation.setProgress(75);
+        dragBarSimulation.setMax(recentTimeStamp);
+        dragBarSimulation.setValue(dragBarSimulation.getMax());
+        progressBarSimulation.setProgress(100);
+
+        return true;
+    }
+
+    private void regenerateEventList(List<CalculatedEvent> calculatedEvents) {
         List<Event> allEvents = new ArrayList<>();
         calculatedEvents.forEach(e -> allEvents.addAll(e.events));
         progressBarSimulation.setProgress(50);
 
         // Add recent events to Vbox containing all events
-        double recentTimeStamp = 0;
         int eventIndex = 1;
         eventsVBox = new VBox();
         for (Event event : allEvents) {
             eventsVBox.getChildren().add(createEventButton(eventIndex, event.type.toString(), event.t));
-            recentTimeStamp = event.t;
             eventIndex++;
         }
-        progressBarSimulation.setProgress(75);
         eventList.setContent(eventsVBox);
-        dragBarSimulation.setMax(recentTimeStamp);
-        dragBarSimulation.setValue(recentTimeStamp);
-
-        // Redraw robot positions
-        progressBarSimulation.setProgress(100);
-
-        return true;
     }
 
     private List<CalculatedEvent> removeInvalidCalcEvents(List<CalculatedEvent> calculatedEvents, CalculatedEvent latestEvent) {

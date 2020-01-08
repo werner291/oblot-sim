@@ -5,8 +5,7 @@ import PositionTransformations.PositionTransformation;
 import RobotPaths.RobotPath;
 import Util.Vector;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Scanner;
@@ -63,6 +62,26 @@ public class Robot {
         this.state = State.SLEEPING;
         this.speed = 1.0;
         this.lastStateChange = 0.0;
+    }
+
+    /**
+     * Write an array of robot positions to the specified file.
+     *
+     * Algorithm and transformation are NOT saved, but these are not required for replay.
+     *
+     * @param file File to write to.
+     * @param robots The robots to same to the file.
+     * @throws FileNotFoundException If the file location cannot be found.
+     */
+    public static void toFile(File file, Robot[] robots) throws FileNotFoundException {
+        try (PrintWriter w = new PrintWriter(new FileOutputStream(file))) {
+
+            w.println(robots.length); // Print number of robots first.
+
+            for (Robot robot : robots) {
+                w.println(robot.pos.x + ", " + robot.pos.y); // Then x and y positions, 1 per line.
+            }
+        }
     }
 
     /**
