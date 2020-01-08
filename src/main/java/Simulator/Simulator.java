@@ -46,7 +46,7 @@ public class Simulator {
     /**
      * The {@link Scheduler} that regulates which robots activate when.
      */
-    private Scheduler scheduler;
+    public Scheduler scheduler;
 
     public Simulator(Config c, Robot[] robots, Scheduler scheduler) {
         this.config = c;

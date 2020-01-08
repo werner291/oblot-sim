@@ -29,8 +29,10 @@
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" onAction="#onSave" text="Save" />
-            <MenuItem mnemonicParsing="false" onAction="#onLoad" text="Load" />
+            <MenuItem mnemonicParsing="false" onAction="#onLoadRun" text="Load run" />
+            <MenuItem mnemonicParsing="false" onAction="#onSaveRun" text="Save run" />
+                  <MenuItem mnemonicParsing="false" onAction="#onLoadRobots" text="Load robots" />
+                  <MenuItem mnemonicParsing="false" onAction="#onSaveRobots" text="Save robot snapshot" />
             <MenuItem mnemonicParsing="false" onAction="#onClear" text="Clear" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#onQuit" text="Quit" />

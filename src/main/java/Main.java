@@ -1,16 +1,14 @@
 import Algorithms.*;
 import PositionTransformations.RotationTransformation;
 import Schedulers.FSyncScheduler;
-import Schedulers.FileScheduler;
-import Schedulers.SSyncScheduler;
 import Schedulers.Scheduler;
 import Simulator.Simulator;
 import Simulator.Robot;
 import GUI.GUI;
-import Util.Vector;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * The public class that we will use to start our GUI. This is an example class of how the simulator may be used.
@@ -22,16 +20,8 @@ public class Main{
     public static void main(String[] args) {
         // We're keeping this
         System.out.println("Most awesome simulator ever.");
-        Robot[] robots = Robot.fromFile("testRobots2", new MoveAlongSEC(), null);
-        for (Robot r : robots) {
-            r.trans = new RotationTransformation().randomize(false, false, false);
-        }
-//        Scheduler s = null;
-//        try {
-//            s = new FileScheduler(new File(Main.class.getClassLoader().getResource("testSchedule").toURI()), robots);
-//        } catch (URISyntaxException e) {
-//            e.printStackTrace();
-//        }
+        Robot[] robots = loadTestRobots();
+
         Scheduler s = new FSyncScheduler(1, 1, 1, 1);
         Util.Config c = new Util.Config(true, -1, true);
         Simulator simulator = new Simulator(c, robots, s);
@@ -39,5 +29,26 @@ public class Main{
         Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class, GoToRightMost.class, MoveAlongSEC.class};
 
         GUI.runGUI(args, simulator, algorithms);
+    }
+
+    /**
+     * Load a set of robots with randomized position transformations.
+     * @return An array of Robot instances that have a randomized positions, and using the MoveAlongSEC algorithm.
+     */
+    public static Robot[] loadTestRobots() {
+        URL filePath = Robot.class.getClassLoader().getResource("testRobots2");
+        if (filePath == null) {
+            System.err.println("Cannot find resource testRobots2");
+        }
+        Robot[] robots = new Robot[0];
+        try {
+            robots = Robot.fromFile(new MoveAlongSEC(), null, new File(filePath.toURI()));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        for (Robot r : robots) {
+            r.trans = new RotationTransformation().randomize(false, false, false);
+        }
+        return robots;
     }
 }

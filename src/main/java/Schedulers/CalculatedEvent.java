@@ -28,6 +28,13 @@ public class CalculatedEvent {
     public List<Event> events;
 
     /**
+     * Get the timestamp of the CalculatedEvent.
+     */
+    public double getTimestamp() {
+        return events.get(0).t;
+    }
+
+    /**
      * The current position of the robot
      */
     public Vector[] positions;

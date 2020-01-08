@@ -73,4 +73,6 @@ public class RotationTransformation extends PositionTransformation {
         this.rotation = sameRotation ? 0 : (random.nextDouble() * 2 * Math.PI) - Math.PI;
         return this;
     }
+
+    public static PositionTransformation IDENTITY = new RotationTransformation(0.0);
 }

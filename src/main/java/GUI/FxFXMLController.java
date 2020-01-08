@@ -24,14 +24,12 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
+import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 
-import java.net.CacheRequest;
+import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -252,15 +250,67 @@ public class FxFXMLController
     }
 
     @FXML
-    private void onSave()
+    private void onSaveRun()
     {
         System.out.println("Save");
     }
 
     @FXML
-    private void onLoad()
+    private void onSaveRobots()
+    {
+        System.out.println("Save");
+    }
+
+    @FXML
+    private void onLoadRun()
     {
         System.out.println("Load");
+    }
+
+    @FXML
+    private void onLoadRobots()
+    {
+
+        // Only prompt if there is anything to be saved/discarded.
+        if (! simulator.calculatedEvents.isEmpty()) {
+            // Prompt the user to optionally save the current run.
+            // Button to save the run.
+            ButtonType saveRunButtonType = new ButtonType("Save run", ButtonBar.ButtonData.YES);
+            // Button to discard the run.
+            ButtonType discardButtonType = new ButtonType("Discard run", ButtonBar.ButtonData.NO);
+            // Button to stop loading robots.
+            ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            Alert alert = new Alert(Alert.AlertType.NONE,
+                    "Loading a new set of robots will clear the simulation state. Do you wish to save the current run?",
+                    saveRunButtonType, discardButtonType, cancelButtonType);
+
+            // Hack to avoid a bug where the dialog has almost 0 size.
+            alert.setResizable(true);
+            alert.getDialogPane().setPrefSize(480, 320);
+
+            Optional<ButtonType> result = alert.showAndWait();
+
+            if (result.isPresent() && result.get() == saveRunButtonType) {
+                // If the user used the "Save Run" button, trigger the onSaveRun event handler as if the user clicked that menu option.
+                // That is what they would have done anyway if they'd canceled the robot load action to save their current run.
+                onSaveRun();
+            } else if (result.isEmpty() || result.get() == cancelButtonType) {
+                return;
+            }
+        }
+
+        final FileChooser fileChooser = new FileChooser();
+
+        File robotsFile = fileChooser.showOpenDialog(null);
+
+        if (robotsFile != null) {
+            Robot[] robots = Robot.fromFile(simulator.getRobots()[0].getAlgorithm(), RotationTransformation.IDENTITY, robotsFile);
+
+            /*empty*/
+            simulator.setState(robots, List.of(/*empty*/), 0.0);
+            this.localRobots = simulator.getRobots();
+        }
     }
 
     @FXML

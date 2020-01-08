@@ -90,18 +90,14 @@ public class Robot {
      * x, y<br>
      * ...<br>
      * First the amount of robots n, then on separate lines, the starting positions of the robots.
-     * @param fileName the path of the file to read the starting configuration from
      * @param algo the algorithm all robots should follow
      * @param t the transformation to global coordinate system the robots should use
+     * @param file the file to read the starting configuration from
      * @return a list of robots that start on the positions specified in the file
      */
-    public static Robot[] fromFile(String fileName, Algorithm algo, PositionTransformation t) {
+    public static Robot[] fromFile(Algorithm algo, PositionTransformation t, File file) {
         try {
-            URL filePath = Robot.class.getClassLoader().getResource(fileName);
-            if (filePath == null) {
-                throw new FileNotFoundException();
-            }
-            Scanner s = new Scanner(new File(filePath.toURI()));
+            Scanner s = new Scanner(file);
             int n = Integer.parseInt(s.nextLine());
             Robot[] robots = new Robot[n];
             int i = 0;
@@ -115,8 +111,8 @@ public class Robot {
                 i++;
             }
             return robots;
-        } catch (FileNotFoundException | URISyntaxException e) {
-            System.err.println(String.format("File not found: %s", fileName));
+        } catch (FileNotFoundException e) {
+            System.err.println(String.format("File not found: %s", file.getPath()));
             System.err.println("Does it exists and does it have read access?");
         } catch (NumberFormatException e) {
             System.err.println("The file does not have the correct format.");
@@ -152,5 +148,9 @@ public class Robot {
     @Override
     public int hashCode() {
         return Integer.hashCode(id);
+    }
+
+    public Algorithm getAlgorithm() {
+        return algo;
     }
 }
