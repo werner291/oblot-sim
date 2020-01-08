@@ -25,6 +25,9 @@ public class FSyncScheduler extends SSyncScheduler {
 
     @Override
     public List<Event> getNextEvent(Robot[] robots, double t) {
+        if (lastRequestedEventTime == t) {
+            return lastReturnedEvents;
+        }
         EventType nextType = null;
         State currentState = null;
         for (Robot robot: robots) {
@@ -68,6 +71,8 @@ public class FSyncScheduler extends SSyncScheduler {
                 }
                 break;
         }
+        lastRequestedEventTime = t;
+        lastReturnedEvents = events;
         return events;
     }
 }

@@ -13,6 +13,9 @@ public class AsyncScheduler extends Scheduler {
     double maxMoveTime;
     Map<Robot, Double> endMovingTimes;
 
+    double lastRequestedEventTime = -1;
+    List<Event> lastReturnedEvents = null;
+
 
     Random random;
 
@@ -57,6 +60,9 @@ public class AsyncScheduler extends Scheduler {
 
     @Override
     public List<Event> getNextEvent(Robot[] robots, double t) {
+        if (lastRequestedEventTime == t) {
+            return lastReturnedEvents;
+        }
         double earliestNextEventTime = Double.MAX_VALUE;
         Robot earliestNextEventRobot = null;
         List<Event> events = new ArrayList<>();
@@ -122,6 +128,9 @@ public class AsyncScheduler extends Scheduler {
         EventType eventType = getNextEventType(chosenRobot);
         double eventTime = t + (earliestNextEventTime - t) * random.nextDouble();
         events.add(new Event(eventType, eventTime, chosenRobot));
+
+        lastRequestedEventTime = t;
+        lastReturnedEvents = events;
         return events;
     }
 
