@@ -6,6 +6,7 @@ import RobotPaths.LinearPath;
 import RobotPaths.RobotPath;
 import Simulator.Robot;
 import Util.Vector;
+import javafx.collections.ObservableArray;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -18,9 +19,6 @@ import java.util.Scanner;
  * For every timestamp that there is an event, a calculatedEvent will be generated and stored.
  */
 public class CalculatedEvent {
-    /**
-     * Timastamp of the event
-     */
 
     /**
      * A list of events which all happen at the same timestamp.

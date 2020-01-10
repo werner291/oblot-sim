@@ -391,7 +391,6 @@ public class RobotView extends Region {
      */
     private void setUpContextMenu() {
         // setup the contextmenu
-
         setOnContextMenuRequested(e -> {
             if (!robotManager.canEditRobots()) {
                 return;
