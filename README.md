@@ -125,3 +125,7 @@ Finally, if you wish, you can run the GUI to visualise the simulation.
 ```
 GUI.runGUI({}, sim);
 ```
+
+## How to use the GUI
+
+![alt text](doc/screenshot.png "Logo Title Text 1")
