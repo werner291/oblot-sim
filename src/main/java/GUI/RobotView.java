@@ -6,14 +6,11 @@ import Util.Circle;
 import Util.SmallestEnclosingCircle;
 import Util.Vector;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
@@ -32,6 +29,7 @@ import java.util.stream.Collectors;
  */
 public class RobotView extends Region {
 
+    private ContextMenu cM = null;
     // parameters for the canvas
     private double viewX = 0; // bottom left coords
     private double viewY = 0;
@@ -60,14 +58,7 @@ public class RobotView extends Region {
      */
     public SimpleBooleanProperty drawRadii = new SimpleBooleanProperty(false);
 
-    /**
-     * Context menu for the canvas. Used for adding/removing robots and for adding/removing events
-     */
-    ContextMenu canvasContextMenu;
-
     private Canvas canvas;
-    private Vector clickedPosition;
-    private Robot clickedRobot;
 
     // Interface of the object containing robots, to separate concerns.
     public interface RobotManager {
@@ -179,9 +170,11 @@ public class RobotView extends Region {
         gc.setTransform(tOld);
     }
 
-    public void drawPTVisualizationLegend(GraphicsContext gc) {
+    /**
+     * Draw a legend in the top left corner of the robot view.
+     */
+    private void drawPTVisualizationLegend(GraphicsContext gc) {
         // draw legend for the coordinate system
-        // TODO What does this do?
         Vector center = new Vector(50, 100);
         Vector right = new Vector(100, 100);
         Vector up = new Vector(50, 50);
@@ -365,7 +358,9 @@ public class RobotView extends Region {
         oldViewX = viewX;
         oldViewY = viewY;
 
-        canvasContextMenu.hide();
+        if (cM != null) {
+            cM.hide();
+        }
     }
 
     @FXML
@@ -396,53 +391,54 @@ public class RobotView extends Region {
      */
     private void setUpContextMenu() {
         // setup the contextmenu
-        canvasContextMenu = new ContextMenu();
-        canvasContextMenu.setAutoHide(true);
-        MenuItem addRobotMenuItem = new MenuItem("Add robot");
-        addRobotMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                Robot[] localRobots = robotManager.getRobots();
-                Robot newRobot = new Robot(localRobots.length, localRobots[0].algo, clickedPosition, localRobots[0].trans);
-                robotManager.addRobot(newRobot);
-            }
-        });
-        MenuItem removeRobotItem = new MenuItem("Remove robot");
-        removeRobotItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                if (clickedRobot != null) { // there is a robot that we should remove
-                    robotManager.removeRobot(clickedRobot);
-                }
-            }
-        });
-        canvasContextMenu.getItems().addAll(addRobotMenuItem);
 
-        setOnContextMenuRequested(new EventHandler<>() {
-            @Override
-            public void handle(ContextMenuEvent e) {
-                if (!robotManager.canEditRobots()) {
-                    return;
-                }
-                // check if we clicked on a robot
-                Vector mouseClick = new Vector(e.getX(), e.getY());
-                clickedPosition = canvasToRobotCoords(mouseClick);
-                clickedRobot = null;
-                for (Robot r : robotManager.getRobots()) {
-                    if (Math.abs(r.pos.x - clickedPosition.x) < 0.5 && Math.abs(r.pos.y - clickedPosition.y) < 0.5) {
-                        clickedRobot = r;
-                    }
-                }
-                // if we clicked on a robot, adjust the menu accordingly
-                if (clickedRobot != null) {
-                    if (!canvasContextMenu.getItems().contains(removeRobotItem)) {
-                        canvasContextMenu.getItems().add(removeRobotItem);
-                    }
-                } else {
-                    canvasContextMenu.getItems().remove(removeRobotItem); // will not remove if not contains
-                }
-                canvasContextMenu.show(canvas, e.getScreenX(), e.getScreenY());
+        setOnContextMenuRequested(e -> {
+            if (!robotManager.canEditRobots()) {
+                return;
             }
+            // check if we clicked on a robot
+            Vector mouseClick = new Vector(e.getX(), e.getY());
+            Robot picked = pickRobot(mouseClick);
+
+            cM = new ContextMenu();
+            cM.setAutoHide(true);
+
+            MenuItem addRobotMenuItem = new MenuItem("Add robot");
+            addRobotMenuItem.setOnAction(actionEvent -> {
+                Robot[] localRobots = robotManager.getRobots();
+                Robot newRobot = new Robot(localRobots.length, localRobots[0].algo, mouseClick, localRobots[0].trans);
+                robotManager.addRobot(newRobot);
+            });
+
+            MenuItem removeRobotItem = new MenuItem("Remove robot");
+            removeRobotItem.setOnAction(actionEvent -> {
+                if (picked != null) { // there is a robot that we should remove
+                    robotManager.removeRobot(picked);
+                }
+            });
+
+            cM.getItems().add(addRobotMenuItem);
+
+            if (picked != null) {
+                cM.getItems().add(removeRobotItem);
+            }
+
+
+            cM.show(this, e.getScreenX(), e.getScreenY());
         });
+    }
+
+    /**
+     * Find the robot associated with the position clicked in mouse coordinates.
+     *
+     * @param mouseClick Where the user has clicked.
+     * @return The {@link Robot} that was found, or null if none found.
+     */
+    Robot pickRobot(Vector mouseClick) {
+        Vector clickedPosition = canvasToRobotCoords(mouseClick);
+        return Arrays.stream(robotManager.getRobots())
+                .filter(r -> Math.abs(r.pos.x - clickedPosition.x) < 0.5 && Math.abs(r.pos.y - clickedPosition.y) < 0.5)
+                .findFirst()
+                .orElse(null);
     }
 }
