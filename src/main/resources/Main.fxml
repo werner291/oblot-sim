@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Label?>
@@ -22,6 +21,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
+<?import GUI.RobotView?>
 
 <VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.FxFXMLController">
   <children>
@@ -51,7 +51,7 @@
         </Menu>
             <Menu mnemonicParsing="false" text="Axis">
                <items>
-                  <CheckMenuItem mnemonicParsing="false" onAction="#showAxisTriggered" text="Show Axis" />
+                  <CheckMenuItem fx:id="drawCoordinateSystemsButton" mnemonicParsing="false" text="Show Axis" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <CheckMenuItem fx:id="chiralityAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Chirality Shared" />
                   <CheckMenuItem fx:id="unitLengthAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Unit Length" />
@@ -60,8 +60,8 @@
             </Menu>
             <Menu mnemonicParsing="false" text="View">
               <items>
-                  <CheckMenuItem mnemonicParsing="false" onAction="#onShowSEC" text="Show SEC" />
-                  <CheckMenuItem mnemonicParsing="false" onAction="#onShowRadii" text="Show Radii" />
+                  <CheckMenuItem mnemonicParsing="false" fx:id="drawSECButton" text="Show SEC" />
+                  <CheckMenuItem mnemonicParsing="false" fx:id="drawRadiiButton" text="Show Radii" />
               </items>
             </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -89,7 +89,7 @@
         </AnchorPane>
             <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
                <children>
-                  <Canvas fx:id="canvas" height="547.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled" width="400.0" />
+                  <RobotView fx:id="robotView" />
                   <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="0.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
                </children>
             </AnchorPane>
