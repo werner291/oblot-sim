@@ -15,9 +15,11 @@ import Util.Vector;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Side;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
@@ -95,6 +97,11 @@ public class FxFXMLController
     @FXML
     private CheckMenuItem rotationAxisButton;
 
+    /**
+     * Context menu for the canvas. Used for adding/removing robots and for adding/removing events
+     */
+    ContextMenu canvasContextMenu;
+
     // parameters for the canvas
     private double viewX = 0; // bottom left coords
     private double viewY = 0;
@@ -166,6 +173,8 @@ public class FxFXMLController
         canvasBackground.heightProperty().addListener((ov, oldValue, newValue) -> {
             canvas.setHeight(newValue.doubleValue() - dragBarSimulation.getHeight());
         });
+
+        setUpContextMenu();
     }
 
     private Popup warningPopup = new Popup();
@@ -186,6 +195,77 @@ public class FxFXMLController
 
         warningPopup.show(GUI.stage);
 
+    }
+
+    Robot clickedRobot;
+    Vector clickedPosition;
+    /**
+     * Sets up the context menu for the canvas.
+     */
+    private void setUpContextMenu() {
+        // setup the contextmenu
+        canvasContextMenu = new ContextMenu();
+        canvasContextMenu.setAutoHide(true);
+        MenuItem addRobotMenuItem = new MenuItem("Add robot");
+        addRobotMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Robot[] copy = new Robot[localRobots.length + 1];
+                System.arraycopy(localRobots, 0, copy, 0, localRobots.length);
+                copy[copy.length - 1] = new Robot(localRobots.length, localRobots[0].algo, clickedPosition, localRobots[0].trans);
+                localRobots = copy;
+                Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
+                dragBarSimulation.setValue(0);
+                simulator.setState(localRobots, new ArrayList<>(), 0);
+            }
+        });
+        MenuItem removeRobotItem = new MenuItem("Remove robot");
+        removeRobotItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (clickedRobot != null) { // there is a robot that we should remove
+                    Robot[] copy = new Robot[localRobots.length - 1];
+                    int indexInCopy = 0;
+                    for (Robot localRobot : localRobots) {
+                        if (localRobot != clickedRobot) {
+                            copy[indexInCopy] = localRobot;
+                            indexInCopy++;
+                        }
+                    }
+                    localRobots = copy;
+                    Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
+                    dragBarSimulation.setValue(0);
+                    simulator.setState(localRobots, new ArrayList<>(), 0);
+                }
+            }
+        });
+        canvasContextMenu.getItems().addAll(addRobotMenuItem);
+        canvas.setOnContextMenuRequested(new EventHandler<>() {
+            @Override
+            public void handle(ContextMenuEvent e) {
+                if (!isPaused) {
+                    return;
+                }
+                // check if we clicked on a robot
+                Vector mouseClick = new Vector(e.getX(), e.getY());
+                clickedPosition = canvasToRobotCoords(mouseClick);
+                clickedRobot = null;
+                for (Robot r : localRobots) {
+                    if (Math.abs(r.pos.x - clickedPosition.x) < 0.5 && Math.abs(r.pos.y - clickedPosition.y) < 0.5) {
+                        clickedRobot = r;
+                    }
+                }
+                // if we clicked on a robot, adjust the menu accordingly
+                if (clickedRobot != null) {
+                    if (!canvasContextMenu.getItems().contains(removeRobotItem)) {
+                        canvasContextMenu.getItems().add(removeRobotItem);
+                    }
+                } else {
+                    canvasContextMenu.getItems().remove(removeRobotItem); // will not remove if not contains
+                }
+                canvasContextMenu.show(canvas, e.getScreenX(), e.getScreenY());
+            }
+        });
     }
 
     private void hideWarningPopUp() {
@@ -868,21 +948,17 @@ public class FxFXMLController
      */
     public void zoomIn(double mouseX, double mouseY) {
         if (scale < MAX_SCALE) { // prevent scrolling further
-            double portHeight = canvas.getHeight();
-
-            // calculate canvas coord
-            double xCoord = mouseX / scale + viewX;
-            double yCoord = ((mouseY - (portHeight - 1)) / -scale) + viewY;
+            // calculate old coord
+            Vector oldCoord = canvasToRobotCoords(new Vector(mouseX, mouseY));
 
             scale *= 1.5;
 
             // calculate new canvas coord
-            double xCoordNew = mouseX / scale + viewX;
-            double yCoordNew = ((mouseY - (portHeight - 1)) / -scale) + viewY;
+            Vector newCoord = canvasToRobotCoords(new Vector(mouseX, mouseY));
 
             // the difference should be added to the bottom left of the view
-            viewX += xCoord - xCoordNew;
-            viewY += yCoord - yCoordNew;
+            viewX += oldCoord.x - newCoord.x;
+            viewY += oldCoord.y - newCoord.y;
         }
     }
 
@@ -893,22 +969,30 @@ public class FxFXMLController
      */
     public void zoomOut(double mouseX, double mouseY) {
         if (scale > MIN_SCALE) {
-            double portHeight = canvas.getHeight();
-
-            // calculate canvas coord
-            double xCoord = mouseX / scale + viewX;
-            double yCoord = ((mouseY - (portHeight - 1)) / -scale) + viewY;
+            // calculate old coord
+            Vector oldCoord = canvasToRobotCoords(new Vector(mouseX, mouseY));
 
             scale /= 1.5;
 
             // calculate new canvas coord
-            double xCoordNew = mouseX / scale + viewX;
-            double yCoordNew = ((mouseY - (portHeight - 1)) / -scale) + viewY;
+            Vector newCoord = canvasToRobotCoords(new Vector(mouseX, mouseY));
 
             // the difference should be added to the bottom left of the view
-            viewX += xCoord - xCoordNew;
-            viewY += yCoord - yCoordNew;
+            viewX += oldCoord.x - newCoord.x;
+            viewY += oldCoord.y - newCoord.y;
         }
+    }
+
+    /**
+     * Convert a coordinate on the canvas to a coordinate in the coordinate system of the robots that is drawn
+     * @param p the point to convert
+     * @return the converted point
+     */
+    private Vector canvasToRobotCoords(Vector p) {
+        double portHeight = canvas.getHeight();
+        double xCoord = p.x / scale + viewX;
+        double yCoord = ((p.y - (portHeight - 1)) / -scale) + viewY;
+        return new Vector(xCoord, yCoord);
     }
 
     @FXML
@@ -923,6 +1007,7 @@ public class FxFXMLController
         mouseY = e.getY();
         oldViewX = viewX;
         oldViewY = viewY;
+        canvasContextMenu.hide();
     }
 
     @FXML

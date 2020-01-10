@@ -45,7 +45,7 @@ public class Robot {
     /**
      * The algorithm the robot will run.
      */
-    private Algorithm algo;
+    public Algorithm algo;
 
 
     /**
