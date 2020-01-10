@@ -756,16 +756,7 @@ public class FxFXMLController
         simulator.setState(robots);
     };
 
-//    public void showAxisTriggered(ActionEvent actionEvent) {
-//        this.drawCoordinateSystems = ((CheckMenuItem)actionEvent.getSource()).isSelected();
-//        if (drawCoordinateSystems) {
-//            System.out.println("Coordinate systems of the robots will be drawn.");
-//        } else {
-//            System.out.println("Coordinate systems of the robots will not be drawn.");
-//        }
-//    }
-
-    public void axisChanged(ActionEvent azctionEvent) {
+    public void axisChanged(ActionEvent actionEvent) {
         boolean sameChirality = chiralityAxisButton.isSelected();
         boolean sameUnitLength = unitLengthAxisButton.isSelected();
         boolean sameRotation = rotationAxisButton.isSelected();
