@@ -91,8 +91,19 @@ public class RobotView extends Region {
         // clear the canvas
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, portWidth, portHeight);
+
+        // Draw the background grid.
         drawGrid(gc, portHeight, portWidth);
 
+        // Draw the robots and any associated graphics.
+        drawRobots(robots, gc, portHeight);
+
+        // Draw the axes legend.
+        drawPTVisualizationLegend(gc);
+
+    }
+
+    public void drawRobots(Robot[] robots, GraphicsContext gc, double portHeight) {
         Affine tOld = gc.getTransform();
         Affine t = new Affine();
         // set the transform to a new transform
@@ -127,25 +138,27 @@ public class RobotView extends Region {
         for (Robot r : robots) {
             if (drawCoordinateSystems) {
                 visualizeTransform(gc, r.pos, r.trans);
-
-                // draw legend for the coordinate system
-                // TODO What does this do?
-                Vector center = new Vector(50, 100);
-                Vector right = new Vector(100, 100);
-                Vector up = new Vector(50, 50);
-                gc.setLineWidth(2.5);
-                gc.setStroke(Color.RED);
-                gc.strokeLine(center.x, center.y, up.x, up.y);
-                gc.strokeText("y", up.x + 5, up.y);
-                gc.setStroke(Color.GREEN);
-                gc.strokeLine(center.x, center.y, right.x, right.y);
-                gc.strokeText("x", right.x, right.y - 5);
             }
             drawRobot(gc, r);
         }
 
         // transform back to the old transform
         gc.setTransform(tOld);
+    }
+
+    public void drawPTVisualizationLegend(GraphicsContext gc) {
+        // draw legend for the coordinate system
+        // TODO What does this do?
+        Vector center = new Vector(50, 100);
+        Vector right = new Vector(100, 100);
+        Vector up = new Vector(50, 50);
+        gc.setLineWidth(2.5);
+        gc.setStroke(Color.RED);
+        gc.strokeLine(center.x, center.y, up.x, up.y);
+        gc.strokeText("y", up.x + 5, up.y);
+        gc.setStroke(Color.GREEN);
+        gc.strokeLine(center.x, center.y, right.x, right.y);
+        gc.strokeText("x", right.x, right.y - 5);
     }
 
     public void drawRobotToSECRadius(GraphicsContext gc, boolean drawSEC, Circle SEC, Robot r) {
