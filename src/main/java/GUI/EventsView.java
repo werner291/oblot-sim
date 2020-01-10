@@ -20,14 +20,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleConsumer;
 
+/**
+ * A ScrollPane that displays a list of events that happened during the simulation.
+ */
 public class EventsView extends ScrollPane {
 
+    /**
+     * Property that holds the time picking listener.
+     * It will be called with a timestamp whenever the user picks an event.
+     */
     public final Property<DoubleConsumer> timePickedCB = new SimpleObjectProperty<>(v -> {/* Do nothing */});
+    /**
+     * List of {@link CalculatedEvent} to display. These are flattened out automatically.
+     */
     public final ListProperty<CalculatedEvent> events = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     public EventsView() {
-        setWidth(300);
-
+        // Each time that the list changes, regenerate the list of events.
         events.addListener((observableValue, calculatedEvents, t1) -> {
             VBox list = new VBox();
 
