@@ -405,7 +405,7 @@ public class RobotView extends Region {
             MenuItem addRobotMenuItem = new MenuItem("Add robot");
             addRobotMenuItem.setOnAction(actionEvent -> {
                 Robot[] localRobots = robotManager.getRobots();
-                Robot newRobot = new Robot(localRobots.length, localRobots[0].algo, mouseClick, localRobots[0].trans);
+                Robot newRobot = new Robot(localRobots.length, localRobots[0].algo, canvasToRobotCoords(mouseClick), localRobots[0].trans);
                 robotManager.addRobot(newRobot);
             });
 

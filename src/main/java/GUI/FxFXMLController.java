@@ -622,25 +622,29 @@ public class FxFXMLController implements RobotView.RobotManager
      * @return The event that was created. This is now also the last event in the timeline.
      */
     private CalculatedEvent makeSyntheticNextEvent() {
+        System.out.println("Synthetic.");
         CalculatedEvent currentEvent = simulator.calculatedEvents.get(simulator.calculatedEvents.size()-1);
         CalculatedEvent nextEvent = currentEvent.copyDeep();
-        double maxEndTime = currentEvent.events.get(0).t + 1;
+
+        Vector[] positions = new Vector[localRobots.length];
+
+        double maxEndTime = currentEvent.getTimestamp() + 1;
 
         int eventIndex = 0;
-        for (Event robotEvent : nextEvent.events) {
+        for (Event robotEvent : currentEvent.events) {
             int robotIndexTemp = getRobotIndex(robotEvent.r);
             Robot robot = localRobots[robotIndexTemp];
 
             Event nextRobotEvent = nextEvent.events.get(robotIndexTemp);
             RobotPath nextRobotPath = nextEvent.robotPaths[robotIndexTemp];
 
-            // If no more calculatedevents came up and we haven't finished padding till all robots stop do this
+            // If no more calculated events came up and we haven't finished padding till all robots stop do this
             if (!isDoneSimulating && isScheduleDone && !paddedLastEvent) {
 
-                switch (currentEvent.events.get(robotIndexTemp).type) {
+                Event robotCurrentEvent = currentEvent.events.get(robotIndexTemp);
+                switch (robotCurrentEvent.type) {
                     // If robots have started moving then finish the movement to their goal and calculate how much time this takes. TODO: Make sure this takes the current scheduler into account
                     case START_MOVING:
-                        nextRobotEvent.type = EventType.END_MOVING;
                         nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
                         double endTime = nextRobotPath.getEndTime(nextRobotEvent.t, robot.speed);
                         if (endTime > maxEndTime) maxEndTime = endTime;
@@ -648,19 +652,19 @@ public class FxFXMLController implements RobotView.RobotManager
 
                         // If robots have started computing, finish the compute cycle and afterwards should start moving to final goal.
                     case START_COMPUTE:
-                        nextRobotEvent.type = EventType.START_MOVING;
                         nextRobotEvent.t = nextRobotEvent.t + 1;
                         break;
 
                     case END_MOVING:
-
                         // If robots have started stopped moving, but are not yet at their goal start computing next round.
-                        nextRobotEvent.type = EventType.START_COMPUTE;
                         nextRobotEvent.t = nextRobotEvent.t + 1;
                         nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
                         break;
                 }
 
+                nextRobotEvent.type = EventType.next(robotCurrentEvent.type);
+
+                System.out.println(eventIndex + " ? " + (nextEvent.events.size()-1));
                 if (eventIndex == nextEvent.events.size()-1) {
                     dragBarSimulation.setMax(maxEndTime);
                     dragBarSimulation.setValue(maxEndTime);
