@@ -51,7 +51,7 @@
         </Menu>
             <Menu mnemonicParsing="false" text="Axis">
                <items>
-                  <CheckMenuItem fx:id="drawCoordinateSystemsButton" mnemonicParsing="false" text="Show Axis" />
+                  <CheckMenuItem fx:id="drawCoordinateSystemsButton" mnemonicParsing="false" text="Visualize Transforms" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <CheckMenuItem fx:id="chiralityAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Chirality Shared" />
                   <CheckMenuItem fx:id="unitLengthAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Unit Length" />
