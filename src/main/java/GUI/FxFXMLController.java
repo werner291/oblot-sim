@@ -141,7 +141,8 @@ public class FxFXMLController implements RobotView.RobotManager
             }
         });
 
-
+        // Listen to the user picking times on the event list sidebar.
+        eventList.timePickedCB.setValue(dragBarSimulation::setValue);
 
         algorithmsVBox.setSpacing(1);
         algorithmsVBox.setPadding(new Insets(1));
