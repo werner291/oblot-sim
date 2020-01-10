@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -764,58 +765,34 @@ public class FxFXMLController
 //        }
 //    }
 
-    public void axisChanged(ActionEvent actionEvent) {
+    public void axisChanged(ActionEvent azctionEvent) {
         boolean sameChirality = chiralityAxisButton.isSelected();
         boolean sameUnitLength = unitLengthAxisButton.isSelected();
         boolean sameRotation = rotationAxisButton.isSelected();
         for (Robot r : localRobots) {
             r.trans = new RotationTransformation().randomize(sameChirality, sameUnitLength, sameRotation);
         }
+
     }
 
     public void onFSync(ActionEvent actionEvent) {
-        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
-        if (!selectedText.equals(lastSelectedScheduler)) {
-            lastSelectedScheduler = selectedText;
-            simulator.setScheduler(new FSyncScheduler());
-            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
-        }
+        onSelectScheduler(actionEvent, FSyncScheduler::new);
     }
 
     public void onSSync(ActionEvent actionEvent) {
-        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
-        if (!selectedText.equals(lastSelectedScheduler)) {
-            lastSelectedScheduler = selectedText;
-            simulator.setScheduler(new SSyncScheduler());
-            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
-        }
+        onSelectScheduler(actionEvent, SSyncScheduler::new);
     }
 
     public void onASync(ActionEvent actionEvent) {
+        onSelectScheduler(actionEvent, AsyncScheduler::new);
+    }
+
+    public void onSelectScheduler(ActionEvent actionEvent, Supplier<Scheduler> schedulerSupplier) {
         String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
         if (!selectedText.equals(lastSelectedScheduler)) {
             lastSelectedScheduler = selectedText;
-            simulator.setScheduler(new AsyncScheduler());
+            simulator.setScheduler(schedulerSupplier.get());
             System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
         }
     }
-
-//    public void onShowSEC(ActionEvent actionEvent) {
-//        this.drawSEC = ((CheckMenuItem)actionEvent.getSource()).isSelected();
-//        if (drawSEC) {
-//            System.out.println("Smallest enclosing circle will be drawn.");
-//        } else {
-//            System.out.println("Smallest enclosing circle will not be drawn.");
-//        }
-//    }
-//
-//    public void onShowRadii(ActionEvent actionEvent) {
-//        this.drawRadii = ((CheckMenuItem)actionEvent.getSource()).isSelected();
-//        if (drawRadii) {
-//            System.out.println("Radii to center of SEC will be shown");
-//        } else {
-//            System.out.println("Radii to center of SEC will not be shown");
-//            System.out.println("Radii to center of SEC will not be shown");
-//        }
-//    }
 }
