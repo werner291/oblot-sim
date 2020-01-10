@@ -6,9 +6,14 @@ import Util.Circle;
 import Util.SmallestEnclosingCircle;
 import Util.Vector;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
@@ -35,6 +40,9 @@ public class RobotView extends Region {
     private double mouseX = 0; // mouse coords at start of dragging
     private double mouseY = 0;
     private double scale = 40; // the current scale of the coordinate system
+    private final double MAX_SCALE = 200; // the maximum scale of the coordinate system
+    private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
+
 
     /**
      * Determines whether the robots' local coordinate systems are visualized,
@@ -52,7 +60,29 @@ public class RobotView extends Region {
      */
     public SimpleBooleanProperty drawRadii = new SimpleBooleanProperty(false);
 
+    /**
+     * Context menu for the canvas. Used for adding/removing robots and for adding/removing events
+     */
+    ContextMenu canvasContextMenu;
+
     private Canvas canvas;
+    private Vector clickedPosition;
+    private Robot clickedRobot;
+
+    // Interface of the object containing robots, to separate concerns.
+    public interface RobotManager {
+
+        void addRobot(Robot toAdd);
+        void removeRobot(Robot toRemove);
+        boolean canEditRobots();
+        Robot[] getRobots();
+    }
+
+    public void setRobotManager(RobotManager robotManager) {
+        this.robotManager = robotManager;
+    }
+
+    private RobotManager robotManager;
 
     public RobotView() {
 
@@ -70,6 +100,8 @@ public class RobotView extends Region {
         canvas.widthProperty().bind(this.widthProperty());
         canvas.heightProperty().bind(this.heightProperty());
 
+
+        setUpContextMenu();
     }
 
     public void setWidth(double w) {
@@ -83,7 +115,8 @@ public class RobotView extends Region {
     /**
      * Draws a grid in the canvas based on the viewX, viewY and the scale, using a given set of robots.
      */
-    public void paintCanvas(Robot[] robots) {
+    public void paintCanvas() {
+        Robot[] robots = robotManager.getRobots();
         GraphicsContext gc = canvas.getGraphicsContext2D();
         double portHeight = canvas.getHeight();
         double portWidth = canvas.getWidth();
@@ -267,58 +300,56 @@ public class RobotView extends Region {
 
     /**
      * Zoom in on the mouse coordinates
-     *
      * @param mouseX the x coord of the mouse
      * @param mouseY the y coord of the mouse
      */
     public void zoomIn(double mouseX, double mouseY) {
-        // the maximum scale of the coordinate system
-        double MAX_SCALE = 200;
         if (scale < MAX_SCALE) { // prevent scrolling further
-            double portHeight = canvas.getHeight();
-
-            // calculate canvas coord
-            double xCoord = mouseX / scale + viewX;
-            double yCoord = ((mouseY - (portHeight - 1)) / -scale) + viewY;
+            // calculate old coord
+            Vector oldCoord = canvasToRobotCoords(new Vector(mouseX, mouseY));
 
             scale *= 1.5;
 
             // calculate new canvas coord
-            double xCoordNew = mouseX / scale + viewX;
-            double yCoordNew = ((mouseY - (portHeight - 1)) / -scale) + viewY;
+            Vector newCoord = canvasToRobotCoords(new Vector(mouseX, mouseY));
 
             // the difference should be added to the bottom left of the view
-            viewX += xCoord - xCoordNew;
-            viewY += yCoord - yCoordNew;
+            viewX += oldCoord.x - newCoord.x;
+            viewY += oldCoord.y - newCoord.y;
         }
     }
 
     /**
      * Zoom out on the mouse coordinates.
-     *
      * @param mouseX the x coord of the mouse
      * @param mouseY the y coord of the mouse
      */
     public void zoomOut(double mouseX, double mouseY) {
-        // the minimum scale of the coordinate system
-        double MIN_SCALE = 10;
         if (scale > MIN_SCALE) {
-            double portHeight = canvas.getHeight();
-
-            // calculate canvas coord
-            double xCoord = mouseX / scale + viewX;
-            double yCoord = ((mouseY - (portHeight - 1)) / -scale) + viewY;
+            // calculate old coord
+            Vector oldCoord = canvasToRobotCoords(new Vector(mouseX, mouseY));
 
             scale /= 1.5;
 
             // calculate new canvas coord
-            double xCoordNew = mouseX / scale + viewX;
-            double yCoordNew = ((mouseY - (portHeight - 1)) / -scale) + viewY;
+            Vector newCoord = canvasToRobotCoords(new Vector(mouseX, mouseY));
 
             // the difference should be added to the bottom left of the view
-            viewX += xCoord - xCoordNew;
-            viewY += yCoord - yCoordNew;
+            viewX += oldCoord.x - newCoord.x;
+            viewY += oldCoord.y - newCoord.y;
         }
+    }
+
+    /**
+     * Convert a coordinate on the canvas to a coordinate in the coordinate system of the robots that is drawn
+     * @param p the point to convert
+     * @return the converted point
+     */
+    private Vector canvasToRobotCoords(Vector p) {
+        double portHeight = canvas.getHeight();
+        double xCoord = p.x / scale + viewX;
+        double yCoord = ((p.y - (portHeight - 1)) / -scale) + viewY;
+        return new Vector(xCoord, yCoord);
     }
 
     @FXML
@@ -333,6 +364,8 @@ public class RobotView extends Region {
         mouseY = e.getY();
         oldViewX = viewX;
         oldViewY = viewY;
+
+        canvasContextMenu.hide();
     }
 
     @FXML
@@ -358,4 +391,58 @@ public class RobotView extends Region {
         }
     }
 
+    /**
+     * Sets up the context menu for the canvas.
+     */
+    private void setUpContextMenu() {
+        // setup the contextmenu
+        canvasContextMenu = new ContextMenu();
+        canvasContextMenu.setAutoHide(true);
+        MenuItem addRobotMenuItem = new MenuItem("Add robot");
+        addRobotMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Robot[] localRobots = robotManager.getRobots();
+                Robot newRobot = new Robot(localRobots.length, localRobots[0].algo, clickedPosition, localRobots[0].trans);
+                robotManager.addRobot(newRobot);
+            }
+        });
+        MenuItem removeRobotItem = new MenuItem("Remove robot");
+        removeRobotItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (clickedRobot != null) { // there is a robot that we should remove
+                    robotManager.removeRobot(clickedRobot);
+                }
+            }
+        });
+        canvasContextMenu.getItems().addAll(addRobotMenuItem);
+
+        setOnContextMenuRequested(new EventHandler<>() {
+            @Override
+            public void handle(ContextMenuEvent e) {
+                if (!robotManager.canEditRobots()) {
+                    return;
+                }
+                // check if we clicked on a robot
+                Vector mouseClick = new Vector(e.getX(), e.getY());
+                clickedPosition = canvasToRobotCoords(mouseClick);
+                clickedRobot = null;
+                for (Robot r : robotManager.getRobots()) {
+                    if (Math.abs(r.pos.x - clickedPosition.x) < 0.5 && Math.abs(r.pos.y - clickedPosition.y) < 0.5) {
+                        clickedRobot = r;
+                    }
+                }
+                // if we clicked on a robot, adjust the menu accordingly
+                if (clickedRobot != null) {
+                    if (!canvasContextMenu.getItems().contains(removeRobotItem)) {
+                        canvasContextMenu.getItems().add(removeRobotItem);
+                    }
+                } else {
+                    canvasContextMenu.getItems().remove(removeRobotItem); // will not remove if not contains
+                }
+                canvasContextMenu.show(canvas, e.getScreenX(), e.getScreenY());
+            }
+        });
+    }
 }

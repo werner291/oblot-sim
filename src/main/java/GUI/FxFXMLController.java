@@ -4,8 +4,6 @@ import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
 import RobotPaths.RobotPath;
 import Schedulers.*;
-import Util.Circle;
-import Util.SmallestEnclosingCircle;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import Simulator.Simulator;
@@ -15,15 +13,10 @@ import Util.Vector;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.transform.Affine;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 
@@ -32,13 +25,12 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * The controller behind the {@link GUI}. The functions here define what happens when
  * the GUI is manipulated using button presses, slider changes etc.
  */
-public class FxFXMLController
+public class FxFXMLController implements RobotView.RobotManager
 {
     boolean isScheduleDone = false;
     boolean isDoneSimulating = false;
@@ -103,6 +95,7 @@ public class FxFXMLController
     @FXML
     private CheckMenuItem drawRadiiButton;
 
+
     private String lastSelectedScheduler;
 
     private Simulator simulator; // the simulator that will run the simulation.
@@ -118,6 +111,8 @@ public class FxFXMLController
     @FXML
     private void initialize()
     {
+        robotView.setRobotManager(this);
+
         // draw the canvas on a timer
         AnimationTimer timer = new AnimationTimer() {
             @Override
@@ -125,7 +120,7 @@ public class FxFXMLController
                 // Prevents trying to draw the simulator before it's fully initialized. (race condition)
                 if (simulator != null) {
                     recomputeRobots(dragBarSimulation.getValue());
-                    robotView.paintCanvas(localRobots);
+                    robotView.paintCanvas();
 
                     if (!isPaused) {
                         playDragBar();
@@ -185,6 +180,40 @@ public class FxFXMLController
 
         warningPopup.show(GUI.stage);
 
+    }
+
+    public boolean canEditRobots() {
+        return isPaused;
+    }
+
+    @Override
+    public Robot[] getRobots() {
+        return localRobots;
+    }
+
+    public void removeRobot(Robot toRemove) {
+        Robot[] copy = new Robot[localRobots.length - 1];
+        int indexInCopy = 0;
+        for (Robot localRobot : localRobots) {
+            if (localRobot != toRemove) {
+                copy[indexInCopy] = localRobot;
+                indexInCopy++;
+            }
+        }
+        localRobots = copy;
+        Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
+        dragBarSimulation.setValue(0);
+        simulator.setState(localRobots, new ArrayList<>(), 0);
+    }
+
+    public void addRobot(Robot newRobot) {
+        Robot[] copy = new Robot[localRobots.length + 1];
+        System.arraycopy(localRobots, 0, copy, 0, localRobots.length);
+        copy[copy.length - 1] = newRobot;
+        localRobots = copy;
+        Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
+        dragBarSimulation.setValue(0);
+        simulator.setState(localRobots, new ArrayList<>(), 0);
     }
 
     private void hideWarningPopUp() {
