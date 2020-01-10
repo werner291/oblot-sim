@@ -1,5 +1,6 @@
 package GUI;
 
+import PositionTransformations.PositionTransformation;
 import Simulator.Robot;
 import Util.Circle;
 import Util.SmallestEnclosingCircle;
@@ -18,6 +19,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * JavaFX view component that contains a canvas that draws the different robots.
+ *
+ * Robots are given in through the paintCanvas, which makes this component
+ * effectively stateless w.r.t the robots.
+ */
 public class RobotView extends Region {
 
     // parameters for the canvas
@@ -27,13 +34,24 @@ public class RobotView extends Region {
     private double oldViewY = 0;
     private double mouseX = 0; // mouse coords at start of dragging
     private double mouseY = 0;
-    private final double LINE_SEP = 1; // the distance between two lines
     private double scale = 40; // the current scale of the coordinate system
-    private final double MAX_SCALE = 200; // the maximum scale of the coordinate system
-    private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
+
+    /**
+     * Determines whether the robots' local coordinate systems are visualized,
+     * indicating how their view of the world around them is transformed.
+     */
     public SimpleBooleanProperty drawCoordinateSystems = new SimpleBooleanProperty(false);
+
+    /**
+     * Determine whether the smallest enclosing circle should be drawn of all the robots.
+     */
     public SimpleBooleanProperty drawSEC = new SimpleBooleanProperty(false);
+
+    /**
+     * Determine whether the radii of the robots on the SEC is to be drawn.
+     */
     public SimpleBooleanProperty drawRadii = new SimpleBooleanProperty(false);
+
     private Canvas canvas;
 
     public RobotView() {
@@ -43,17 +61,16 @@ public class RobotView extends Region {
         canvas = new Canvas();
         getChildren().add(canvas);
 
-
+        // Set up dragging and clicking event handlers.
         setOnMouseDragged(this::canvasMouseDragged);
         setOnMousePressed(this::canvasMousePressed);
         setOnScroll(this::canvasScrolled);
 
+        // Make sure the canvas stays at the same size as its' container.
         canvas.widthProperty().bind(this.widthProperty());
         canvas.heightProperty().bind(this.heightProperty());
 
-//        onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled"
     }
-
 
     public void setWidth(double w) {
         super.setWidth(w);
@@ -64,7 +81,7 @@ public class RobotView extends Region {
     }
 
     /**
-     * Draws a grid in the canvas based on the viewX, viewY and the scale
+     * Draws a grid in the canvas based on the viewX, viewY and the scale, using a given set of robots.
      */
     public void paintCanvas(Robot[] robots) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -74,23 +91,138 @@ public class RobotView extends Region {
         // clear the canvas
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, portWidth, portHeight);
+        drawGrid(gc, portHeight, portWidth);
 
+        Affine tOld = gc.getTransform();
+        Affine t = new Affine();
+        // set the transform to a new transform
+        gc.transform(t);
+        // transform into the new coordinate system so we can draw on that.
+        gc.translate(0, portHeight - 1);
+        gc.scale(scale, -scale); // second negative to reflect horizontally and draw from the bottom left
+        gc.translate(-viewX, -viewY);
+
+        boolean drawSEC = this.drawSEC.get(); // We'd ideally use JavaFX vector graphics, but taking a snapshot like this works too.
+        boolean drawRadii = this.drawRadii.get(); // We'd ideally use JavaFX vector graphics, but taking a snapshot like this works too.
+        boolean drawCoordinateSystems = this.drawCoordinateSystems.get(); // We'd ideally use JavaFX vector graphics, but taking a snapshot like this works too.
+
+        // Pre-compute the smallest enclosing circle.
+        Circle SEC = null;
+        if (drawSEC || drawRadii) {
+            List<Vector> robotPositions = Arrays.stream(robots).map(r -> r.pos).collect(Collectors.toList());
+            SEC = SmallestEnclosingCircle.makeCircle(robotPositions);
+        }
+
+        if (drawSEC) {
+            drawSEC(gc, SEC);
+        }
+
+        if (drawRadii) {
+            for (Robot r : robots) {
+                drawRobotToSECRadius(gc, drawSEC, SEC, r);
+            }
+        }
+
+        // draw on the coordinate system
+        for (Robot r : robots) {
+            if (drawCoordinateSystems) {
+                visualizeTransform(gc, r.pos, r.trans);
+
+                // draw legend for the coordinate system
+                // TODO What does this do?
+                Vector center = new Vector(50, 100);
+                Vector right = new Vector(100, 100);
+                Vector up = new Vector(50, 50);
+                gc.setLineWidth(2.5);
+                gc.setStroke(Color.RED);
+                gc.strokeLine(center.x, center.y, up.x, up.y);
+                gc.strokeText("y", up.x + 5, up.y);
+                gc.setStroke(Color.GREEN);
+                gc.strokeLine(center.x, center.y, right.x, right.y);
+                gc.strokeText("x", right.x, right.y - 5);
+            }
+            drawRobot(gc, r);
+        }
+
+        // transform back to the old transform
+        gc.setTransform(tOld);
+    }
+
+    public void drawRobotToSECRadius(GraphicsContext gc, boolean drawSEC, Circle SEC, Robot r) {
+        if (r.pos.equals(SEC.c)) return;
+        gc.setLineWidth(0.03);
+        gc.setStroke(Color.BLACK);
+        Vector onCircle = drawSEC ? SEC.getPointOnCircle(r.pos) : r.pos;
+        gc.strokeLine(onCircle.x, onCircle.y, SEC.c.x, SEC.c.y);
+    }
+
+    /**
+     * Draw a black circle, in the style used to draw the SEC.
+     */
+    public void drawSEC(GraphicsContext gc, Circle SEC) {
+        gc.setLineWidth(0.05);
+        gc.setStroke(Color.BLACK);
+        gc.strokeOval(SEC.c.x - SEC.r, SEC.c.y - SEC.r, 2 * SEC.r, 2 * SEC.r);
+        gc.setFill(Color.BLACK);
+        double centerR = 0.05;
+        gc.fillOval(SEC.c.x - centerR, SEC.c.y - centerR, 2 * centerR, 2 * centerR);
+    }
+
+    /**
+     * Draw a {@link Robot}, color-coding it based on current state.
+     */
+    private void drawRobot(GraphicsContext gc, Robot r) {
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(0.05);
+        switch (r.state) { // Color-coded robot based on current state.
+            case SLEEPING:
+                gc.setFill(Color.WHITE);
+                break;
+            case MOVING:
+                gc.setFill(Color.GREEN);
+                break;
+            case COMPUTING:
+                gc.setFill(Color.RED);
+                break;
+        }
+        double robotWidth = 0.5;
+        gc.fillOval(r.pos.x - robotWidth / 2, r.pos.y - robotWidth / 2, robotWidth, robotWidth);
+        gc.strokeOval(r.pos.x - robotWidth / 2, r.pos.y - robotWidth / 2, robotWidth, robotWidth);
+    }
+
+    /**
+     * Draw a small coordinate system that visualizes the PositionTransformation centered on a given position.
+     *
+     * @param gc        The graphicscontext used to draw the axes.
+     *
+     * @param originAt  Where to center the origin of the axes.
+     *
+     * @param trans     The transformation to visualize.
+     */
+    private void visualizeTransform(GraphicsContext gc, Vector originAt, PositionTransformation trans) {
+        Vector up = new Vector(0, 1);
+        Vector right = new Vector(1, 0);
+        Vector upGlobal = trans.localToGlobal(up, originAt);
+        Vector rightGlobal = trans.localToGlobal(right, originAt);
+        gc.setLineWidth(0.05);
+        gc.setStroke(Color.RED);
+        gc.strokeLine(originAt.x, originAt.y, upGlobal.x, upGlobal.y);
+        gc.setStroke(Color.GREEN);
+        gc.strokeLine(originAt.x, originAt.y, rightGlobal.x, rightGlobal.y);
+    }
+
+    /**
+     * Draw the coordinate grid, note that it slides along with the dragging/scrolling.
+     */
+    private void drawGrid(GraphicsContext gc, double portHeight, double portWidth) {
         // calculate the starting position of the lines
-        double lineX;
-        if (viewX < 0) {
-            lineX = Math.abs(viewX % LINE_SEP) - LINE_SEP;
-        } else {
-            lineX = 0 - Math.abs(viewX % LINE_SEP);
-        }
-        double lineY;
-        if (viewY < 0) {
-            lineY = Math.abs(viewY % LINE_SEP) - LINE_SEP;
-        } else {
-            lineY = 0 - Math.abs(viewY % LINE_SEP);
-        }
+        double LINE_SEP = 1;
+        double lineX = LINE_SEP * Math.floor(viewX / LINE_SEP) - viewX;
+        double lineY = LINE_SEP * Math.floor(viewY / LINE_SEP) - viewY;
 
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(1);
+
         // vertical lines
         while (lineX * scale <= portWidth) {
             String label;
@@ -117,89 +249,7 @@ public class RobotView extends Region {
             lineY += LINE_SEP;
         }
 
-        // draw legend for the coordinate system
-        if (drawCoordinateSystems.get()) {
-            Vector center = new Vector(50, 100);
-            Vector right = new Vector(100, 100);
-            Vector up = new Vector(50, 50);
-            gc.setLineWidth(2.5);
-            gc.setStroke(Color.RED);
-            gc.strokeLine(center.x, center.y, up.x, up.y);
-            gc.strokeText("y", up.x + 5, up.y);
-            gc.setStroke(Color.GREEN);
-            gc.strokeLine(center.x, center.y, right.x, right.y);
-            gc.strokeText("x", right.x, right.y - 5);
-        }
 
-        Affine tOld = gc.getTransform();
-        Affine t = new Affine();
-        // set the transform to a new transform
-        gc.transform(t);
-        // transform into the new coordinate system so we can draw on that.
-        gc.translate(0, portHeight - 1);
-        gc.scale(scale, -scale); // second negative to reflect horizontally and draw from the bottom left
-        gc.translate(-viewX, -viewY);
-
-        Circle SEC = null;
-        boolean drawSEC = this.drawSEC.get(); // We'd ideally use JavaFX vector graphics, but taking a snapshot like this works too.
-        boolean drawRadii = this.drawRadii.get(); // We'd ideally use JavaFX vector graphics, but taking a snapshot like this works too.
-        boolean drawCoordinateSystems = this.drawCoordinateSystems.get(); // We'd ideally use JavaFX vector graphics, but taking a snapshot like this works too.
-
-        if (drawSEC || drawRadii) {
-            List<Vector> robotPositions = Arrays.stream(robots).map(r -> r.pos).collect(Collectors.toList());
-            SEC = SmallestEnclosingCircle.makeCircle(robotPositions);
-        }
-        if (drawSEC) {
-            gc.setLineWidth(0.05);
-            gc.setStroke(Color.BLACK);
-            gc.strokeOval(SEC.c.x - SEC.r, SEC.c.y - SEC.r, 2 * SEC.r, 2 * SEC.r);
-            gc.setFill(Color.BLACK);
-            double centerR = 0.05;
-            gc.fillOval(SEC.c.x - centerR, SEC.c.y - centerR, 2 * centerR, 2 * centerR);
-        }
-        if (drawRadii) {
-            for (Robot r : robots) {
-                if (r.pos.equals(SEC.c)) continue;
-                gc.setLineWidth(0.03);
-                gc.setStroke(Color.BLACK);
-                Vector onCircle = drawSEC ? SEC.getPointOnCircle(r.pos) : r.pos;
-                gc.strokeLine(onCircle.x, onCircle.y, SEC.c.x, SEC.c.y);
-            }
-        }
-
-        // draw on the coordinate system
-        for (Robot r : robots) {
-            if (drawCoordinateSystems) {
-                Vector up = new Vector(0, 1);
-                Vector right = new Vector(1, 0);
-                Vector upGlobal = r.trans.localToGlobal(up, r.pos);
-                Vector rightGlobal = r.trans.localToGlobal(right, r.pos);
-                gc.setLineWidth(0.05);
-                gc.setStroke(Color.RED);
-                gc.strokeLine(r.pos.x, r.pos.y, upGlobal.x, upGlobal.y);
-                gc.setStroke(Color.GREEN);
-                gc.strokeLine(r.pos.x, r.pos.y, rightGlobal.x, rightGlobal.y);
-            }
-            gc.setStroke(Color.BLACK);
-            gc.setLineWidth(0.05);
-            switch (r.state) {
-                case SLEEPING:
-                    gc.setFill(Color.WHITE);
-                    break;
-                case MOVING:
-                    gc.setFill(Color.GREEN);
-                    break;
-                case COMPUTING:
-                    gc.setFill(Color.RED);
-                    break;
-            }
-            double robotWidth = 0.5;
-            gc.fillOval(r.pos.x - robotWidth / 2, r.pos.y - robotWidth / 2, robotWidth, robotWidth);
-            gc.strokeOval(r.pos.x - robotWidth / 2, r.pos.y - robotWidth / 2, robotWidth, robotWidth);
-        }
-
-        // transform back to the old transform
-        gc.setTransform(tOld);
     }
 
     /**
@@ -209,6 +259,8 @@ public class RobotView extends Region {
      * @param mouseY the y coord of the mouse
      */
     public void zoomIn(double mouseX, double mouseY) {
+        // the maximum scale of the coordinate system
+        double MAX_SCALE = 200;
         if (scale < MAX_SCALE) { // prevent scrolling further
             double portHeight = canvas.getHeight();
 
@@ -235,6 +287,8 @@ public class RobotView extends Region {
      * @param mouseY the y coord of the mouse
      */
     public void zoomOut(double mouseX, double mouseY) {
+        // the minimum scale of the coordinate system
+        double MIN_SCALE = 10;
         if (scale > MIN_SCALE) {
             double portHeight = canvas.getHeight();
 
