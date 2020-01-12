@@ -128,4 +128,4 @@ GUI.runGUI({}, sim);
 
 ## How to use the GUI
 
-![alt text](doc/screenshot.png "Logo Title Text 1")
+# ![alt text](doc/screenshot.png "Logo Title Text 1")

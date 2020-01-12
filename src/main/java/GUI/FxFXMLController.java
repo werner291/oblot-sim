@@ -806,25 +806,6 @@ public class FxFXMLController implements RobotView.RobotManager
         }
     }
 
-    public void onShowSEC(ActionEvent actionEvent) {
-        this.drawSEC = ((CheckMenuItem)actionEvent.getSource()).isSelected();
-        if (drawSEC) {
-            System.out.println("Smallest enclosing circle will be drawn.");
-        } else {
-            System.out.println("Smallest enclosing circle will not be drawn.");
-        }
-    }
-
-    public void onShowRadii(ActionEvent actionEvent) {
-        this.drawRadii = ((CheckMenuItem)actionEvent.getSource()).isSelected();
-        if (drawRadii) {
-            System.out.println("Radii to center of SEC will be shown");
-        } else {
-            System.out.println("Radii to center of SEC will not be shown");
-            System.out.println("Radii to center of SEC will not be shown");
-        }
-    }
-
     public void onMultiplicity(ActionEvent actionEvent) {
         simulator.config.multiplicity = multiplicityToggle.isSelected();
     }
