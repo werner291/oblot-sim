@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
@@ -104,7 +105,7 @@
                 <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
               </textFill>
             </Label>
-              <ScrollPane fx:id="algorithmsList" layoutY="41.0" minWidth="200.0" AnchorPane.bottomAnchor="120.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
+              <ScrollPane fx:id="algorithmsList" layoutY="41.0" minWidth="200.0" prefHeight="210.0" prefWidth="286.0" AnchorPane.bottomAnchor="289.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
               <AnchorPane layoutX="2.0" layoutY="520.0" minWidth="200.0" prefHeight="120.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                      <children>
                         <Button fx:id="backwardsButton" layoutX="6.0" layoutY="59.0" mnemonicParsing="false" onAction="#backwardsAction" prefHeight="50.0" prefWidth="100.0" text="Backwards &lt;&lt;" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
@@ -118,6 +119,26 @@
                            </font>
                         </Label>
                         <TextField fx:id="playBackSpeedLabel" alignment="CENTER" maxWidth="40.0" prefHeight="50.0" text="2" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0" />
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane layoutY="260.0" prefHeight="170.0" prefWidth="286.0">
+                     <children>
+                        <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="60.0" style="&#10;" text="Config" textAlignment="CENTER" wrapText="false">
+                           <font>
+                              <Font size="18.0" fx:id="x71" />
+                           </font>
+                           <textFill>
+                              <Color blue="0.624" green="0.624" red="0.624" fx:id="x81" />
+                           </textFill>
+                        </Label>
+                        <CheckBox fx:id="multiplicityToggle" layoutX="135.0" layoutY="46.0" mnemonicParsing="false" onAction="#onMultiplicity" prefHeight="17.0" prefWidth="15.0" />
+                        <TextField fx:id="visibilityTextBox" layoutX="131.0" layoutY="103.0" onAction="#onVisibility" prefHeight="27.0" prefWidth="40.0" />
+                        <Label layoutX="8.0" layoutY="108.0" prefHeight="17.0" prefWidth="94.0" text="visibility" />
+                        <CheckBox fx:id="interruptableToggle" layoutX="135.0" layoutY="139.0" mnemonicParsing="false" onAction="#onInterruptable" prefHeight="17.0" prefWidth="5.0" />
+                        <Label layoutX="8.0" layoutY="139.0" prefHeight="17.0" prefWidth="94.0" text="interruptable" />
+                        <Label layoutX="8.0" layoutY="46.0" prefHeight="17.0" prefWidth="116.0" text="multiplicity detection" />
+                        <CheckBox fx:id="infiniteVisibilityToggle" layoutX="135.0" layoutY="77.0" mnemonicParsing="false" onAction="#onInfiniteVisibility" prefHeight="17.0" prefWidth="15.0" />
+                        <Label layoutX="8.0" layoutY="77.0" prefHeight="17.0" prefWidth="94.0" text="infinite visibility" />
                      </children>
                   </AnchorPane>
           </children>

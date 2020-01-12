@@ -15,6 +15,9 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.InputMethodEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -32,6 +35,10 @@ import java.util.function.Supplier;
  */
 public class FxFXMLController implements RobotView.RobotManager
 {
+    public CheckBox interruptableToggle;
+    public TextField visibilityTextBox;
+    public CheckBox multiplicityToggle;
+    public CheckBox infiniteVisibilityToggle;
     boolean isScheduleDone = false;
     boolean isDoneSimulating = false;
     boolean paddedLastEvent = false;
@@ -256,8 +263,19 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void setSimulator(Simulator sim) {
+        System.out.println("test");
         this.simulator = sim;
         localRobots = simulator.getRobots();
+
+        if (sim.config.visibility == -1.0) {
+            infiniteVisibilityToggle.setSelected(true);
+            visibilityTextBox.setDisable(true);
+        }else {
+            visibilityTextBox.setText(Double.toString(sim.config.visibility));
+        }
+        multiplicityToggle.setSelected(sim.config.multiplicity);
+        interruptableToggle.setSelected(sim.config.interuptable);
+
     }
 
     public void setAlgorithms(Class[] algorithms) {
@@ -786,5 +804,47 @@ public class FxFXMLController implements RobotView.RobotManager
             simulator.setScheduler(schedulerSupplier.get());
             System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
         }
+    }
+
+    public void onShowSEC(ActionEvent actionEvent) {
+        this.drawSEC = ((CheckMenuItem)actionEvent.getSource()).isSelected();
+        if (drawSEC) {
+            System.out.println("Smallest enclosing circle will be drawn.");
+        } else {
+            System.out.println("Smallest enclosing circle will not be drawn.");
+        }
+    }
+
+    public void onShowRadii(ActionEvent actionEvent) {
+        this.drawRadii = ((CheckMenuItem)actionEvent.getSource()).isSelected();
+        if (drawRadii) {
+            System.out.println("Radii to center of SEC will be shown");
+        } else {
+            System.out.println("Radii to center of SEC will not be shown");
+            System.out.println("Radii to center of SEC will not be shown");
+        }
+    }
+
+    public void onMultiplicity(ActionEvent actionEvent) {
+        simulator.config.multiplicity = multiplicityToggle.isSelected();
+    }
+
+    public void onVisibility(ActionEvent actionEvent) {
+        simulator.config.visibility =  Double.valueOf(visibilityTextBox.getText());
+    }
+
+    public void onInterruptable(ActionEvent actionEvent) {
+        simulator.config.interuptable = interruptableToggle.isSelected();
+    }
+
+    public void onInfiniteVisibility(ActionEvent actionEvent) {
+        if (infiniteVisibilityToggle.isSelected()) {
+            simulator.config.visibility = -1;
+        }else {
+            if (!visibilityTextBox.getText().equals("")) {
+                simulator.config.visibility = Double.valueOf(visibilityTextBox.getText());
+            }
+        }
+        visibilityTextBox.setDisable(infiniteVisibilityToggle.isSelected());
     }
 }
