@@ -14,10 +14,6 @@ import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.InputMethodEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -786,20 +782,26 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void onFSync(ActionEvent actionEvent) {
-        onSelectScheduler(actionEvent, FSyncScheduler::new);
+        onSelectScheduler(actionEvent, FSyncScheduler::new, false);
     }
 
     public void onSSync(ActionEvent actionEvent) {
-        onSelectScheduler(actionEvent, SSyncScheduler::new);
+        onSelectScheduler(actionEvent, SSyncScheduler::new, false);
     }
 
     public void onASync(ActionEvent actionEvent) {
-        onSelectScheduler(actionEvent, AsyncScheduler::new);
+        onSelectScheduler(actionEvent, AsyncScheduler::new, false);
     }
 
-    public void onSelectScheduler(ActionEvent actionEvent, Supplier<Scheduler> schedulerSupplier) {
+    public void onFileScheduler(ActionEvent actionEvent) {
+        final FileChooser fc = new FileChooser();
+        File file = fc.showOpenDialog(null);
+        onSelectScheduler(actionEvent, () -> new FileScheduler(file, localRobots), true);
+    }
+
+    public void onSelectScheduler(ActionEvent actionEvent, Supplier<Scheduler> schedulerSupplier, boolean force) {
         String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
-        if (!selectedText.equals(lastSelectedScheduler)) {
+        if (!selectedText.equals(lastSelectedScheduler) || force) {
             lastSelectedScheduler = selectedText;
             simulator.setScheduler(schedulerSupplier.get());
             System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
