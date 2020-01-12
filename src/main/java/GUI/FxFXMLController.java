@@ -4,23 +4,21 @@ import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
 import RobotPaths.RobotPath;
 import Schedulers.*;
+import Simulator.Robot;
+import Simulator.Simulator;
+import Simulator.State;
 import Util.Circle;
 import Util.SmallestEnclosingCircle;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import Simulator.Simulator;
-import Simulator.Robot;
-import Simulator.State;
 import Util.Vector;
 import javafx.animation.AnimationTimer;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.geometry.Side;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
@@ -244,6 +242,52 @@ public class FxFXMLController
                 }
             }
         });
+        MenuItem nextEventMenuItem = new MenuItem("Next event");
+        nextEventMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (clickedRobot != null) { // if there is a robot to schedule this event for
+                    double t = dragBarSimulation.getValue();
+                    EventType type = null;
+                    switch (clickedRobot.state) {
+                        case MOVING:
+                            type = EventType.END_MOVING;
+                            break;
+                        case COMPUTING:
+                            type = EventType.START_MOVING;
+                            break;
+                        case SLEEPING:
+                            type = EventType.START_COMPUTE;
+                            break;
+                    }
+                    Event enteredEvent = new Event(type, t, clickedRobot);
+                    simulator.scheduler.addEvent(enteredEvent);
+                }
+            }
+        });
+        MenuItem nextEventAllRobotsMenuItem = new MenuItem("Next event (all robots)");
+        nextEventAllRobotsMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                double t = dragBarSimulation.getValue();
+                for (Robot r : localRobots) {
+                    EventType type = null;
+                    switch (r.state) {
+                        case MOVING:
+                            type = EventType.END_MOVING;
+                            break;
+                        case COMPUTING:
+                            type = EventType.START_MOVING;
+                            break;
+                        case SLEEPING:
+                            type = EventType.START_COMPUTE;
+                            break;
+                    }
+                    Event enteredEvent = new Event(type, t, r);
+                    simulator.scheduler.addEvent(enteredEvent);
+                }
+            }
+        });
         canvasContextMenu.getItems().addAll(addRobotMenuItem);
         canvas.setOnContextMenuRequested(new EventHandler<>() {
             @Override
@@ -260,13 +304,24 @@ public class FxFXMLController
                         clickedRobot = r;
                     }
                 }
-                // if we clicked on a robot, adjust the menu accordingly
+
+                // setup the correct menu items
                 if (clickedRobot != null) {
-                    if (!canvasContextMenu.getItems().contains(removeRobotItem)) {
-                        canvasContextMenu.getItems().add(removeRobotItem);
+                    if (simulator.scheduler instanceof ManualScheduler) {
+                        List<MenuItem> items = Arrays.asList(addRobotMenuItem, removeRobotItem, nextEventMenuItem, nextEventAllRobotsMenuItem);
+                        canvasContextMenu.getItems().setAll(items);
+                    } else {
+                        List<MenuItem> items = Arrays.asList(addRobotMenuItem, removeRobotItem);
+                        canvasContextMenu.getItems().setAll(items);
                     }
                 } else {
-                    canvasContextMenu.getItems().remove(removeRobotItem); // will not remove if not contains
+                    if (simulator.scheduler instanceof ManualScheduler) {
+                        List<MenuItem> items = Arrays.asList(addRobotMenuItem, nextEventAllRobotsMenuItem);
+                        canvasContextMenu.getItems().setAll(items);
+                    } else {
+                        List<MenuItem> items = Arrays.asList(addRobotMenuItem);
+                        canvasContextMenu.getItems().setAll(items);
+                    }
                 }
                 canvasContextMenu.show(canvas, e.getScreenX(), e.getScreenY());
             }
@@ -1123,6 +1178,15 @@ public class FxFXMLController
         if (!selectedText.equals(lastSelectedScheduler)) {
             lastSelectedScheduler = selectedText;
             simulator.setScheduler(new AsyncScheduler());
+            System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
+        }
+    }
+
+    public void onManual(ActionEvent actionEvent) {
+        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
+        if (!selectedText.equals(lastSelectedScheduler)) {
+            lastSelectedScheduler = selectedText;
+            simulator.setScheduler(new ManualScheduler());
             System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
         }
     }

@@ -48,6 +48,7 @@
                   </RadioMenuItem>
                   <RadioMenuItem mnemonicParsing="false" onAction="#onSSync" text="Semi Sync" toggleGroup="$schedGroup" />
                   <RadioMenuItem mnemonicParsing="false" onAction="#onASync" text="Async" toggleGroup="$schedGroup" />
+                  <RadioMenuItem mnemonicParsing="false" onAction="#onManual" text="Manual" toggleGroup="$schedGroup" />
                </items>
         </Menu>
             <Menu mnemonicParsing="false" text="Axis">
