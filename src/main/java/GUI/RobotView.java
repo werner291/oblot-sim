@@ -58,6 +58,11 @@ public class RobotView extends Region {
      */
     public SimpleBooleanProperty drawRadii = new SimpleBooleanProperty(false);
 
+    /**
+     * Determine whether the radii of the robots on the SEC is to be drawn.
+     */
+    public SimpleBooleanProperty drawRobotLabel = new SimpleBooleanProperty(false);
+
     private Canvas canvas;
 
     // Interface of the object containing robots, to separate concerns.
@@ -121,6 +126,16 @@ public class RobotView extends Region {
 
         // Draw the robots and any associated graphics.
         drawRobots(robots, gc, portHeight);
+
+        if (drawRobotLabel.get()) {
+            gc.setLineWidth(1);
+            for (Robot r : robots) {
+                double offset = 2.5;
+                double xCoord = (r.pos.x - viewX) * scale;
+                double yCoord = (r.pos.y - viewY) * -scale + (portHeight - 1);
+                gc.strokeText((r.id + 1) + "", xCoord - offset, yCoord + offset);
+            }
+        }
 
         // Draw the axes legend.
         drawPTVisualizationLegend(gc);

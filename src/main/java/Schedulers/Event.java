@@ -41,4 +41,20 @@ public class Event {
     public Event copyEvent() {
         return new Event(this.type, this.t, this.r.copy());
     }
+
+
+    /**
+     * Generate the next event for the same robot, respecting the rotation in event type and increasing the timestamp.
+     *
+     * Note that the reference to the {@link Robot} is shared.
+     *
+     * @param deltaT Amount to add to event timestamp.
+     *
+     * @return The generated {@link Event}
+     */
+    public Event nextWithDelay(double deltaT) {
+        assert deltaT > 0;
+
+        return new Event(EventType.next(this.type), this.t + deltaT, this.r);
+    }
 }
