@@ -676,18 +676,17 @@ public class FxFXMLController
             double maxEndTime = currentEvent.events.get(0).t + 1;
 
             int eventIndex = 0;
-            for (Event robotEvent : nextEvent.events) {
-                int robotIndexTemp = getRobotIndex(robotEvent.r);
+            for (Event nextRobotEvent : nextEvent.events) {
+                int robotIndexTemp = getRobotIndex(nextRobotEvent.r);
                 Robot robot = localRobots[robotIndexTemp];
 
-                Event nextRobotEvent = nextEvent.events.get(robotIndexTemp);
                 RobotPath nextRobotPath = nextEvent.robotPaths[robotIndexTemp];
 
                 // If no more calculatedevents came up and we haven't finished padding till all robots stop do this
                 if (!isDoneSimulating && isScheduleDone && !paddedLastEvent) {
 
-                    // If robots have started moving then finish the movement to their goal and calculate how much time this takes. TODO: Make sure this takes the current scheduler into account
-                    if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.START_MOVING)) {
+                    // If robots have started moving then finish the movement to their goal and calculate how much time this takes.
+                    if (nextRobotEvent.type.equals(EventType.END_MOVING)) {
                         nextRobotEvent.type = EventType.END_MOVING;
                         nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
                         double endTime = nextRobotPath.getEndTime(nextRobotEvent.t, robot.speed);
@@ -695,13 +694,13 @@ public class FxFXMLController
                     }
 
                     // If robots have started computing, finish the compute cycle and afterwards should start moving to final goal.
-                    if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.START_COMPUTE)) {
+                    if (nextRobotEvent.type.equals(EventType.START_COMPUTE)) {
                         nextRobotEvent.type = EventType.START_MOVING;
                         nextRobotEvent.t = nextRobotEvent.t + 1;
                     }
 
                     // If robots have started stopped moving, but are not yet at their goal start computing next round.
-                    if (currentEvent.events.get(robotIndexTemp).type.equals(EventType.END_MOVING)) {
+                    if (nextRobotEvent.type.equals(EventType.START_MOVING)) {
                         nextRobotEvent.type = EventType.START_COMPUTE;
                         nextRobotEvent.t = nextRobotEvent.t + 1;
                         nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
@@ -735,26 +734,37 @@ public class FxFXMLController
 
             double startTime = currentEvent.events.get(0).t;
             Vector endPos = nextEvent.positions[robotIndex];
-            double endTime = nextEvent.events.get(0).t;
+            double endTime = nextRobotEvent.t;
             RobotPath currentPath = currentEvent.robotPaths[robotIndex];
             // could be that the robot already earlier reached its goal. We want to show this as well in the gui
             double possiblyEarlierEndtime = currentPath.getEndTime(startTime, robot.speed);
             endTime = Math.min(endTime, possiblyEarlierEndtime);
 
-            switch (currentEvent.events.get(robotIndex).type) {
-                case END_MOVING:
+            switch (nextRobotEvent.type) {
+                case START_COMPUTE:
                     robot.state = State.SLEEPING;
                     break;
-                case START_COMPUTE:
+                case START_MOVING:
                     robot.state = State.COMPUTING;
                     break;
-                case START_MOVING:
+                case END_MOVING:
                     robot.state = State.MOVING;
                     break;
             }
 
             if (startTime == endTime) {
                 robot.pos = endPos;
+                switch (nextRobotEvent.type) {
+                    case START_COMPUTE:
+                        robot.state = State.COMPUTING;
+                        break;
+                    case START_MOVING:
+                        robot.state = State.MOVING;
+                        break;
+                    case END_MOVING:
+                        robot.state = State.SLEEPING;
+                        break;
+                }
             } else if (endTime < timestamp) {
                 robot.pos = endPos;
             } else {
@@ -969,7 +979,7 @@ public class FxFXMLController
                 double offset = 2.5;
                 double xCoord = (r.pos.x - viewX) * scale;
                 double yCoord = (r.pos.y - viewY) * -scale + (portHeight - 1);
-                gc.strokeText(r.id + "", xCoord - offset, yCoord + offset);
+                gc.strokeText((r.id + 1) + "", xCoord - offset, yCoord + offset);
             }
         }
     }
