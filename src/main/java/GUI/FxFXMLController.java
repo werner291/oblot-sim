@@ -123,6 +123,7 @@ public class FxFXMLController
 
     private boolean drawCoordinateSystems = false;
     private boolean drawSEC = false;
+    private boolean drawRobotLabel = true;
     private boolean drawRadii = false;
 
     private Simulator simulator; // the simulator that will run the simulation.
@@ -560,13 +561,19 @@ public class FxFXMLController
         progressBarSimulation.setProgress(50);
 
         // Add recent events to Vbox containing all events
-        int eventIndex = 1;
+        double recentTimeStamp = 0;
         eventsVBox = new VBox();
         for (Event event : allEvents) {
-            eventsVBox.getChildren().add(createEventButton(eventIndex, event.type.toString(), event.t));
-            eventIndex++;
+            eventsVBox.getChildren().add(createEventButton(event.r.id+1, event.type.toString(), event.t));
+            recentTimeStamp = event.t;
         }
+        progressBarSimulation.setProgress(75);
         eventList.setContent(eventsVBox);
+        dragBarSimulation.setMax(recentTimeStamp);
+        dragBarSimulation.setValue(recentTimeStamp);
+
+        // Redraw robot positions
+        progressBarSimulation.setProgress(100);
     }
 
     private List<CalculatedEvent> removeInvalidCalcEvents(List<CalculatedEvent> calculatedEvents, CalculatedEvent latestEvent) {
@@ -955,6 +962,16 @@ public class FxFXMLController
 
         // transform back to the old transform
         gc.setTransform(tOld);
+
+        if (drawRobotLabel) {
+            gc.setLineWidth(1);
+            for (Robot r : robots) {
+                double offset = 2.5;
+                double xCoord = (r.pos.x - viewX) * scale;
+                double yCoord = (r.pos.y - viewY) * -scale + (portHeight - 1);
+                gc.strokeText(r.id + "", xCoord - offset, yCoord + offset);
+            }
+        }
     }
 
     /**
