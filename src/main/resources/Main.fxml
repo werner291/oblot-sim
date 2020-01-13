@@ -92,37 +92,26 @@
         </AnchorPane>
             <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
                <children>
-                  <RobotView fx:id="robotView" />
+                  <RobotView fx:id="robotView" width="400"/>
                   <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="0.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
                </children>
             </AnchorPane>
         <AnchorPane maxWidth="600.0" minWidth="260.0" prefWidth="260.0">
           <children>
-            <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Algorithms" textAlignment="CENTER" wrapText="false">
-              <font>
-                <Font size="18.0" fx:id="x1" />
-              </font>
-              <textFill>
-                <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
-              </textFill>
-            </Label>
-              <ScrollPane fx:id="algorithmsList" layoutY="41.0" minWidth="200.0" prefHeight="210.0" prefWidth="286.0" AnchorPane.bottomAnchor="289.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
-              <AnchorPane layoutX="2.0" layoutY="520.0" minWidth="200.0" prefHeight="120.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                  <AnchorPane prefHeight="259.0" prefWidth="282.0">
                      <children>
-                        <Button fx:id="backwardsButton" layoutX="6.0" layoutY="59.0" mnemonicParsing="false" onAction="#backwardsAction" prefHeight="50.0" prefWidth="100.0" text="Backwards &lt;&lt;" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
-                        <Button fx:id="playButton" layoutX="-4.0" layoutY="49.0" mnemonicParsing="false" onAction="#playSimulation" prefWidth="80.0" text="Play" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="70.0" />
-                        <Button fx:id="nextButton" layoutX="150.0" layoutY="58.0" mnemonicParsing="false" onAction="#nextSimulation" prefWidth="80.0" text="Next" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="100.0" AnchorPane.topAnchor="70.0" />
-                        <Button fx:id="endButton" layoutX="188.0" layoutY="42.0" mnemonicParsing="false" onAction="#endSimulation" prefHeight="50.0" prefWidth="80.0" text="End" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="190.0" AnchorPane.topAnchor="70.0" />
-                        <Button fx:id="forwardButton" layoutX="16.0" layoutY="69.0" mnemonicParsing="false" onAction="#forwardAction" prefHeight="50.0" prefWidth="100.0" text="&gt;&gt; Forwards" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="170.0" AnchorPane.topAnchor="10.0" />
-                        <Label alignment="CENTER" layoutX="126.0" layoutY="27.0" prefHeight="50.0" prefWidth="40.0" text="0.02" textAlignment="CENTER" textOverrun="CLIP" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0">
-                           <font>
-                              <Font name="System Bold" size="18.0" />
-                           </font>
-                        </Label>
-                        <TextField fx:id="playBackSpeedLabel" alignment="CENTER" maxWidth="40.0" prefHeight="50.0" text="2" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0" />
+                  <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Algorithms" textAlignment="CENTER" wrapText="false">
+                    <font>
+                      <Font size="18.0" fx:id="x1" />
+                    </font>
+                    <textFill>
+                      <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
+                    </textFill>
+                  </Label>
+                    <ScrollPane fx:id="algorithmsList" minWidth="200.0" prefHeight="211.0" prefWidth="282.0" AnchorPane.bottomAnchor="-2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
                      </children>
                   </AnchorPane>
-                  <AnchorPane layoutY="260.0" prefHeight="170.0" prefWidth="286.0">
+                  <AnchorPane layoutX="-4.0" layoutY="259.0" prefHeight="170.0" prefWidth="286.0">
                      <children>
                         <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="60.0" style="&#10;" text="Config" textAlignment="CENTER" wrapText="false">
                            <font>
@@ -140,6 +129,21 @@
                         <Label layoutX="8.0" layoutY="46.0" prefHeight="17.0" prefWidth="116.0" text="multiplicity detection" />
                         <CheckBox fx:id="infiniteVisibilityToggle" layoutX="135.0" layoutY="77.0" mnemonicParsing="false" onAction="#onInfiniteVisibility" prefHeight="17.0" prefWidth="15.0" />
                         <Label layoutX="8.0" layoutY="77.0" prefHeight="17.0" prefWidth="94.0" text="infinite visibility" />
+                     </children>
+                  </AnchorPane>
+              <AnchorPane layoutX="2.0" layoutY="520.0" minWidth="200.0" prefHeight="120.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                     <children>
+                        <Button fx:id="backwardsButton" layoutX="6.0" layoutY="59.0" mnemonicParsing="false" onAction="#backwardsAction" prefHeight="50.0" prefWidth="100.0" text="Backwards &lt;&lt;" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
+                        <Button fx:id="playButton" layoutX="-4.0" layoutY="49.0" mnemonicParsing="false" onAction="#playSimulation" prefWidth="80.0" text="Play" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="70.0" />
+                        <Button fx:id="nextButton" layoutX="150.0" layoutY="58.0" mnemonicParsing="false" onAction="#nextSimulation" prefWidth="80.0" text="Next" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="100.0" AnchorPane.topAnchor="70.0" />
+                        <Button fx:id="endButton" layoutX="188.0" layoutY="42.0" mnemonicParsing="false" onAction="#endSimulation" prefHeight="50.0" prefWidth="80.0" text="End" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="190.0" AnchorPane.topAnchor="70.0" />
+                        <Button fx:id="forwardButton" layoutX="16.0" layoutY="69.0" mnemonicParsing="false" onAction="#forwardAction" prefHeight="50.0" prefWidth="100.0" text="&gt;&gt; Forwards" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="170.0" AnchorPane.topAnchor="10.0" />
+                        <Label alignment="CENTER" layoutX="126.0" layoutY="27.0" prefHeight="50.0" prefWidth="40.0" text="0.02" textAlignment="CENTER" textOverrun="CLIP" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="playBackSpeedLabel" alignment="CENTER" maxWidth="40.0" prefHeight="50.0" text="2" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0" />
                      </children>
                   </AnchorPane>
           </children>
