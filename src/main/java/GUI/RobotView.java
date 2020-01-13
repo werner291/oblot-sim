@@ -61,7 +61,7 @@ public class RobotView extends Region {
     /**
      * Determine whether the radii of the robots on the SEC is to be drawn.
      */
-    public SimpleBooleanProperty drawRobotLabel = new SimpleBooleanProperty(false);
+    public SimpleBooleanProperty drawRobotLabel = new SimpleBooleanProperty(true);
 
     private Canvas canvas;
 
