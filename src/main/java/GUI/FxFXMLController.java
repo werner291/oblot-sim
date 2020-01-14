@@ -24,6 +24,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
+import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
+import javafx.util.converter.NumberStringConverter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -202,16 +205,22 @@ public class FxFXMLController implements RobotView.RobotManager
         };
         timer.start();
 
-        playBackSpeedLabel.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                try {
-                    playBackSpeed = Integer.parseInt(playBackSpeedLabel.getText());
-                } catch (NumberFormatException e) {
-                    playBackSpeedLabel.setText(""+playBackSpeed);
-                }
-            }
-        });
+        TextFormatter<Integer> formatter = new TextFormatter<>(
+                new IntegerStringConverter(),
+                defaultValue,
+                c -> Pattern.matches("\\d*", c.getText()) ? c : null );
+        Bindings.bindBidirectional(playBackSpeedLabel.textProperty(), playBackSpeed, new NumberStringConverter());
+//        .bindBidirectional();//playBackSpeed, new IntegerStringConverter());
+//        setOnAction(new EventHandler<ActionEvent>() {
+//            @Override
+//            public void handle(ActionEvent event) {
+//                try {
+//                    playBackSpeed = Integer.parseInt(playBackSpeedLabel.getText());
+//                } catch (NumberFormatException e) {
+//                    playBackSpeedLabel.setText(""+playBackSpeed);
+//                }
+//            }
+//        });
 
         // Listen to the user picking times on the event list sidebar.
 //        eventList.timePickedCB.setValue(dragBarSimulation::setValue);
