@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * The controller behind the {@link GUI}. The functions here define what happens when
@@ -201,15 +202,25 @@ public class FxFXMLController implements RobotView.RobotManager
                     float timeToDisplayFloat = (float)(timeToDisplay)/100;
                     statusLabel.setText("Computing: " + timeToDisplayFloat + "/" + timeToEndSimulation);
                 }
+
+                playBackSpeed.set(playBackSpeed.get() + 1);
+                System.out.println(playBackSpeed);
             }
         };
         timer.start();
 
         TextFormatter<Integer> formatter = new TextFormatter<>(
                 new IntegerStringConverter(),
-                defaultValue,
+                1,
                 c -> Pattern.matches("\\d*", c.getText()) ? c : null );
-        Bindings.bindBidirectional(playBackSpeedLabel.textProperty(), playBackSpeed, new NumberStringConverter());
+        formatter.valueProperty().bindBidirectional(playBackSpeed.asObject());
+        playBackSpeedLabel.setTextFormatter(formatter);
+
+        playBackSpeed.set(100);
+
+        System.out.println(playBackSpeed);
+
+//        Bindings.bindBidirectional(playBackSpeedLabel.textProperty(), playBackSpeed, new NumberStringConverter());
 //        .bindBidirectional();//playBackSpeed, new IntegerStringConverter());
 //        setOnAction(new EventHandler<ActionEvent>() {
 //            @Override
