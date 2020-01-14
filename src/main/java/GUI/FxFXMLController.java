@@ -4,34 +4,24 @@ import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
 import RobotPaths.RobotPath;
 import Schedulers.*;
-import Util.Circle;
-import Util.SmallestEnclosingCircle;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.MapProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import Simulator.Simulator;
 import Simulator.Robot;
+import Simulator.Simulator;
 import Simulator.State;
 import Util.Vector;
 import javafx.animation.AnimationTimer;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 
@@ -54,7 +44,6 @@ public class FxFXMLController implements RobotView.RobotManager
     boolean isScheduleDone = false;
     boolean isDoneSimulating = false;
     boolean paddedLastEvent = false;
-    boolean isPaused = true;
     boolean simulatingTillEnd = false;
     boolean resetEvents = true;
 
@@ -66,7 +55,6 @@ public class FxFXMLController implements RobotView.RobotManager
     double simRate = 10;
     double simTimeMillis = 1000/simRate;
 
-    int playBackSpeed = 2;
     int timeToEndSimulation = 100;
     BooleanProperty isPaused = new SimpleBooleanProperty(true);
     SimpleIntegerProperty playBackSpeed = new SimpleIntegerProperty(1);
@@ -174,7 +162,7 @@ public class FxFXMLController implements RobotView.RobotManager
                 if (System.currentTimeMillis() > lastsimTime + simTimeMillis) {
                     lastsimTime = System.currentTimeMillis();
                     // If the bar is playing increment it
-                    if (!isPaused) {
+                    if (!isPaused.get()) {
                         recomputeRobots(dragBarSimulation.getValue());
                         playDragBar();
                     }
@@ -540,13 +528,13 @@ public class FxFXMLController implements RobotView.RobotManager
     @FXML
     private void playSimulation() {
         // If called whilst browsing history, reset the future, only when starting to play, not pausing
-        if (dragBarSimulation.getValue() < dragBarSimulation.getMax() && isPaused) {
+        if (dragBarSimulation.getValue() < dragBarSimulation.getMax() && isPaused.get()) {
             resetSimulation();
         }
 
         // toggle the isPaused global variable also set the buttontext and disable the end/nextbuttons
-        isPaused = !isPaused;
-        if (isPaused) {
+        isPaused.set(!isPaused.get());
+        if (isPaused.get()) {
             playButton.setText("Play");
             endButton.setDisable(false);
             nextButton.setDisable(false);
