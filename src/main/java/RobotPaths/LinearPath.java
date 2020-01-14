@@ -1,6 +1,7 @@
 package RobotPaths;
 
 import PositionTransformations.PositionTransformation;
+import Util.Config;
 import Util.Vector;
 
 public class LinearPath extends RobotPath {
@@ -24,6 +25,11 @@ public class LinearPath extends RobotPath {
         }
         if (tStart >= tEnd) {
             throw new IllegalArgumentException("tStart should be strictly smaller than tEnd");
+        }
+        if (t <= tStart - Config.EPSILON) {
+            return start;
+        } else if (t >= tEnd + Config.EPSILON) {
+            return end;
         }
         if (tStart > t || t > tEnd) {
             throw new IllegalArgumentException("the timestamp to interpolate to should lie strictly in" +

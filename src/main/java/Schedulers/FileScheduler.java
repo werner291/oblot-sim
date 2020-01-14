@@ -20,19 +20,7 @@ import java.util.stream.IntStream;
  * c = end moving<br>
  * Every line is a new robot. The indices are the same as for the robots array given on creation.
  */
-public class FileScheduler extends Scheduler {
-
-    /**
-     * An array that contains all events that will happen, sorted on timestamp
-     */
-    private Event[] events = new Event[0];
-
-    /**
-     * The index in the {@link FileScheduler#events} array we last accessed. This is useful because
-     * sequential access is the most likely use case.
-     * If this is events.length, this means that the last timestamp requested was after the last event
-     */
-    private int currentIndex;
+public class FileScheduler extends ListScheduler {
 
     /**
      * Reads a file and stores an ordered array of events. Does this by reading a file and then merging it with the total
@@ -42,7 +30,7 @@ public class FileScheduler extends Scheduler {
      * @param file the file this scheduler should load
      * @param robots the list of robots for which this scheduler needs to load the schedule
      */
-    public FileScheduler(File file, Robot[] robots) {
+    public FileScheduler(File file, Robot[] robots) throws FileNotFoundException, IllegalArgumentException {
         String filePath = file.getAbsolutePath(); // used for printing
         try {
             int lineIndex = 0;
@@ -60,10 +48,10 @@ public class FileScheduler extends Scheduler {
                     throw new IllegalArgumentException("The timestamps are not in increasing order");
                 }
 
-                Event[] eventsForRobot = new Event[timestamps.length];
+                List<Event> eventsForRobot = new ArrayList<>(timestamps.length);
                 EventType currentType = EventType.START_COMPUTE;
-                for (int i = 0; i < timestamps.length; i++) {
-                    eventsForRobot[i] = new Event(currentType, timestamps[i], robots[lineIndex]);
+                for (double timestamp : timestamps) {
+                    eventsForRobot.add(new Event(currentType, timestamp, robots[lineIndex]));
                     currentType = EventType.next(currentType);
                 }
                 events = merge(events, eventsForRobot);
@@ -77,17 +65,14 @@ public class FileScheduler extends Scheduler {
 
 
         } catch (FileNotFoundException e) {
-            System.err.println(String.format("File not found: %s", filePath));
-            System.err.println("Does it exists and does it have read access?");
+            throw new FileNotFoundException(String.format("File not found: %s. Does it exists and does it have read access?", filePath));
         } catch (NumberFormatException e) {
-            System.err.println("The file does not have the correct format.");
-        } catch (IllegalArgumentException e) {
-            System.err.println(e.getMessage());
+            throw new NumberFormatException("The file does not have the correct format.");
         }
     }
 
     /**
-     * Checks if an array is sorted. Same ints are allowed, but they should be next to each other.
+     * Checks if an array of timestamps is sorted. Same ints are allowed, but they should be next to each other.
      * @param array the array of ints
      * @return if the array is sorted
      */
@@ -101,185 +86,4 @@ public class FileScheduler extends Scheduler {
         }
         return true;
     }
-
-    /**
-     * Merge two event arrays to be sorted on timestamp. Assume a and b are already sorted.
-     * @param a the first event array
-     * @param b the second event array
-     * @return an event array sorted on timestamp
-     */
-    private Event[] merge(Event[] a, Event[] b) {
-        boolean ASorted = IntStream.range(0, a.length - 1).noneMatch(i -> a[i].t > a[i + 1].t);
-        boolean BSorted = IntStream.range(0, b.length - 1).noneMatch(i -> b[i].t > b[i + 1].t);
-        if (!ASorted) {
-            throw new IllegalArgumentException("Array a is not sorted");
-        }
-        if (!BSorted) {
-            throw new IllegalArgumentException("Array b is not sorted");
-        }
-
-        Event[] result = new Event[a.length + b.length];
-        int i = 0; // index in a
-        int j = 0; // index in b
-        for (int k = 0; k < result.length; k++) { // k is the index in the result array
-            if (i == a.length) { // just add b
-                result[k] = b[j];
-                j++;
-            } else if (j == b.length) { // just add a
-                result[k] = a[i];
-                i++;
-            } else {
-                // cannot happen both because k = a.length + b.length, so in this case we have
-                // i < a.length && j < b.length
-                if (a[i].t < b[j].t) {
-                    result[k] = a[i];
-                    i++;
-                } else { // in case they are equal it does not matter
-                    result[k] = b[j];
-                    j++;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Finds the index i in the event array such that event[i].timestamp > t && event[i-1].timestamp <= t
-     * It returns events.length if event[events.length-1].timestamp <= t
-     * @param t the timestamp to look for
-     * @return the index of the correct event
-     */
-    private int binarySearch(double t) {
-        return binarySearch(0, events.length - 1, t);
-    }
-
-    /**
-     * Recursive implementation of binary search
-     * @param t the timestamp to look for
-     * @return the index of the correct event
-     */
-    private int binarySearch(int l, int r, double t)
-    {
-        if (r >= l) {
-            int mid = l + (r - l) / 2;
-
-            // check the special case at the beginning
-            if (mid == 0 && events[0].t > t) {
-                return 0;
-            }
-
-            // check the special cases at the end
-            if (mid == events.length - 2 && events[mid+1].t <= t) { // -2 because mid calculation will always be rounded down
-                return events.length;
-            }
-            if (events[mid].t <= t && events[mid+1].t > t) {
-                return mid+1;
-            }
-
-            // recurse on left or right part of the array
-            if (events[mid].t > t) {
-                return binarySearch(l, mid, t);
-            } else {
-                return binarySearch(mid, r, t);
-            }
-        }
-        // Whenever this happens, there is a bug in the binary search.
-        // It should find the answer in all cases before r < l
-        throw new IllegalStateException("r < l, this should never happen.");
-    }
-
-    @Override
-    public List<Event> getNextEvent(Robot[] robots, double t) {
-        // There can be many events, while the most likely access is in sequential order.
-        // Therefore, we maintain the current index and first check if it is the next one.
-        // In all other cases, we do a binary search.
-
-        if (currentIndex == events.length && events[currentIndex - 1].t <= t) {
-            return null;
-        }
-        if (currentIndex == events.length - 1 && events[currentIndex].t <= t) {
-            currentIndex++;
-            return null;
-        }
-        if (currentIndex == 0 && events[currentIndex].t > t) {
-            return getSameEvents(currentIndex);
-        }
-
-        if (currentIndex != events.length) {
-            // if there are multiple events with the same timestamp, increase currentIndex until the last one
-            while (currentIndex < events.length - 1 && events[currentIndex].t == events[currentIndex + 1].t) {
-                currentIndex++;
-            }
-            // if we now are at the end of the events, there are no new events anymore.
-            if (currentIndex == events.length - 1) {
-                return null;
-            }
-
-            // check the easy case if the next is the following event
-            if (events[currentIndex].t <= t && events[currentIndex + 1].t > t) {
-                return getSameEvents(++currentIndex);
-            }
-        }
-
-        // If the checks with the currentIndex fail, fall back to binary search
-        currentIndex = binarySearch(t);
-        if (currentIndex == events.length) {
-            return null;
-        } else {
-            return getSameEvents(currentIndex);
-        }
-    }
-
-    /**
-     * From a starting index, it traverses the event array and adds
-     * all events with the same timestamp as the event at the starting index to a list
-     * @param start the index to start looking
-     * @return a list of all events with the same timestamp as the event at index start
-     */
-    private List<Event> getSameEvents(int start) {
-        List<Event> eventsFound = new ArrayList<>();
-        int i = start;
-        while (i < events.length && events[i].t == events[start].t) {
-            eventsFound.add(events[i]);
-            i++;
-        }
-        return eventsFound;
-    }
-
-    @Override
-    public void addEvent(Event e) {
-        int index = binarySearch(e.t);
-        int indexSameRobotAfter = -1;
-        for (int i = index; i < events.length; i++) {
-            if (events[i].r == e.r){
-                indexSameRobotAfter = i;
-                break;
-            }
-        }
-        int indexSameRobotBefore = -1; // or with the same timestamp
-        for (int i = index - 1; i >= 0; i--) {
-            if (events[i].r == e.r) {
-                indexSameRobotBefore = i;
-                break;
-            }
-        }
-
-        // check if the event falls strictly in between
-        if (events[indexSameRobotBefore].t < e.t) {
-            // if it does not break the chain of events (START_COMPUTE, START_MOVE, END_MOVE), insert it
-            // it should be the eventType after the previous for the same robot, but it should be the same type as the one
-            // it will be switched for.
-            if (EventType.next(events[indexSameRobotBefore].type) == e.type && e.type == events[indexSameRobotAfter].type) { // it is a correct insertion
-                // insert e and remove the event at indexSameRobotAfter. Shift everything in between
-                if (indexSameRobotAfter - index >= 0) {
-                    System.arraycopy(events, index, events, index + 1, indexSameRobotAfter - index);
-                }
-                events[index] = e;
-            }
-        }
-        // in case the event is not strictly in between the other events
-        // for the same robot, but instead it has the same timestamp as an already defined event in the list,
-        // this will always break the natural chain of events
-    }
-
 }
