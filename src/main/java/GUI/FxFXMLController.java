@@ -166,9 +166,6 @@ public class FxFXMLController implements RobotView.RobotManager
                     robotView.paintCanvas();
                 }
 
-                if (!isPaused) {
-                    playDragBar();
-                }
                 if (System.currentTimeMillis() > lastsimTime + simTimeMillis) {
                     lastsimTime = System.currentTimeMillis();
                     // If the bar is playing increment it
