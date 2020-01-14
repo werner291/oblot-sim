@@ -323,7 +323,7 @@ public class FxFXMLController implements RobotView.RobotManager
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
         if (calculatedEvents.size() == 0) {
             simulateNextEvent();
-            calculatedEvents = simulator.getCalculatedEvents();
+            return;
         }
         List<Event> recentEvents = calculatedEvents.get((calculatedEvents.size()-1)).events;
 
@@ -497,6 +497,8 @@ public class FxFXMLController implements RobotView.RobotManager
     private void onDragDetected() {
         isPaused = true;
         playButton.setText("Play");
+        endButton.setDisable(false);
+        nextButton.setDisable(false);
     }
 
     /**
@@ -579,6 +581,10 @@ public class FxFXMLController implements RobotView.RobotManager
 
         // Set global variable which will enforce the list of events on the left to be recomputed from scratch
         resetEvents = true;
+        isDoneSimulating = false;
+        isScheduleDone = false;
+        paddedLastEvent = false;
+
     }
 
     /**
@@ -773,36 +779,26 @@ public class FxFXMLController implements RobotView.RobotManager
             // If no more calculatedevents came up and we haven't finished padding till all robots stop do this
             if (!isDoneSimulating && isScheduleDone && !paddedLastEvent) {
                 double maxEndTime = currentEvent.events.get(0).t + 1;
-                int eventIndex = 0;
+                int robotIndex = 0;
 
-                for (Event nextRobotEvent : nextEvent.events) {
-                    int robotIndexTemp = getRobotIndex(nextRobotEvent.r);
-                    Robot robot = localRobots[robotIndexTemp];
+                List<Event> newlistofEvents = new ArrayList<>();
 
+                for (Robot robot : localRobots) {
+
+                }
+
+                for (Robot robot : localRobots) {
+                    int robotIndexTemp = getRobotIndex(robot);
                     RobotPath nextRobotPath = nextEvent.robotPaths[robotIndexTemp];
 
-                    // If robots have started moving then finish the movement to their goal and calculate how much time this takes.
-                    if (nextRobotEvent.type.equals(EventType.END_MOVING)) {
-                        nextRobotEvent.type = EventType.END_MOVING;
-                        nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
-                        double endTime = nextRobotPath.getEndTime(nextRobotEvent.t, robot.speed);
-                        if (endTime > maxEndTime) maxEndTime = endTime;
-                    }
-
-                    // If robots have started computing, finish the compute cycle and afterwards should start moving to final goal.
-                    if (nextRobotEvent.type.equals(EventType.START_COMPUTE)) {
-                        nextRobotEvent.type = EventType.START_MOVING;
-                        nextRobotEvent.t = nextRobotEvent.t + 1;
-                    }
-
                     // If robots have started stopped moving, but are not yet at their goal start computing next round.
-                    if (nextRobotEvent.type.equals(EventType.START_MOVING)) {
-                        nextRobotEvent.type = EventType.START_COMPUTE;
-                        nextRobotEvent.t = nextRobotEvent.t + 1;
+                    if (robot.state.equals(State.MOVING)) {
+                        Event finalRobotEvent = new Event(EventType.END_MOVING, maxEndTime, robot);
+                        newlistofEvents.add(finalRobotEvent);
                         nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
                     }
 
-                    if (eventIndex == nextEvent.events.size()-1) {
+                    if (robotIndex == localRobots.length - 1) {
                         dragBarSimulation.setMax(maxEndTime);
                         dragBarSimulation.setValue(maxEndTime);
 
@@ -811,6 +807,7 @@ public class FxFXMLController implements RobotView.RobotManager
                             event.t = maxEndTime;
                         }
                         simulator.getCalculatedEvents().add(nextEvent);
+                        regenerateEventList(simulator.getCalculatedEvents(), false);
                         if (nextRobotEvent.type.equals(EventType.END_MOVING)) {
                             paddedLastEvent = true;
                         }
@@ -1049,7 +1046,14 @@ public class FxFXMLController implements RobotView.RobotManager
     public void onFileScheduler(ActionEvent actionEvent) {
         final FileChooser fc = new FileChooser();
         File file = fc.showOpenDialog(null);
-        onSelectScheduler(actionEvent, () -> new FileScheduler(file, localRobots), true);
+        onSelectScheduler(actionEvent, () -> {
+            try {
+                return new FileScheduler(file, localRobots);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }, true);
     }
 
     public void onSelectScheduler(ActionEvent actionEvent, Supplier<Scheduler> schedulerSupplier, boolean force) {
