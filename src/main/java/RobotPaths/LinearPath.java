@@ -25,6 +25,11 @@ public class LinearPath extends RobotPath {
         if (tStart >= tEnd) {
             throw new IllegalArgumentException("tStart should be strictly smaller than tEnd");
         }
+        if (t == tStart) {
+            return start;
+        } else if (t == tEnd) {
+            return end;
+        }
         if (tStart > t || t > tEnd) {
             throw new IllegalArgumentException("the timestamp to interpolate to should lie strictly in" +
                     "between the start and end timestamps");
