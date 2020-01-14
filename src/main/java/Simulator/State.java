@@ -16,13 +16,13 @@ public enum State {
         return State.values()[(e.ordinal() + 1) % State.values().length];
     }
 
-    public static State resultingFromEventType(EventType et) {
+    public static State  resultingFromEventType(EventType et) {
         switch (et) {
-            case END_MOVING:
-                return State.SLEEPING;
             case START_COMPUTE:
-                return  State.COMPUTING;
+                return State.SLEEPING;
             case START_MOVING:
+                return  State.COMPUTING;
+            case END_MOVING:
                 return  State.MOVING;
         }
         throw new IllegalStateException("Shouldn't reach here, switch is supposed to be exhaustive.");
