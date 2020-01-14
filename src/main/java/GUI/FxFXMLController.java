@@ -10,7 +10,9 @@ import Simulator.State;
 import Util.Vector;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
@@ -138,6 +140,12 @@ public class FxFXMLController implements RobotView.RobotManager
     private Class[] algorithms; // the list of possible algorithms
 
     private Robot[] localRobots;
+    private DoubleBinding robotViewWidth;
+
+    @SuppressWarnings("FieldCanBeLocal")
+    // NO! IT CANNOT BE LOCAL! JAVA IS STUPID AND WILL GARBAGE-COLLECT THE INTERMEDIATE PROPERTY!
+    // See https://tomasmikula.github.io/blog/2015/02/10/the-trouble-with-weak-listeners.html
+    private ObjectProperty<Integer> playbackspeedAsObject;
 
     // Add a public no-args constructor
     public FxFXMLController()
@@ -202,9 +210,6 @@ public class FxFXMLController implements RobotView.RobotManager
                     float timeToDisplayFloat = (float)(timeToDisplay)/100;
                     statusLabel.setText("Computing: " + timeToDisplayFloat + "/" + timeToEndSimulation);
                 }
-
-                playBackSpeed.set(playBackSpeed.get() + 1);
-                System.out.println(playBackSpeed);
             }
         };
         timer.start();
@@ -213,10 +218,9 @@ public class FxFXMLController implements RobotView.RobotManager
                 new IntegerStringConverter(),
                 1,
                 c -> Pattern.matches("\\d*", c.getText()) ? c : null );
-        formatter.valueProperty().bindBidirectional(playBackSpeed.asObject());
+        playbackspeedAsObject = playBackSpeed.asObject();
+        formatter.valueProperty().bindBidirectional(playbackspeedAsObject);
         playBackSpeedLabel.setTextFormatter(formatter);
-
-        playBackSpeed.set(100);
 
         System.out.println(playBackSpeed);
 
@@ -261,7 +265,8 @@ public class FxFXMLController implements RobotView.RobotManager
         algorithmsVBox.setPadding(new Insets(1));
 
         // set the canvas to listen to the size of its parent
-        robotView.prefWidthProperty().bind(canvasBackground.widthProperty().subtract(30));
+        robotViewWidth = canvasBackground.widthProperty().subtract(30);
+        robotView.prefWidthProperty().bind(robotViewWidth);
 
         canvasBackground.heightProperty().addListener((ov, oldValue, newValue) -> {
             robotView.setHeight(newValue.doubleValue() - dragBarSimulation.getHeight());
