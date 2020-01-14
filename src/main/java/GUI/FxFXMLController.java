@@ -4,6 +4,11 @@ import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
 import RobotPaths.RobotPath;
 import Schedulers.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.MapProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import Simulator.Simulator;
@@ -38,8 +43,8 @@ public class FxFXMLController implements RobotView.RobotManager
     boolean isScheduleDone = false;
     boolean isDoneSimulating = false;
     boolean paddedLastEvent = false;
-    boolean isPaused = true;
-    int playBackSpeed = 1;
+    BooleanProperty isPaused = new SimpleBooleanProperty(true);
+    SimpleIntegerProperty playBackSpeed = new SimpleIntegerProperty(1);
     int last_size_calc_events = 0;
 
     @FXML
@@ -100,11 +105,6 @@ public class FxFXMLController implements RobotView.RobotManager
 
     private String lastSelectedScheduler;
 
-    private boolean drawCoordinateSystems = false;
-    private boolean drawSEC = false;
-    private boolean drawRobotLabel = true;
-    private boolean drawRadii = false;
-
     private Simulator simulator; // the simulator that will run the simulation.
     private Class[] algorithms; // the list of possible algorithms
 
@@ -129,7 +129,7 @@ public class FxFXMLController implements RobotView.RobotManager
                     recomputeRobots(dragBarSimulation.getValue());
                     robotView.paintCanvas();
 
-                    if (!isPaused) {
+                    if (!isPaused.get()) {
                         playDragBar();
                     }
                 }
@@ -137,17 +137,7 @@ public class FxFXMLController implements RobotView.RobotManager
         };
         timer.start();
 
-        playBackSpeedLabel.setText(""+playBackSpeed);
-        playBackSpeedLabel.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                try {
-                    playBackSpeed = Integer.parseInt(playBackSpeedLabel.getText());
-                } catch (NumberFormatException e) {
-                    playBackSpeedLabel.setText(""+playBackSpeed);
-                }
-            }
-        });
+        playBackSpeedLabel.textProperty().bind(playBackSpeed.asString());
 
         // Listen to the user picking times on the event list sidebar.
         eventList.timePickedCB.setValue(dragBarSimulation::setValue);
@@ -156,9 +146,8 @@ public class FxFXMLController implements RobotView.RobotManager
         algorithmsVBox.setPadding(new Insets(1));
 
         // set the canvas to listen to the size of its parent
-        canvasBackground.widthProperty().addListener((ov, oldValue, newValue) -> {
-            robotView.setWidth(newValue.doubleValue() - 30);
-        });
+        robotView.prefWidthProperty().bind(canvasBackground.widthProperty().subtract(30));
+
         canvasBackground.heightProperty().addListener((ov, oldValue, newValue) -> {
             robotView.setHeight(newValue.doubleValue() - dragBarSimulation.getHeight());
         });
@@ -166,6 +155,9 @@ public class FxFXMLController implements RobotView.RobotManager
         robotView.drawCoordinateSystems.bind(drawCoordinateSystemsButton.selectedProperty());
         robotView.drawSEC.bind(drawSECButton.selectedProperty());
         robotView.drawRadii.bind(drawRadiiButton.selectedProperty());
+
+        playButton.textProperty().bind(Bindings.createStringBinding(() -> isPaused.get() ? "Play" : "Pause", isPaused));
+
     }
 
     private Popup warningPopup = new Popup();
@@ -189,7 +181,7 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public boolean canEditRobots() {
-        return isPaused;
+        return isPaused.get();
     }
 
     @Override
@@ -226,16 +218,24 @@ public class FxFXMLController implements RobotView.RobotManager
         warningPopup.hide();
     }
 
+    /**
+     * When not paused, called once every frame to update the state of the bar at the bottom of the screen showing
+     * which time point in the simulation is visible.
+     */
     private void playDragBar() {
+
         // Get list of computed events
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
-        if (calculatedEvents.size() == 0) {
+
+        // If the list of events is empty...
+        if (calculatedEvents.isEmpty()) {
+            // Fetch an event. If you can't find any, pause the simulation.
             if (!simulateNextEvent()) {
-                isPaused = true;
-                playButton.setText("Play");
+                isPaused.set(true);
             }
             return;
         }
+
         List<Event> recentEvents = calculatedEvents.get((calculatedEvents.size()-1)).events;
 
         // Add recent events to Vbox containing all events
@@ -244,22 +244,22 @@ public class FxFXMLController implements RobotView.RobotManager
             recentTimeStamp = calculatedEvent.t;
         }
 
+
+
         // Redraw robot positions
         double simulationTime = dragBarSimulation.valueProperty().get();
-        if (simulationTime == recentTimeStamp && playBackSpeed <= 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
-        else if (simulationTime == 0 && playBackSpeed >= 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
-        else if (simulationTime < recentTimeStamp && simulationTime > 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
-        else if (simulationTime >= recentTimeStamp && playBackSpeed >= 0)
+        if (simulationTime == recentTimeStamp && playBackSpeed.get() <= 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed.get()/100));
+        else if (simulationTime == 0 && playBackSpeed.get() >= 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed.get()/100));
+        else if (simulationTime < recentTimeStamp && simulationTime > 0) dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed.get()/100));
+        else if (simulationTime >= recentTimeStamp && playBackSpeed.get() >= 0)
         {
             if (!simulateNextEvent()) {
-                isPaused = true;
-                playButton.setText("Play");
+                isPaused.set(true);
             }
-            dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed/100));
+            dragBarSimulation.valueProperty().set(simulationTime + ((double)playBackSpeed.get()/100));
         }
         else {
-            isPaused = true;
-            playButton.setText("Play");
+            isPaused.set(true);
         }
     }
 
@@ -410,8 +410,7 @@ public class FxFXMLController implements RobotView.RobotManager
 
     @FXML
     private void onDragDetected() {
-        isPaused = true;
-        playButton.setText("Play");
+        isPaused.set(true);
     }
 
     /**
@@ -438,8 +437,7 @@ public class FxFXMLController implements RobotView.RobotManager
             dragBarSimulation.setValue(dragBarSimulation.getMax());
         } else {
             if (!simulateNextEvent()) {
-                isPaused = true;
-                playButton.setText("Play");
+                isPaused.set(true);
             }
         }
     }
@@ -519,21 +517,17 @@ public class FxFXMLController implements RobotView.RobotManager
      */
     @FXML
     private void playSimulation() {
-        isPaused = !isPaused;
-        if (isPaused) playButton.setText("Play");
-        else playButton.setText("Pause");
+        isPaused.set(!isPaused.get());
     }
 
     @FXML
     private void forwardAction() {
-        playBackSpeed += 1;
-        playBackSpeedLabel.setText(""+playBackSpeed);
+        playBackSpeed.set(playBackSpeed.get() + 1);
     }
 
     @FXML
     private void backwardsAction() {
-        playBackSpeed -= 1;
-        playBackSpeedLabel.setText(""+playBackSpeed);
+        playBackSpeed.set(playBackSpeed.get() - 1);
     }
 
     /**
@@ -886,7 +880,7 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void onVisibility(ActionEvent actionEvent) {
-        simulator.config.visibility =  Double.valueOf(visibilityTextBox.getText());
+        simulator.config.visibility =  Double.parseDouble(visibilityTextBox.getText());
     }
 
     public void onInterruptable(ActionEvent actionEvent) {
@@ -898,7 +892,7 @@ public class FxFXMLController implements RobotView.RobotManager
             simulator.config.visibility = -1;
         }else {
             if (!visibilityTextBox.getText().equals("")) {
-                simulator.config.visibility = Double.valueOf(visibilityTextBox.getText());
+                simulator.config.visibility = Double.parseDouble(visibilityTextBox.getText());
             }
         }
         visibilityTextBox.setDisable(infiniteVisibilityToggle.isSelected());
