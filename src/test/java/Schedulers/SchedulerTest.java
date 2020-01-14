@@ -2,6 +2,7 @@ package Schedulers;
 
 import Simulator.Robot;
 import Simulator.State;
+import net.jqwik.api.Example;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SchedulerTest {
 
-    @Test
+    @Example
     void fileSchedulerTest() {
 
         Random rng = new Random(1337);
@@ -50,8 +51,8 @@ class SchedulerTest {
 
             // Run the regular scheduler test as well, using a new instance of the scheduler since running this test
             // adds movement stop events to the schedule.
-            SchedulerTest.testScheduler(new FileScheduler(file, robots), (robots1, events) -> { /* No additional checks. */ },
-                    robots);
+            SchedulerTest.testScheduler(new FileScheduler(file, robots), (robots1, events) -> { /* No additional checks. */ }, robots, false);
+            SchedulerTest.testScheduler(new FileScheduler(file, robots), (robots1, events) -> { /* No additional checks. */ }, robots, true);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -129,20 +130,26 @@ class SchedulerTest {
     /**
      * An FSYNC schedule should consist of an alternation between START_COMPUTE and START_MOVING schedule events.
      */
-    @Test
+    @Example
     void testIsSynchronous() {
         testScheduler(new SSyncScheduler(),
                 (robots, events1) -> {
                     // Each new set of events must strictly be of the same type.
                     assertAllOfType(events1, events1.get(0).type);
                 }, TestUtil.generateRobotCloud(TestUtil.GO_TO_COG, 10.0, 50)
-        );
+        ,false);
+        testScheduler(new SSyncScheduler(),
+                (robots, events1) -> {
+                    // Each new set of events must strictly be of the same type.
+                    assertAllOfType(events1, events1.get(0).type);
+                }, TestUtil.generateRobotCloud(TestUtil.GO_TO_COG, 10.0, 50)
+        ,true);
     }
 
     /**
      * An FSYNC schedule should consist of an alternation between START_COMPUTE and START_MOVING schedule events.
      */
-    @Test
+    @Example
     void testIsFullySynchronous() {
 
         testScheduler(new FSyncScheduler(),
@@ -152,7 +159,15 @@ class SchedulerTest {
                     // Must come with exactly one event for each robot under FSYNC
                     assertOneEventForEachRobot(robots, events1);
                 }, TestUtil.generateRobotCloud(TestUtil.GO_TO_COG, 10.0, 50)
-        );
+        ,false);
+        testScheduler(new FSyncScheduler(),
+                (robots, events1) -> {
+                    // Each new set of events must strictly be of the same type.
+                    assertAllOfType(events1, events1.get(0).type);
+                    // Must come with exactly one event for each robot under FSYNC
+                    assertOneEventForEachRobot(robots, events1);
+                }, TestUtil.generateRobotCloud(TestUtil.GO_TO_COG, 10.0, 50)
+        ,true);
     }
 
     /**
@@ -220,7 +235,7 @@ class SchedulerTest {
      * @param checkNewEvents A callback that can be used to check additional things about individual batches of events.
      * @param robots         The set of robots to test the scheduler with.
      */
-    static void testScheduler(Scheduler scheduler, BiConsumer<Robot[], List<Event>> checkNewEvents, Robot[] robots) {
+    static void testScheduler(Scheduler scheduler, BiConsumer<Robot[], List<Event>> checkNewEvents, Robot[] robots, boolean generateInterrupts) {
 
         // Initialize the rng with a seed to make tests reproducible.
         Random r = new Random(1337);
@@ -271,8 +286,10 @@ class SchedulerTest {
             // Run additional checks that may be relevant to the particular type of scheduler.
             checkNewEvents.accept(robots, events);
 
-            // Add any relevant movement end events to the scheduler.
-            addRandomArrivalToSchedule(r, scheduler, events, eventT);
+            if (generateInterrupts) {
+                // Add any relevant movement end events to the scheduler.
+                addRandomArrivalToSchedule(r, scheduler, events, eventT);
+            }
 
             for (int j = 0; j < 50; j++) {
                 // Poke at the schedule at random times to make sure there aren't weird state bugs.

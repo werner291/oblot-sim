@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.CheckMenuItem?>
@@ -23,150 +22,161 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
+<?import GUI.RobotView?>
 
 <VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.FxFXMLController">
-  <children>
-    <MenuBar VBox.vgrow="NEVER">
-      <menus>
-        <Menu mnemonicParsing="false" text="File">
-          <items>
-            <MenuItem mnemonicParsing="false" onAction="#onLoadRun" text="Load run" />
-            <MenuItem mnemonicParsing="false" onAction="#onSaveRun" text="Save run" />
-                  <MenuItem mnemonicParsing="false" onAction="#onLoadRobots" text="Load robots" />
-                  <MenuItem mnemonicParsing="false" onAction="#onSaveRobots" text="Save robot snapshot" />
-            <MenuItem mnemonicParsing="false" onAction="#onClear" text="Clear" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" onAction="#onQuit" text="Quit" />
-          </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Scheduler">
-               <items>
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onFSync" selected="true" text="Full Sync">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="schedGroup" />
-                     </toggleGroup>
-                  </RadioMenuItem>
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onSSync" text="Semi Sync" toggleGroup="$schedGroup" />
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onASync" text="Async" toggleGroup="$schedGroup" />
-                  <RadioMenuItem mnemonicParsing="false" onAction="#onManual" text="Manual" toggleGroup="$schedGroup" />
-               </items>
-        </Menu>
-            <Menu mnemonicParsing="false" text="Axis">
-               <items>
-                  <CheckMenuItem mnemonicParsing="false" onAction="#showAxisTriggered" text="Show Axis" />
-                  <SeparatorMenuItem mnemonicParsing="false" />
-                  <CheckMenuItem fx:id="chiralityAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Chirality Shared" />
-                  <CheckMenuItem fx:id="unitLengthAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Unit Length" />
-                  <CheckMenuItem fx:id="rotationAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Rotation" />
-               </items>
-            </Menu>
-            <Menu mnemonicParsing="false" text="View">
-              <items>
-                  <CheckMenuItem mnemonicParsing="false" onAction="#onShowSEC" text="Show SEC" />
-                  <CheckMenuItem mnemonicParsing="false" onAction="#onShowRadii" text="Show Radii" />
-              </items>
-            </Menu>
-        <Menu mnemonicParsing="false" text="Help">
-          <items>
-            <MenuItem mnemonicParsing="false" onAction="#onGettingStarted" text="Getting Started" />
-                  <MenuItem mnemonicParsing="false" onAction="#onAbout" text="About Simulator.Simulator App" />
-          </items>
-        </Menu>
-      </menus>
-    </MenuBar>
-    <SplitPane dividerPositions="0.2, 0.5" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
-      <items>
-        <AnchorPane minWidth="200.0" prefWidth="250.0">
-          <children>
-            <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" style="&#10;" text="Events" textAlignment="CENTER" wrapText="false">
-                     <font>
-                        <Font size="18.0" fx:id="x7" />
-                     </font>
-                     <textFill>
-                        <Color blue="0.624" green="0.624" red="0.624" fx:id="x8" />
-                     </textFill></Label>
-                  <AnchorPane layoutY="505.0" prefHeight="45.0" prefWidth="507.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="505.0" />
-                  <ScrollPane fx:id="eventList" layoutY="41.0" minWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
-          </children>
-        </AnchorPane>
-            <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
-               <children>
-                  <Canvas fx:id="canvas" height="498.0" onMouseDragged="#canvasMouseDragged" onMousePressed="#canvasMousePressed" onScroll="#canvasScrolled" width="400.0" />
-                  <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="0.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
-               </children>
-            </AnchorPane>
-        <AnchorPane maxWidth="600.0" minWidth="260.0" prefWidth="260.0">
-          <children>
-                  <AnchorPane prefHeight="259.0" prefWidth="282.0">
-                     <children>
-                  <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Algorithms" textAlignment="CENTER" wrapText="false">
+    <children>
+        <MenuBar VBox.vgrow="NEVER">
+            <menus>
+                <Menu mnemonicParsing="false" text="File">
+                    <items>
+                        <MenuItem mnemonicParsing="false" onAction="#onLoadRun" text="Load run" />
+                        <MenuItem mnemonicParsing="false" onAction="#onSaveRun" text="Save run" />
+                        <MenuItem mnemonicParsing="false" onAction="#onLoadRobots" text="Load robots" />
+                        <MenuItem mnemonicParsing="false" onAction="#onSaveRobots" text="Save robot snapshot" />
+                        <MenuItem mnemonicParsing="false" onAction="#onClear" text="Clear" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#onQuit" text="Quit" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Scheduler">
+                    <items>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#onFSync" selected="true" text="Full Sync">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="schedGroup" />
+                            </toggleGroup>
+                        </RadioMenuItem>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#onSSync" text="Semi Sync" toggleGroup="$schedGroup" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#onASync" text="Async" toggleGroup="$schedGroup" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#onFileScheduler" text="From file" toggleGroup="$schedGroup" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Axis">
+                    <items>
+                        <CheckMenuItem fx:id="drawCoordinateSystemsButton" mnemonicParsing="false" text="Visualize Transforms" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <CheckMenuItem fx:id="chiralityAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Chirality Shared" />
+                        <CheckMenuItem fx:id="unitLengthAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Unit Length" />
+                        <CheckMenuItem fx:id="rotationAxisButton" mnemonicParsing="false" onAction="#axisChanged" text="Same Rotation" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="View">
+                    <items>
+                        <CheckMenuItem mnemonicParsing="false" fx:id="drawSECButton" text="Show SEC" />
+                        <CheckMenuItem mnemonicParsing="false" fx:id="drawRadiiButton" text="Show Radii" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Performance">
+                    <items>
+                        <MenuItem fx:id="frameRateMenuItem" mnemonicParsing="false" onAction="#onGettingStarted" text="FrameRate: 30">
+                            <graphic>
+                                <Slider fx:id="frameRateMenuSlider" blockIncrement="0.0" majorTickUnit="20.0" max="300.0" min="5.0" minorTickCount="5" prefWidth="800.0" showTickLabels="true" showTickMarks="true" value="30.0" />
+                            </graphic>
+                        </MenuItem>
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                    <items>
+                        <MenuItem mnemonicParsing="false" onAction="#onGettingStarted" text="Getting Started" />
+                        <MenuItem mnemonicParsing="false" onAction="#onAbout" text="About Simulator.Simulator App" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <SplitPane dividerPositions="0.2, 0.5" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+            <items>
+                <AnchorPane minWidth="200.0" prefWidth="250.0">
+                    <children>
+                        <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" style="&#10;" text="Events" textAlignment="CENTER" wrapText="false">
+                            <font>
+                                <Font size="18.0" fx:id="x7" />
+                            </font>
+                            <textFill>
+                                <Color blue="0.624" green="0.624" red="0.624" fx:id="x8" />
+                            </textFill></Label>
+                        <AnchorPane layoutY="505.0" prefHeight="45.0" prefWidth="507.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="505.0" />
+                        <ScrollPane fx:id="eventList" layoutY="41.0" minWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
+                    </children>
+                </AnchorPane>
+                <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
+                    <children>
+                        <RobotView fx:id="robotView" width="400"/>
+                        <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="0.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
+                    </children>
+                </AnchorPane>
+                <AnchorPane maxWidth="600.0" minWidth="260.0" prefWidth="260.0">
+                    <children>
+                        <AnchorPane prefHeight="259.0" prefWidth="282.0">
+                            <children>
+                                <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Algorithms" textAlignment="CENTER" wrapText="false">
+                                    <font>
+                                        <Font size="18.0" fx:id="x1" />
+                                    </font>
+                                    <textFill>
+                                        <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
+                                    </textFill>
+                                </Label>
+                                <ScrollPane fx:id="algorithmsList" minWidth="200.0" prefHeight="211.0" prefWidth="282.0" AnchorPane.bottomAnchor="-2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
+                            </children>
+                        </AnchorPane>
+                        <AnchorPane layoutX="-4.0" layoutY="259.0" prefHeight="170.0" prefWidth="286.0">
+                            <children>
+                                <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="60.0" style="&#10;" text="Config" textAlignment="CENTER" wrapText="false">
+                                    <font>
+                                        <Font size="18.0" fx:id="x71" />
+                                    </font>
+                                    <textFill>
+                                        <Color blue="0.624" green="0.624" red="0.624" fx:id="x81" />
+                                    </textFill>
+                                </Label>
+                                <CheckBox fx:id="multiplicityToggle" layoutX="135.0" layoutY="46.0" mnemonicParsing="false" onAction="#onMultiplicity" prefHeight="17.0" prefWidth="15.0" />
+                                <TextField fx:id="visibilityTextBox" layoutX="131.0" layoutY="103.0" onAction="#onVisibility" prefHeight="27.0" prefWidth="40.0" />
+                                <Label layoutX="8.0" layoutY="108.0" prefHeight="17.0" prefWidth="94.0" text="visibility" />
+                                <CheckBox fx:id="interruptableToggle" layoutX="135.0" layoutY="139.0" mnemonicParsing="false" onAction="#onInterruptable" prefHeight="17.0" prefWidth="5.0" />
+                                <Label layoutX="8.0" layoutY="139.0" prefHeight="17.0" prefWidth="94.0" text="interruptable" />
+                                <Label layoutX="8.0" layoutY="46.0" prefHeight="17.0" prefWidth="116.0" text="multiplicity detection" />
+                                <CheckBox fx:id="infiniteVisibilityToggle" layoutX="135.0" layoutY="77.0" mnemonicParsing="false" onAction="#onInfiniteVisibility" prefHeight="17.0" prefWidth="15.0" />
+                                <Label layoutX="8.0" layoutY="77.0" prefHeight="17.0" prefWidth="94.0" text="infinite visibility" />
+                            </children>
+                        </AnchorPane>
+                        <AnchorPane layoutX="2.0" layoutY="520.0" minWidth="200.0" prefHeight="120.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                            <children>
+                                <Button fx:id="backwardsButton" layoutX="6.0" layoutY="59.0" mnemonicParsing="false" onAction="#backwardsAction" prefHeight="50.0" prefWidth="100.0" text="Backwards &lt;&lt;" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
+                                <Button fx:id="playButton" layoutX="-4.0" layoutY="49.0" mnemonicParsing="false" onAction="#playSimulation" prefWidth="60.0" text="Play" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="70.0" />
+                                <Button fx:id="nextButton" layoutX="150.0" layoutY="58.0" mnemonicParsing="false" onAction="#nextSimulation" prefWidth="60.0" text="Next" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="70.0" />
+                                <Button fx:id="endButton" layoutX="188.0" layoutY="42.0" mnemonicParsing="false" onAction="#endSimulation" prefHeight="50.0" prefWidth="60.0" text="End" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="150.0" AnchorPane.topAnchor="70.0" />
+                                <TextField fx:id="timeToEndSimulationTextField" layoutX="188.0" layoutY="42.0" prefHeight="50.0" prefWidth="60.0" text="100" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="220.0" AnchorPane.topAnchor="70.0" />
+                                <Button fx:id="forwardButton" layoutX="16.0" layoutY="69.0" mnemonicParsing="false" onAction="#forwardAction" prefHeight="50.0" prefWidth="100.0" text="&gt;&gt; Forwards" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="170.0" AnchorPane.topAnchor="10.0" />
+                                <Label alignment="CENTER" layoutX="126.0" layoutY="27.0" prefHeight="50.0" prefWidth="40.0" text="0.02" textAlignment="CENTER" textOverrun="CLIP" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0">
+                                    <font>
+                                        <Font name="System Bold" size="18.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="playBackSpeedLabel" alignment="CENTER" maxWidth="40.0" prefHeight="50.0" text="2" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0" />
+                            </children>
+                        </AnchorPane>
+                    </children>
+                </AnchorPane>
+            </items>
+        </SplitPane>
+        <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
+            <children>
+                <Label fx:id="statusLabel" maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="Status" HBox.hgrow="ALWAYS">
                     <font>
-                      <Font size="18.0" fx:id="x1" />
+                        <Font size="11.0" fx:id="x3" />
                     </font>
                     <textFill>
-                      <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
+                        <Color blue="0.625" green="0.625" red="0.625" fx:id="x4" />
                     </textFill>
-                  </Label>
-                    <ScrollPane fx:id="algorithmsList" minWidth="200.0" prefHeight="211.0" prefWidth="282.0" AnchorPane.bottomAnchor="-2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane layoutX="-4.0" layoutY="259.0" prefHeight="170.0" prefWidth="286.0">
-                     <children>
-                        <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="60.0" style="&#10;" text="Config" textAlignment="CENTER" wrapText="false">
-                           <font>
-                              <Font size="18.0" fx:id="x71" />
-                           </font>
-                           <textFill>
-                              <Color blue="0.624" green="0.624" red="0.624" fx:id="x81" />
-                           </textFill>
-                        </Label>
-                        <CheckBox fx:id="multiplicityToggle" layoutX="135.0" layoutY="46.0" mnemonicParsing="false" onAction="#onMultiplicity" prefHeight="17.0" prefWidth="15.0" />
-                        <TextField fx:id="visibilityTextBox" layoutX="131.0" layoutY="103.0" onAction="#onVisibility" prefHeight="27.0" prefWidth="40.0" />
-                        <Label layoutX="8.0" layoutY="108.0" prefHeight="17.0" prefWidth="94.0" text="visibility" />
-                        <CheckBox fx:id="interruptableToggle" layoutX="135.0" layoutY="139.0" mnemonicParsing="false" onAction="#onInterruptable" prefHeight="17.0" prefWidth="5.0" />
-                        <Label layoutX="8.0" layoutY="139.0" prefHeight="17.0" prefWidth="94.0" text="interruptable" />
-                        <Label layoutX="8.0" layoutY="46.0" prefHeight="17.0" prefWidth="116.0" text="multiplicity detection" />
-                        <CheckBox fx:id="infiniteVisibilityToggle" layoutX="135.0" layoutY="77.0" mnemonicParsing="false" onAction="#onInfiniteVisibility" prefHeight="17.0" prefWidth="15.0" />
-                        <Label layoutX="8.0" layoutY="77.0" prefHeight="17.0" prefWidth="94.0" text="infinite visibility" />
-                     </children>
-                  </AnchorPane>
-              <AnchorPane layoutX="2.0" layoutY="520.0" minWidth="200.0" prefHeight="120.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                     <children>
-                        <Button fx:id="backwardsButton" layoutX="6.0" layoutY="59.0" mnemonicParsing="false" onAction="#backwardsAction" prefHeight="50.0" prefWidth="100.0" text="Backwards &lt;&lt;" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
-                        <Button fx:id="playButton" layoutX="-4.0" layoutY="49.0" mnemonicParsing="false" onAction="#playSimulation" prefWidth="80.0" text="Play" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="70.0" />
-                        <Button fx:id="nextButton" layoutX="150.0" layoutY="58.0" mnemonicParsing="false" onAction="#nextSimulation" prefWidth="80.0" text="Next" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="100.0" AnchorPane.topAnchor="70.0" />
-                        <Button fx:id="endButton" layoutX="188.0" layoutY="42.0" mnemonicParsing="false" onAction="#endSimulation" prefHeight="50.0" prefWidth="80.0" text="End" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="190.0" AnchorPane.topAnchor="70.0" />
-                        <Button fx:id="forwardButton" layoutX="16.0" layoutY="69.0" mnemonicParsing="false" onAction="#forwardAction" prefHeight="50.0" prefWidth="100.0" text="&gt;&gt; Forwards" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="170.0" AnchorPane.topAnchor="10.0" />
-                        <Label alignment="CENTER" layoutX="126.0" layoutY="27.0" prefHeight="50.0" prefWidth="40.0" text="0.02" textAlignment="CENTER" textOverrun="CLIP" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0">
-                           <font>
-                              <Font name="System Bold" size="18.0" />
-                           </font>
-                        </Label>
-                        <TextField fx:id="playBackSpeedLabel" alignment="CENTER" maxWidth="40.0" prefHeight="50.0" text="2" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="10.0" />
-                     </children>
-                  </AnchorPane>
-          </children>
-        </AnchorPane>
-      </items>
-    </SplitPane>
-    <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
-      <children>
-        <Label maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="Status" HBox.hgrow="ALWAYS">
-          <font>
-            <Font size="11.0" fx:id="x3" />
-          </font>
-          <textFill>
-            <Color blue="0.625" green="0.625" red="0.625" fx:id="x4" />
-          </textFill>
-        </Label>
-        <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS">
-               <children>
-                  <ProgressBar fx:id="progressBarSimulation" prefHeight="20.0" progress="0.0" />
-               </children></Pane>
-      </children>
-      <padding>
-        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
-      </padding>
-    </HBox>
-  </children>
+                </Label>
+                <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <ProgressBar fx:id="progressBarSimulation" prefHeight="20.0" progress="0.0" />
+                    </children></Pane>
+            </children>
+            <padding>
+                <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+            </padding>
+        </HBox>
+    </children>
 </VBox>

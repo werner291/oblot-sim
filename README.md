@@ -125,3 +125,39 @@ Finally, if you wish, you can run the GUI to visualise the simulation.
 ```
 GUI.runGUI({}, sim);
 ```
+
+## How to use the GUI
+
+![alt text](doc/screenshot.png "Logo Title Text 1")
+
+When opening the GUI, you will be presented with an overview of the current state of the simulation.
+
+In the middle of the screen (2), you are presented with an overview of the robots, and their positions at the current timestamp. 
+The robots are drawn as disks with a black outline, their fill color corresponding to their current state: sleeping (white), moving (green) or computing (red).
+The robot view can be panned by clicking and dragging and zoomed in/out using the scroll wheel. Individual robots can be added/removed by right-clicking inside the robot view.
+
+On the left-hand side of the screen (1), we find the event list. This list displays all events that occurred during a simulation,
+each of which can be clicked to move the simulation to the exact timestamp of that event. This will cause the robot view 
+to display the state of the robots resulting from the occurrance of the event.
+
+At the bottom (3 and 6) of the screen, we find timing controls. These can be used to control the execution/replay
+of the simulation. It can be used to play/pause the simulation, step through it from event to event, control playback speed,
+and scrub through the timeline using the slider. Note that the positions of robots between events may be the result of linear interpolation,
+and does not affect the outcome of the simulation.
+
+On the right-hand side of the screen (4), you can configure different options, such as choosing which algorithm is used
+to control the robots, and where you can choose a few other configuration options for the simulator. Note that if an algorithm
+and configuration settings were chosen through code before opening the GUI, these will still be used in the simulation until this is changed.
+
+Furthermore, at the top of the screen, we can find:
+
+- File: Options to save/load simulation runs, options to save a snapshot of the robots in their current state
+
+- Schedule: Choose which scheduler to use, including fully synchronous, semi-synchronous, async and file-based.
+
+- Axis: Enable/disable certain guarantees about the way different robots see the world.
+
+- View: Different visualization options can be enabled/disabled here such as showing the smallest enclosing circle of the robots.
+
+
+

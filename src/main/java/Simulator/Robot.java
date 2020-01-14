@@ -18,7 +18,7 @@ public class Robot {
     /**
      * The id of the robot
      */
-    private int id;
+    public int id;
 
     /**
      * The current position of the robot.

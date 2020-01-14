@@ -1,6 +1,7 @@
 import Algorithms.*;
 import PositionTransformations.RotationTransformation;
 import Schedulers.FSyncScheduler;
+import Schedulers.FileScheduler;
 import Schedulers.Scheduler;
 import Simulator.Simulator;
 import Simulator.Robot;
