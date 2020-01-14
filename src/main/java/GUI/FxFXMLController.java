@@ -198,6 +198,7 @@ public class FxFXMLController implements RobotView.RobotManager
                         // Else stop simulating, goal has been reached
                         endButton.setText("End:");
                         playButton.setDisable(false);
+                        nextButton.setDisable(false);
                         simulatingTillEnd = false;
                     }
 
@@ -236,6 +237,7 @@ public class FxFXMLController implements RobotView.RobotManager
         });
 
         frameRateMenuItem.setText("FrameRate: "+frameRate);
+        frameRateMenuSlider.valueProperty().setValue(frameRate);
         frameRateMenuSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
@@ -834,7 +836,7 @@ public class FxFXMLController implements RobotView.RobotManager
             double possiblyEarlierEndtime = currentPath.getEndTime(startTime, robot.speed);
             endTime = Math.min(endTime, possiblyEarlierEndtime);
 
-            robot.state = State.resultingFromEventType(nextEvent.events.get(robotIndex).type);
+            robot.state = State.resultingFromEventType(nextRobotEvent.type);
 
             if (startTime == endTime) {
                 robot.pos = endPos;
