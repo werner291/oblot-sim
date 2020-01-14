@@ -3,6 +3,7 @@ package Simulator;
 import Algorithms.Algorithm;
 import PositionTransformations.PositionTransformation;
 import RobotPaths.RobotPath;
+import Schedulers.EventType;
 import Util.Vector;
 
 import java.io.*;
@@ -162,6 +163,26 @@ public class Robot {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Return the next event type this robot requires
+     * @return the next event type based on the state of the robot
+     */
+    public EventType getNextEventType() {
+        EventType type = null;
+        switch (state) {
+            case MOVING:
+                type = EventType.END_MOVING;
+                break;
+            case COMPUTING:
+                type = EventType.START_MOVING;
+                break;
+            case SLEEPING:
+                type = EventType.START_COMPUTE;
+                break;
+        }
+        return type;
     }
 
     @Override

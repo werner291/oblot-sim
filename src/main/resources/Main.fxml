@@ -49,6 +49,7 @@
                         <RadioMenuItem mnemonicParsing="false" onAction="#onSSync" text="Semi Sync" toggleGroup="$schedGroup" />
                         <RadioMenuItem mnemonicParsing="false" onAction="#onASync" text="Async" toggleGroup="$schedGroup" />
                         <RadioMenuItem mnemonicParsing="false" onAction="#onFileScheduler" text="From file" toggleGroup="$schedGroup" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#onManualScheduler" text="Manual" toggleGroup="$schedGroup" />
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Axis">

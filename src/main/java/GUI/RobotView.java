@@ -1,22 +1,31 @@
 package GUI;
 
 import PositionTransformations.PositionTransformation;
+import Schedulers.Event;
+import Schedulers.EventType;
+import Schedulers.ManualScheduler;
+import Schedulers.Scheduler;
 import Simulator.Robot;
+import Simulator.State;
 import Util.Circle;
 import Util.SmallestEnclosingCircle;
 import Util.Vector;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,6 +81,8 @@ public class RobotView extends Region {
         void removeRobot(Robot toRemove);
         boolean canEditRobots();
         Robot[] getRobots();
+        double getTime();
+        Scheduler getScheduler();
     }
 
     public void setRobotManager(RobotManager robotManager) {
@@ -430,15 +441,42 @@ public class RobotView extends Region {
                     robotManager.removeRobot(picked);
                 }
             });
+            MenuItem nextEventMenuItem = new MenuItem("Next event");
+            nextEventMenuItem.setOnAction(actionEvent -> {
+                if (picked != null) { // if there is a robot to schedule this event for
+                    double t = robotManager.getTime();
+                    Event enteredEvent = new Event(picked.getNextEventType(), t, picked);
+                    robotManager.getScheduler().addEvent(enteredEvent);
+                }
+            });
+            MenuItem nextEventAllRobotsMenuItem = new MenuItem("Next event (all robots)");
+            nextEventAllRobotsMenuItem.setOnAction(actionEvent -> {
+                double t = robotManager.getTime();
+                for (Robot r : robotManager.getRobots()) {
+                    Event enteredEvent = new Event(r.getNextEventType(), t, r);
+                    robotManager.getScheduler().addEvent(enteredEvent);
+                }
+            });
 
-            cM.getItems().add(addRobotMenuItem);
-
+            // setup the correct menu items
             if (picked != null) {
-                cM.getItems().add(removeRobotItem);
+                if (robotManager.getScheduler() instanceof ManualScheduler) {
+                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, removeRobotItem, nextEventMenuItem, nextEventAllRobotsMenuItem);
+                    cM.getItems().setAll(items);
+                } else {
+                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, removeRobotItem);
+                    cM.getItems().setAll(items);
+                }
+            } else {
+                if (robotManager.getScheduler() instanceof ManualScheduler) {
+                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, nextEventAllRobotsMenuItem);
+                    cM.getItems().setAll(items);
+                } else {
+                    List<MenuItem> items = Arrays.asList(addRobotMenuItem);
+                    cM.getItems().setAll(items);
+                }
             }
-
-
-            cM.show(this, e.getScreenX(), e.getScreenY());
+            cM.show(canvas, e.getScreenX(), e.getScreenY());
         });
     }
 

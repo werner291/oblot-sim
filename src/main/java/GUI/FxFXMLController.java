@@ -292,6 +292,14 @@ public class FxFXMLController implements RobotView.RobotManager
         return localRobots;
     }
 
+    public double getTime() {
+        return dragBarSimulation.getValue();
+    }
+
+    public Scheduler getScheduler() {
+        return simulator.scheduler;
+    }
+
     public void removeRobot(Robot toRemove) {
         Robot[] copy = new Robot[localRobots.length - 1];
         int indexInCopy = 0;
@@ -1052,7 +1060,12 @@ public class FxFXMLController implements RobotView.RobotManager
     public void onFileScheduler(ActionEvent actionEvent) {
         final FileChooser fc = new FileChooser();
         File file = fc.showOpenDialog(null);
-        onSelectScheduler(actionEvent, () -> new FileScheduler(file, localRobots), true);
+       // onSelectScheduler(actionEvent, () -> new FileScheduler(file, localRobots), true);
+    }
+
+
+    public void onManualScheduler(ActionEvent actionEvent) {
+        onSelectScheduler(actionEvent, ManualScheduler::new, false);
     }
 
     public void onSelectScheduler(ActionEvent actionEvent, Supplier<Scheduler> schedulerSupplier, boolean force) {
@@ -1086,4 +1099,5 @@ public class FxFXMLController implements RobotView.RobotManager
         }
         visibilityTextBox.setDisable(infiniteVisibilityToggle.isSelected());
     }
+
 }
