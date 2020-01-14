@@ -70,7 +70,7 @@
                     <items>
                         <MenuItem fx:id="frameRateMenuItem" mnemonicParsing="false" onAction="#onGettingStarted" text="FrameRate: 30">
                             <graphic>
-                                <Slider fx:id="frameRateMenuSlider" blockIncrement="0.0" majorTickUnit="20.0" max="300.0" min="5.0" minorTickCount="5" prefWidth="800.0" showTickLabels="true" showTickMarks="true" value="30.0" />
+                                <Slider fx:id="frameRateMenuSlider" blockIncrement="0.0" majorTickUnit="20.0" max="300.0" min="5.0" minorTickCount="5" prefWidth="800.0" showTickLabels="true" showTickMarks="true" value="60.0" />
                             </graphic>
                         </MenuItem>
                     </items>
