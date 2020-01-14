@@ -441,7 +441,7 @@ public class RobotView extends Region {
                     robotManager.removeRobot(picked);
                 }
             });
-            MenuItem nextEventMenuItem = new MenuItem("Next event");
+            MenuItem nextEventMenuItem = new MenuItem("Next event (this robot)");
             nextEventMenuItem.setOnAction(actionEvent -> {
                 if (picked != null) { // if there is a robot to schedule this event for
                     double t = robotManager.getTime();
