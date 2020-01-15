@@ -160,12 +160,15 @@ public class FxFXMLController implements RobotView.RobotManager
     @FXML
     private AnchorPane canvasBackground;
 
+
+    //region Buttons / checkboxes for PositionTransformations
     @FXML
     private CheckMenuItem chiralityAxisButton;
     @FXML
     private CheckMenuItem unitLengthAxisButton;
     @FXML
     private CheckMenuItem rotationAxisButton;
+    //endregion
 
     //region Draw / don't draw visual aids.
     @FXML
@@ -176,11 +179,24 @@ public class FxFXMLController implements RobotView.RobotManager
     private CheckMenuItem drawRadiiButton;
     //endregion
 
+    // Keep track of this to stop us from replacing an already-selected schedule.
     private String lastSelectedScheduler;
 
-    private Simulator simulator; // the simulator that will run the simulation.
-    private Class[] algorithms; // the list of possible algorithms
+    /**
+     * The Simulator currently computing the robot movements.
+     */
+    private Simulator simulator;
 
+    /**
+     * The list of possible algorithms
+     */
+    private Class[] algorithms;
+
+    /**
+     * A mirror of simulator.robots that reflects the current visible state of the robots.
+     * Note that these can be in a very different position than those in the simulator,
+     * as they might be representing historical robot positions.
+     */
     private Robot[] localRobots;
 
     //region Binding references to prevent the GC from destroying them.
@@ -311,7 +327,14 @@ public class FxFXMLController implements RobotView.RobotManager
         return localRobots;
     }
 
+    /**
+     * Remove the given robot from the set of robots.
+     *
+     * @param toRemove The robot to remove. Must be in this.localRobots.
+     */
     public void removeRobot(Robot toRemove) {
+        assert Arrays.stream(this.localRobots).anyMatch(robot -> robot == toRemove);
+
         Robot[] newRobots = Arrays.stream(localRobots).filter(robot -> robot != toRemove).map(robot -> {
             robot.state = State.SLEEPING;
             return robot;
