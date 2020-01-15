@@ -516,7 +516,7 @@ public class FxFXMLController implements RobotView.RobotManager
     private void nextSimulation() {
         // If called whilst browsing history, reset the future
         if (dragBarSimulation.getValue() < dragBarSimulation.getMax()) {
-            resetSimulation();
+//            resetSimulation();
             simulateNextEvent();
         }
         // Should not be possible, added just in case
@@ -537,7 +537,7 @@ public class FxFXMLController implements RobotView.RobotManager
     private void playSimulation() {
         // If called whilst browsing history, reset the future, only when starting to play, not pausing
         if (dragBarSimulation.getValue() < dragBarSimulation.getMax() && isPaused) {
-            resetSimulation();
+//            resetSimulation();
         }
 
         // toggle the isPaused global variable also set the buttontext and disable the end/nextbuttons
@@ -574,7 +574,7 @@ public class FxFXMLController implements RobotView.RobotManager
         recomputeRobots(localTimeStamp);
 
         // Set the reset robots and calculatedevents to the state of the sim
-        simulator.setState(localRobots, newList, localTimeStamp);
+        simulator.setState(localRobots.clone(), newList, localTimeStamp);
         regenerateEventList(simulator.getCalculatedEvents(), true);
 
         // Reset the simulation drag bar as well
@@ -782,75 +782,38 @@ public class FxFXMLController implements RobotView.RobotManager
         // Change robots for the draw function
         for (Robot robot : localRobots) {
             int robotIndex = getRobotIndex(robot);
+            Vector robotPosition = startRobots[robotIndex].pos;
+
             CalculatedEvent currentRobotCevent = getLatestRobotEvent(robot, timestamp);
 
             Event currentRobotEvent = null;
+            if (currentRobotCevent != null) currentRobotEvent = getRobotEvent(robot, currentRobotCevent.events);
 
-            Vector robotPosition = startRobots[robotIndex].pos;
-
-            if (currentRobotCevent == null) { // If the current event is the first event, make up the prev event as sleeping until the first event.
-                currentRobotEvent = new Event(EventType.END_MOVING, 0, robot);
+            if (currentRobotEvent == null) { // If the current event is the first event, make up the prev event as sleeping until the first event.
+                //currentRobotEvent = new Event(EventType.END_MOVING, 0, robot);
                 robot.pos = robotPosition;
                 robot.state = State.SLEEPING;
 
                 // Don't do anything else
                 continue;
             }
-            else currentRobotEvent = getRobotEvent(robot, currentRobotCevent.events);
-
-//            if (nextRobotCevent == null) { // If the next event is unknown, make up the next event until sleep.
-//                nextRobotEvent = currentRobotEvent;
-//                nextRobotCevent = currentRobotCevent;
-//
-////                // If no more calculatedevents came up and we haven't finished padding till all robots stop do this
-////                if (!isDoneSimulating && isScheduleDone && !paddedLastEvent && currentRobotCevent != null) {
-////                    double startTime = currentRobotEvent.t;
-////                    double endTime = startTime + 1;
-////                    double maxEndTime = 0;
-////
-////                    List<Event> newlistofEvents = new ArrayList<>();
-////                    int robotIndexTemp = getRobotIndex(robot);
-////                    RobotPath nextRobotPath = currentRobotCevent.robotPaths[robotIndexTemp];
-////
-//////                    if (simulator.scheduler.getClass() == AsyncScheduler.class) {
-////                    endTime = nextRobotPath.getEndTime(startTime, robot.speed);
-////                    if (endTime > maxEndTime) maxEndTime = endTime;
-//////                    }
-////
-////                    // If robots have started stopped moving, but are not yet at their goal start computing next round.
-////                    if (robot.state.equals(State.MOVING)) {
-////                        Event finalRobotEvent = new Event(EventType.END_MOVING, endTime, robot);
-////                        newlistofEvents.add(finalRobotEvent);
-////                        currentRobotCevent.positions[robotIndexTemp] = nextRobotPath.end;
-////                    }
-////
-////                    currentRobotCevent.events = newlistofEvents;
-////                    simulator.calculatedEvents.add(currentRobotCevent);
-////                    regenerateEventList(simulator.calculatedEvents, false);
-////                    paddedOne = true;
-////                    dragBarSimulation.setMax(maxEndTime);
-////                    dragBarSimulation.valueProperty().setValue(maxEndTime);
-////                }
-//            }
-//            else nextRobotEvent = getRobotEvent(robot, nextRobotCevent.events);
 
             double startTime = currentRobotEvent.t;
             RobotPath currentPath = currentRobotCevent.robotPaths[robotIndex];
 
-            double possiblyEarlierEndtime = currentPath.getEndTime(startTime, robot.speed);
+            double endTimePath = currentPath.getEndTime(startTime, robot.speed);
             // could be that the robot already earlier reached its goal. We want to show this as well in the gui
-//            endTime = Math.min(endTime, possiblyEarlierEndtime);
 
             robot.state = State.resultingFromEventType(currentRobotEvent.type);
 
-            if (timestamp >= possiblyEarlierEndtime) {
+            if (timestamp >= endTimePath) {
                 robot.pos = currentPath.end;
             } else {
                 if (robot.state == State.MOVING) {
                     if (currentPath.startTime == -1) currentPath.startTime = startTime;
-                    robot.pos = currentPath.interpolate(currentPath.startTime, possiblyEarlierEndtime, timestamp);
+                    robot.pos = currentPath.interpolate(currentPath.startTime, endTimePath, timestamp);
                 } else if (robot.state == State.SLEEPING) {
-                    robot.pos = currentPath.interpolate(currentPath.startTime, possiblyEarlierEndtime, startTime);
+                    robot.pos = currentPath.interpolate(currentPath.startTime, endTimePath, startTime);
                 } else {
                     robot.pos = currentPath.start;
                 }
@@ -901,6 +864,7 @@ public class FxFXMLController implements RobotView.RobotManager
         }
 
         CalculatedEvent currentEvent = null;
+        List<CalculatedEvent> pastEvents = new ArrayList<>();
 
         for (int i = 0; i < calculatedEvents.size(); i++) {
             double calculatedEventsTime = calculatedEvents.get(i).events.get(0).t;
@@ -908,13 +872,31 @@ public class FxFXMLController implements RobotView.RobotManager
 
             // The event with this timestamp happened after or at the selected timestamp
             if (calculatedEventsTime >= timestamp && eventContainsRobot(robot, calculatedEventEvents)) {
-                if (i - 1 < 0) break;
-                else currentEvent = calculatedEvents.get(i-1);
+                Collections.reverse(pastEvents);
+                currentEvent = returnFirstRobotEvent(robot, pastEvents);
                 break;
+            }
+            // Don't add it to the list unless we guarantee that it's not the event past the timestamp were interested in
+            pastEvents.add(calculatedEvents.get(i));
+
+            // If we reach the end then look in the past for the most recent event anyways
+            if (i == calculatedEvents.size() - 1) {
+                Collections.reverse(pastEvents);
+                currentEvent = returnFirstRobotEvent(robot, pastEvents);
+                break;
+
             }
         }
 
         return currentEvent;
+    }
+
+    private CalculatedEvent returnFirstRobotEvent(Robot robot, List<CalculatedEvent> calculatedEvents) {
+        for (CalculatedEvent calculatedEvent : calculatedEvents) {
+            if (eventContainsRobot(robot, calculatedEvent.events)) return calculatedEvent;
+        }
+
+        return null;
     }
 
     /**
