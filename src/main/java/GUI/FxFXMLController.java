@@ -192,11 +192,8 @@ public class FxFXMLController implements RobotView.RobotManager
      */
     private Class[] algorithms;
 
-    /**
-     * A mirror of simulator.robots that reflects the current visible state of the robots.
-     * Note that these can be in a very different position than those in the simulator,
-     * as they might be representing historical robot positions.
-     */
+    // Reference to the array of robots used in the simulator.
+    // Note that this is the same array object by reference!
     private Robot[] localRobots;
 
     //region Binding references to prevent the GC from destroying them.
@@ -903,7 +900,10 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     /**
-     * Gather the previous and next event given a timestamp.
+     * Gather the events directly preceding/succeeding a timestamp.
+     *
+     * The preceding (first in array) event may have the timestamp given as query parameter.
+     *
      * @param timestamp timestamp to find the prev and next events for
      * @return a length 2 array containing the previous and next event in order
      */
@@ -917,6 +917,7 @@ public class FxFXMLController implements RobotView.RobotManager
         CalculatedEvent currentEvent = null;
         CalculatedEvent nextEvent = null;
 
+        // Linear search through calculatedEvents
         for (int i = 0; i < calculatedEvents.size(); i++) {
             double calculatedEventsTime = calculatedEvents.get(i).events.get(0).t;
 
@@ -948,7 +949,12 @@ public class FxFXMLController implements RobotView.RobotManager
         return new CalculatedEvent[]{currentEvent, nextEvent};
     }
 
+    /**
+     * Handle the user clicking one of the algorithm selection buttons.
+     */
     private EventHandler<ActionEvent> algorithmButtonHandler = event -> {
+
+        // Look up the selected algorithm by name.
         String simpleName = ((Button)event.getSource()).getText();
         Class algorithmClass = null;
         for (Class c : algorithms) {
@@ -958,6 +964,7 @@ public class FxFXMLController implements RobotView.RobotManager
         }
         // cannot give NullPointer if the algorithms array is not changed in between
         System.out.println("Algorithm will be set to: " + algorithmClass.getName());
+
         Robot[] robots = localRobots;
         for (Robot r : robots) {
             try {
@@ -971,6 +978,9 @@ public class FxFXMLController implements RobotView.RobotManager
         simulator.setState(robots);
     };
 
+    /**
+     * Update {@link PositionTransformations.PositionTransformation} options.
+     */
     public void axisChanged(ActionEvent actionEvent) {
         boolean sameChirality = chiralityAxisButton.isSelected();
         boolean sameUnitLength = unitLengthAxisButton.isSelected();
