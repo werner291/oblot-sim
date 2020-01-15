@@ -416,6 +416,7 @@ public class FxFXMLController implements RobotView.RobotManager
         this.algorithms = algorithms;
         for (Class a : algorithms) {
             if (!Algorithm.class.isAssignableFrom(a)) { // try to cast algorithm to his subclass
+                new Alert(Alert.AlertType.ERROR, "Class " + a + " is not a subclass of Algorithm.").show();
                 System.err.println("Class " + a + " is not a subclass of Algorithm.");
                 continue;
             }
@@ -683,6 +684,7 @@ public class FxFXMLController implements RobotView.RobotManager
         try {
             simulator.simulateTillNextEvent();
         } catch (Exception e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
             e.printStackTrace();
         }
         progressBarSimulation.setProgress(0.25);
@@ -944,7 +946,7 @@ public class FxFXMLController implements RobotView.RobotManager
                 Algorithm algorithm = (Algorithm)algorithmClass.newInstance();
                 r.setAlgorithm(algorithm);
             } catch (InstantiationException | IllegalAccessException e) {
-                System.err.println("Algorithm " + algorithmClass + " cannot be instantiated.");
+                new Alert(Alert.AlertType.ERROR, "Algorithm " + algorithmClass + " cannot be instantiated.").show();
                 e.printStackTrace();
             }
         }
@@ -987,6 +989,7 @@ public class FxFXMLController implements RobotView.RobotManager
             try {
                 return new FileScheduler(file, localRobots);
             } catch (FileNotFoundException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
                 e.printStackTrace();
             }
             return null;
