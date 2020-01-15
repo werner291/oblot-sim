@@ -246,7 +246,7 @@ public class FxFXMLController implements RobotView.RobotManager
                     }
 
                     // Update progressbar
-                    progressBarSimulation.setProgress((recentEvent.t / timeToEndSimulation));
+                    progressBarSimulation.setProgress((recentEvent.t / (double) timeToEndSimulation.get()));
                     int timeToDisplay = (int)(recentEvent.t*100);
                     float timeToDisplayFloat = (float)(timeToDisplay)/100;
                     statusLabel.setText("Computing: " + timeToDisplayFloat + "/" + timeToEndSimulation);
