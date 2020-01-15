@@ -16,16 +16,19 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Facade class for the Simulator that makes interaction with it a bit more high-level.
+ * Facade class for the Simulator that makes interaction with it a bit more high-level,
+ * specifically targeting GUI-like interactions.
  *
  * Separates concerns between controlling the view and controlling the simulator interactions,
  * such as interpolation, moving to the next event, etc...
  */
-public class SimulationStateInteractor implements GUI.RobotView.RobotManager {
+public class SimulationGUIFacade implements GUI.RobotView.RobotManager {
 
     private final Simulator simulator;
 
-    public SimulationStateInteractor(Simulator simulator) {
+    public DoubleProperty currentTime = new SimpleDoubleProperty();
+
+    public SimulationGUIFacade(Simulator simulator) {
         this.simulator = simulator;
     }
 
@@ -195,23 +198,11 @@ public class SimulationStateInteractor implements GUI.RobotView.RobotManager {
     }
 
     public void removeRobot(Robot toRemove) {
-        Robot[] copy = Arrays.stream(simulator.getRobots()).filter(robot -> robot != toRemove).map(robot -> {
+        currentTime.setValue(0);
+        simulator.setState(Arrays.stream(simulator.getRobots()).filter(robot -> robot != toRemove).map(robot -> {
             robot.state = State.SLEEPING;
             return robot;
-        })
-
-
-                new Robot[simulator.getRobots().length - 1];
-        int indexInCopy = 0;
-        for (Robot localRobot : simulator.getRobots()) {
-            if (localRobot != toRemove) {
-                copy[indexInCopy] = localRobot;
-                indexInCopy++;
-            }
-        }
-        Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
-        dragBarSimulation.setValue(0);
-        simulator.setState(localRobots, new ArrayList<>(), 0);
+        }), new ArrayList<>(), 0);
     }
 
     public void addRobot(Robot newRobot) {
