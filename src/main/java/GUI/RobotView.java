@@ -65,12 +65,35 @@ public class RobotView extends Region {
 
     private Canvas canvas;
 
-    // Interface of the object containing robots, to separate concerns.
+    /**
+     * Interface for any object that manages an editable set of robots.
+     */
     public interface RobotManager {
 
+        /**
+         * Add a robot to the simulation.
+         *
+         * canEditRobots will be checked beforehand whether this method can safely be called.
+         */
         void addRobot(Robot toAdd);
+
+        /**
+         * Remove a robot to the simulation.
+         *
+         * canEditRobots will be checked beforehand whether this method can safely be called.
+         */
         void removeRobot(Robot toRemove);
+
+        /**
+         * @return Wether it is currently safe to call addRobot/removeRobot.
+         */
         boolean canEditRobots();
+
+        /**
+         * Return a reference to the current array of robots.
+         *
+         * The RobotView will not keep a reference to this or modify it.
+         */
         Robot[] getRobots();
     }
 
@@ -81,8 +104,6 @@ public class RobotView extends Region {
     private RobotManager robotManager;
 
     public RobotView() {
-
-        setStyle("-fx-background-color: lightblue;");
 
         canvas = new Canvas();
         getChildren().add(canvas);
@@ -95,7 +116,6 @@ public class RobotView extends Region {
         // Make sure the canvas stays at the same size as its' container.
         canvas.widthProperty().bind(this.widthProperty());
         canvas.heightProperty().bind(this.heightProperty());
-
 
         setUpContextMenu();
     }
@@ -407,9 +427,12 @@ public class RobotView extends Region {
     private void setUpContextMenu() {
         // setup the contextmenu
         setOnContextMenuRequested(e -> {
+            // Only show if we can currently edit the robots.
             if (!robotManager.canEditRobots()) {
+                System.err.println("Cannot currently edit the robots while the simulation is running.");
                 return;
             }
+
             // check if we clicked on a robot
             Vector mouseClick = new Vector(e.getX(), e.getY());
             Robot picked = pickRobot(mouseClick);
@@ -417,17 +440,28 @@ public class RobotView extends Region {
             cM = new ContextMenu();
             cM.setAutoHide(true);
 
+            // When clicked, add a new robot in the place that the context menu was opened at.
             MenuItem addRobotMenuItem = new MenuItem("Add robot");
             addRobotMenuItem.setOnAction(actionEvent -> {
                 Robot[] localRobots = robotManager.getRobots();
+                eventList.events.setAll(simulator.getCalculatedEvents());
                 int maxID = Arrays.stream(localRobots).max((a, b) -> Integer.compare(a.id, b.id)).get().id;
                 Robot newRobot = new Robot(maxID + 1, localRobots[0].algo, canvasToRobotCoords(mouseClick), localRobots[0].trans);
+                if (!robotManager.canEditRobots()) {
+                    System.err.println("Simulation was started before robot could be added.");
+                    return;
+                }
                 robotManager.addRobot(newRobot);
             });
 
+            // When clicked, remove a robot that is close to the clicked position.
             MenuItem removeRobotItem = new MenuItem("Remove robot");
             removeRobotItem.setOnAction(actionEvent -> {
                 if (picked != null) { // there is a robot that we should remove
+                    if (!robotManager.canEditRobots()) {
+                        System.err.println("Simulation was started before robot could be removed.");
+                        return;
+                    }
                     robotManager.removeRobot(picked);
                 }
             });
@@ -437,7 +471,6 @@ public class RobotView extends Region {
             if (picked != null) {
                 cM.getItems().add(removeRobotItem);
             }
-
 
             cM.show(this, e.getScreenX(), e.getScreenY());
         });

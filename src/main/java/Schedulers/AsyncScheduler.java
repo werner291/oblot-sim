@@ -81,11 +81,11 @@ public class AsyncScheduler extends Scheduler {
         }
 
         if (earliestNextEventRobot == null) {
-            earliestNextEventTime = t + random.nextDouble();
+            earliestNextEventTime = t + 0.2*random.nextDouble();
             earliestNextEventRobot = robots[random.nextInt(robots.length)];
         }
 
-        if (earliestNextEventTime - t < 1) {
+        if (earliestNextEventTime - t < 0.2) {
             EventType eventType = getNextEventType(earliestNextEventRobot);
             events.add(new Event(eventType, earliestNextEventTime, earliestNextEventRobot));
             return events;
