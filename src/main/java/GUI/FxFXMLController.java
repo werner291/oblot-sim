@@ -563,12 +563,10 @@ public class FxFXMLController implements RobotView.RobotManager
         // toggle the isPaused global variable also set the buttontext and disable the end/nextbuttons
         isPaused.set(!isPaused.get());
         if (isPaused.get()) {
-            playButton.setText("Play");
             endButton.setDisable(false);
             nextButton.setDisable(false);
         }
         else {
-            playButton.setText("Pause");
             endButton.setDisable(true);
             nextButton.setDisable(true);
         }
@@ -612,7 +610,6 @@ public class FxFXMLController implements RobotView.RobotManager
         paddedLastEvent = false;
 
         isPaused.set(true);
-        playButton.setText("Play");
         nextButton.setDisable(false);
         endButton.setDisable(false);
     }
