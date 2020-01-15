@@ -444,7 +444,6 @@ public class RobotView extends Region {
             MenuItem addRobotMenuItem = new MenuItem("Add robot");
             addRobotMenuItem.setOnAction(actionEvent -> {
                 Robot[] localRobots = robotManager.getRobots();
-                eventList.events.setAll(simulator.getCalculatedEvents());
                 int maxID = Arrays.stream(localRobots).max((a, b) -> Integer.compare(a.id, b.id)).get().id;
                 Robot newRobot = new Robot(maxID + 1, localRobots[0].algo, canvasToRobotCoords(mouseClick), localRobots[0].trans);
                 if (!robotManager.canEditRobots()) {
