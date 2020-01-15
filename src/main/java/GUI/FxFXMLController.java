@@ -134,9 +134,8 @@ public class FxFXMLController implements RobotView.RobotManager
     private Button endButton;
 
     @FXML
-    private ScrollPane eventList;
     // The reference of inputText will be injected by the FXML loader
-    private VBox eventsVBox;
+    private EventsView eventList;
 
     @FXML
     private ScrollPane algorithmsList;
@@ -445,7 +444,7 @@ public class FxFXMLController implements RobotView.RobotManager
             simulator.setState(simulator.robots, events, 0.0);
             dragBarSimulation.setMax(events.get(events.size()-1).getTimestamp());
             dragBarSimulation.setValue(events.get(events.size()-1).getTimestamp());
-            regenerateEventList(simulator.getCalculatedEvents(), true);
+            eventList.events.get().setAll(simulator.getCalculatedEvents());
         }
         System.out.println("Load");
     }
@@ -493,7 +492,7 @@ public class FxFXMLController implements RobotView.RobotManager
             /*empty*/
             simulator.setState(robots, List.of(/*empty*/), 0.0);
             this.localRobots = simulator.getRobots();
-            regenerateEventList(simulator.getCalculatedEvents(), true);
+            eventList.events.get().setAll(simulator.getCalculatedEvents());
         }
     }
 
@@ -597,7 +596,7 @@ public class FxFXMLController implements RobotView.RobotManager
 
         // Set the reset robots and calculatedevents to the state of the sim
         simulator.setState(localRobots, newList, localTimeStamp);
-        regenerateEventList(simulator.getCalculatedEvents(), true);
+        eventList.events.setAll(simulator.getCalculatedEvents());
 
         // Reset the simulation drag bar as well
         dragBarSimulation.setMax(localTimeStamp);
@@ -679,7 +678,7 @@ public class FxFXMLController implements RobotView.RobotManager
         progressBarSimulation.setProgress(0.75);
 
         // Rebuild the Vbox with all events
-        regenerateEventList(calculatedEvents, resetEvents);
+        eventList.events.setAll(calculatedEvents);
 
         double recentTimeStamp = calculatedEvents.get(calculatedEvents.size()-1).getTimestamp();
         dragBarSimulation.setMax(recentTimeStamp);
@@ -688,47 +687,6 @@ public class FxFXMLController implements RobotView.RobotManager
         statusLabel.setText("Idle");
 
         return true;
-    }
-
-    /**
-     * Build EventList on the left
-     * @param calculatedEvents Events to draw onto the eventlist, sometimes only takes the most recent event and adds it
-     * @param rebuild If true, rebuild the whole eventlist from scratch, necessary after changing anything whilst browsing history
-     *                if false just add the most recent event to the vbox, far more performant.
-     */
-    private void regenerateEventList(List<CalculatedEvent> calculatedEvents, boolean rebuild) {
-        // Should completely rebuild or just add recent?
-        if (rebuild) {
-            List<Event> allEvents = new ArrayList<>();
-            calculatedEvents.forEach(e -> allEvents.addAll(e.events));
-            eventsVBox = new VBox();
-            for (Event event : allEvents) {
-                eventsVBox.getChildren().add(createEventButton(event.r.id + 1, event.type.toString(), event.t));
-            }
-
-            // Reset from scratch now, just add onto it from now on, until it needs to be reset again
-            resetEvents = false;
-        } else {
-            CalculatedEvent recentEvent = calculatedEvents.get(calculatedEvents.size()-1);
-            for (Event event : recentEvent.events) {
-                eventsVBox.getChildren().add(createEventButton(event.r.id + 1, event.type.toString(), event.t));
-            }
-        }
-
-        eventList.setContent(eventsVBox);
-    }
-
-    /**
-     * Create a button for in the event scrollpane
-     * @param eventName Name of the event, probably the type of event
-     * @param timeStamp Timestamp of when the event took place
-     * @return The object that can be clicked by the user to return to a certain timestamp/event
-     */
-    private Button createEventButton(int robotnr, String eventName, double timeStamp) {
-        EventButton eventButton = new EventButton( "Robot: " + robotnr + " | " + eventName + " | @: " + timeStamp, timeStamp);
-        eventButton.prefWidthProperty().bind(eventList.widthProperty());
-        eventButton.setOnAction(eventButtonHandler);
-        return eventButton;
     }
 
     private List<CalculatedEvent> removeInvalidCalcEvents(List<CalculatedEvent> calculatedEvents, CalculatedEvent latestEvent) {
@@ -841,7 +799,7 @@ public class FxFXMLController implements RobotView.RobotManager
 
                 nextEvent.events = newlistofEvents;
                 simulator.calculatedEvents.add(nextEvent);
-                regenerateEventList(simulator.calculatedEvents, false);
+                eventList.events.setAll(simulator.calculatedEvents);
                 paddedLastEvent = true;
 
                 dragBarSimulation.setMax(maxEndTime);
@@ -1019,16 +977,6 @@ public class FxFXMLController implements RobotView.RobotManager
         }
         return new CalculatedEvent[]{currentEvent, nextEvent};
     }
-
-    private EventHandler<ActionEvent> eventButtonHandler = event -> {
-        if (!event.getSource().getClass().equals(EventButton.class)) {
-            throw new IllegalArgumentException("Event button trigger by: " + event.getSource().getClass() +
-                    " was not an event button, please only use this eventHandler for EventButtons");
-        }
-        EventButton eventButton = (EventButton) event.getSource();
-        dragBarSimulation.setValue(eventButton.getTimeStamp());
-        event.consume();
-    };
 
     private EventHandler<ActionEvent> algorithmButtonHandler = event -> {
         String simpleName = ((Button)event.getSource()).getText();
