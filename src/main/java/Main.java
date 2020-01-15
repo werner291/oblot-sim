@@ -1,5 +1,6 @@
 import Algorithms.*;
 import PositionTransformations.RotationTransformation;
+import Schedulers.AsyncScheduler;
 import Schedulers.FSyncScheduler;
 import Schedulers.FileScheduler;
 import Schedulers.ManualScheduler;
@@ -46,7 +47,7 @@ public class Main{
         }
         Robot[] robots = new Robot[0];
         try {
-            robots = Robot.fromFile(new MoveAlongSEC(), null, new File(filePath.toURI()));
+            robots = Robot.fromFile(new GatheringWithMultiplicity(), null, new File(filePath.toURI()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

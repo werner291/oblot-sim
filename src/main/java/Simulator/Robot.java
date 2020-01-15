@@ -6,9 +6,10 @@ import RobotPaths.RobotPath;
 import Schedulers.EventType;
 import Util.Vector;
 
-import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 /**
@@ -48,6 +49,11 @@ public class Robot {
      */
     public Algorithm algo;
 
+    /**
+     * The starting position of this robot
+     */
+    private final Vector startPos;
+
 
     /**
      * Creates a new robot
@@ -59,6 +65,7 @@ public class Robot {
         this.id = id;
         this.algo = algo;
         this.pos = startPos;
+        this.startPos = startPos;
         this.trans = trans;
         this.state = State.SLEEPING;
         this.speed = 1.0;
@@ -192,5 +199,12 @@ public class Robot {
 
     public Algorithm getAlgorithm() {
         return algo;
+    }
+
+    /**
+     * Set this robot to its starting position
+     */
+    public void setToStart() {
+        this.pos = this.startPos;
     }
 }

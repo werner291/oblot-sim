@@ -173,4 +173,21 @@ public class CalculatedEvent {
         }
         return new CalculatedEvent(eventsCopy, positionsCopy, this.robotPaths);
     }
+
+    /**
+     * Find out if this calculated event has an event for a specific robot.
+     * @param robot the robot to look for
+     * @return true if there is an event for this robot, false otherwise
+     */
+    public boolean containsRobot(Robot robot) {
+        boolean robotFound = false;
+        for (Event event : events) {
+            if (event.r.equals(robot)) {
+                robotFound = true;
+                break;
+            }
+        }
+
+        return robotFound;
+    }
 }

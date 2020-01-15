@@ -19,11 +19,11 @@ public enum State {
     public static State  resultingFromEventType(EventType et) {
         switch (et) {
             case START_COMPUTE:
-                return State.SLEEPING;
+                return State.COMPUTING;
             case START_MOVING:
-                return  State.COMPUTING;
-            case END_MOVING:
                 return  State.MOVING;
+            case END_MOVING:
+                return  State.SLEEPING;
         }
         throw new IllegalStateException("Shouldn't reach here, switch is supposed to be exhaustive.");
     }
