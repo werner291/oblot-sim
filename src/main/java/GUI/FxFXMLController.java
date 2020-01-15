@@ -176,23 +176,22 @@ public class FxFXMLController implements RobotView.RobotManager
     private CheckMenuItem drawRadiiButton;
     //endregion
 
-
     private String lastSelectedScheduler;
 
     private Simulator simulator; // the simulator that will run the simulation.
     private Class[] algorithms; // the list of possible algorithms
 
     private Robot[] localRobots;
-    private DoubleBinding robotViewWidth;
-
 
     //region Binding references to prevent the GC from destroying them.
     @SuppressWarnings("FieldCanBeLocal")
-    // NO! IT CANNOT BE LOCAL! JAVA IS STUPID AND WILL GARBAGE-COLLECT THE INTERMEDIATE PROPERTY!
+    // NO! IT CANNOT BE LOCAL! JAVAFX IS STUPID AND WILL GARBAGE-COLLECT THE INTERMEDIATE PROPERTY!
     // See https://tomasmikula.github.io/blog/2015/02/10/the-trouble-with-weak-listeners.html
     private Object playbackspeedAsObject;
     @SuppressWarnings("FieldCanBeLocal")
     private Object timetoEndSimulationAsObject;
+    @SuppressWarnings("FieldCanBeLocal")
+    private DoubleBinding robotViewWidth;
     //endregion
 
     // Add a public no-args constructor
