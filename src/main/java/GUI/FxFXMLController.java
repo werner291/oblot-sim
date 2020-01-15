@@ -336,6 +336,7 @@ public class FxFXMLController implements RobotView.RobotManager
     public void removeRobot(Robot toRemove) {
         assert Arrays.stream(this.localRobots).anyMatch(robot -> robot == toRemove);
 
+        //noinspection SuspiciousToArrayCall This works, Intellij just complains about it for some reason.
         Robot[] newRobots = Arrays.stream(localRobots).filter(robot -> robot != toRemove).map(robot -> {
             robot.state = State.SLEEPING;
             return robot;
