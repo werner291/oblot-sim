@@ -24,6 +24,7 @@
 <?import javafx.scene.text.Font?>
 <?import GUI.RobotView?>
 
+<?import GUI.EventsView?>
 <VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.FxFXMLController">
     <children>
         <MenuBar VBox.vgrow="NEVER">
@@ -71,7 +72,7 @@
                     <items>
                         <MenuItem fx:id="frameRateMenuItem" mnemonicParsing="false" onAction="#onGettingStarted" text="FrameRate: 30">
                             <graphic>
-                                <Slider fx:id="frameRateMenuSlider" blockIncrement="0.0" majorTickUnit="20.0" max="300.0" min="5.0" minorTickCount="5" prefWidth="800.0" showTickLabels="true" showTickMarks="true" value="30.0" />
+                                <Slider fx:id="frameRateMenuSlider" blockIncrement="0.0" majorTickUnit="20.0" max="300.0" min="5.0" minorTickCount="5" prefWidth="800.0" showTickLabels="true" showTickMarks="true" value="60.0" />
                             </graphic>
                         </MenuItem>
                     </items>
@@ -96,7 +97,7 @@
                                 <Color blue="0.624" green="0.624" red="0.624" fx:id="x8" />
                             </textFill></Label>
                         <AnchorPane layoutY="505.0" prefHeight="45.0" prefWidth="507.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="505.0" />
-                        <ScrollPane fx:id="eventList" layoutY="41.0" minWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
+                        <EventsView fx:id="eventList" layoutY="41.0" minWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
                     </children>
                 </AnchorPane>
                 <AnchorPane fx:id="canvasBackground" prefHeight="547.0" prefWidth="400.0">
