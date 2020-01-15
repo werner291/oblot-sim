@@ -145,7 +145,6 @@ public class FxFXMLController implements RobotView.RobotManager
     private Simulator simulator; // the simulator that will run the simulation.
     private Class[] algorithms; // the list of possible algorithms
 
-    private Robot[] startRobots;
     private Robot[] localRobots;
 
     // Add a public no-args constructor
@@ -352,7 +351,6 @@ public class FxFXMLController implements RobotView.RobotManager
 
     public void setSimulator(Simulator sim) {
         this.simulator = sim;
-        startRobots = simulator.getRobots();
         localRobots = simulator.getRobots();
 
         if (sim.config.visibility == -1.0) {
@@ -784,7 +782,6 @@ public class FxFXMLController implements RobotView.RobotManager
         // Change robots for the draw function
         for (Robot robot : localRobots) {
             int robotIndex = getRobotIndex(robot);
-            Vector robotPosition = startRobots[robotIndex].pos;
 
             CalculatedEvent currentRobotCevent = getLatestRobotEvent(robot, calcEvents, timestamp);
 
@@ -793,7 +790,7 @@ public class FxFXMLController implements RobotView.RobotManager
 
             if (currentRobotEvent == null) { // If the current event is the first event, make up the prev event as sleeping until the first event.
                 //currentRobotEvent = new Event(EventType.END_MOVING, 0, robot);
-                robot.pos = robotPosition;
+                robot.setToStart();
                 robot.state = State.SLEEPING;
 
                 // Don't do anything else

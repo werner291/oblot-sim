@@ -44,12 +44,12 @@ public class Main{
         }
         Robot[] robots = new Robot[0];
         try {
-            robots = Robot.fromFile(new GoToRightMost(), null, new File(filePath.toURI()));
+            robots = Robot.fromFile(new GatheringWithMultiplicity(), null, new File(filePath.toURI()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         for (Robot r : robots) {
-            r.trans = new RotationTransformation().randomize(true, true, true);
+            r.trans = new RotationTransformation().randomize(false, false, false);
         }
         return robots;
     }
