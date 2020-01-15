@@ -63,14 +63,14 @@ public class RobotView extends Region {
      */
     public SimpleBooleanProperty drawRobotLabel = new SimpleBooleanProperty(true);
 
+    public  SimpleBooleanProperty canEditRobots = new SimpleBooleanProperty(true);
+
     private Canvas canvas;
 
     // Interface of the object containing robots, to separate concerns.
     public interface RobotManager {
-
         void addRobot(Robot toAdd);
         void removeRobot(Robot toRemove);
-        boolean canEditRobots();
         Robot[] getRobots();
     }
 
@@ -407,7 +407,7 @@ public class RobotView extends Region {
     private void setUpContextMenu() {
         // setup the contextmenu
         setOnContextMenuRequested(e -> {
-            if (!robotManager.canEditRobots()) {
+            if (!canEditRobots.get()) {
                 return;
             }
             // check if we clicked on a robot
