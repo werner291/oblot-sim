@@ -795,13 +795,15 @@ public class FxFXMLController implements RobotView.RobotManager
                 continue;
             }
 
+            robot.state = State.resultingFromEventType(currentRobotEvent.type);
+
+            if (robot.state != State.MOVING) continue;
+
             double startTime = currentRobotEvent.t;
             RobotPath currentPath = currentRobotCevent.robotPaths[robotIndex];
 
             double endTimePath = currentPath.getEndTime(startTime, robot.speed);
             // could be that the robot already earlier reached its goal. We want to show this as well in the gui
-
-            robot.state = State.resultingFromEventType(currentRobotEvent.type);
 
             if (timestamp >= endTimePath) {
                 robot.pos = currentPath.end;
