@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -311,18 +312,13 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void removeRobot(Robot toRemove) {
-        Robot[] copy = new Robot[localRobots.length - 1];
-        int indexInCopy = 0;
-        for (Robot localRobot : localRobots) {
-            if (localRobot != toRemove) {
-                copy[indexInCopy] = localRobot;
-                indexInCopy++;
-            }
-        }
-        localRobots = copy;
-        Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
+        Robot[] newRobots = Arrays.stream(localRobots).filter(robot -> robot != toRemove).map(robot -> {
+            robot.state = State.SLEEPING;
+            return robot;
+        }).toArray(Robot[]::new);
+        simulator.setState(newRobots, new ArrayList<>(), 0);
+        localRobots = newRobots;
         dragBarSimulation.setValue(0);
-        simulator.setState(localRobots, new ArrayList<>(), 0);
     }
 
     public void addRobot(Robot newRobot) {
