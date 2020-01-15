@@ -777,8 +777,6 @@ public class FxFXMLController implements RobotView.RobotManager
      */
 
     private void recomputeRobots(double timestamp) {
-        boolean paddedOne = false;
-
         // Change robots for the draw function
         for (Robot robot : localRobots) {
             int robotIndex = getRobotIndex(robot);
@@ -819,10 +817,6 @@ public class FxFXMLController implements RobotView.RobotManager
                 }
             }
         }
-
-//        if (paddedOne) {
-//            paddedLastEvent = true;
-//        }
     }
 
     private Event getRobotEvent(Robot robot, List<Event> eventList) {
