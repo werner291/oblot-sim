@@ -1008,7 +1008,12 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void onVisibility(ActionEvent actionEvent) {
-        simulator.config.visibility =  Double.parseDouble(visibilityTextBox.getText());
+        if (Double.parseDouble(visibilityTextBox.getText()) < 0) {
+            simulator.config.visibility = 0;
+            visibilityTextBox.setText("0");
+        }else {
+            simulator.config.visibility =  Double.parseDouble(visibilityTextBox.getText());
+        }
     }
 
     public void onInterruptable(ActionEvent actionEvent) {
