@@ -69,10 +69,10 @@ public class FxFXMLController implements RobotView.RobotManager
     /**
      * Property that, if true, means that the GUI is currently running non-stop until the end of the simulation.
      */
-    boolean simulatingTillEnd = false;
     boolean resetEvents = true;
 
     BooleanProperty isPaused = new SimpleBooleanProperty(true);
+    BooleanProperty simulatingTillEnd = new SimpleBooleanProperty(false);
 
     int last_size_calc_events = 0;
 
@@ -210,6 +210,8 @@ public class FxFXMLController implements RobotView.RobotManager
     private Object timetoEndSimulationAsObject;
     @SuppressWarnings("FieldCanBeLocal")
     private DoubleBinding robotViewWidth;
+    private StringBinding playButtonText;
+    private StringBinding endButtonText;
     //endregion
 
     // Add a public no-args constructor
@@ -233,12 +235,12 @@ public class FxFXMLController implements RobotView.RobotManager
                     if (!isPaused.get()) {
                         playDragBar();
                         recomputeRobots(dragBarSimulation.getValue());
-                    }
+                    } else recomputeRobots(dragBarSimulation.getValue());
                     robotView.paintCanvas();
                 }
 
                 // If the simulation is simulating till a certain timestamp then follow that
-                if (simulatingTillEnd) {
+                if (simulatingTillEnd.getValue()) {
                     List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
 
                     // If no events exist yet atleast simulate one event
@@ -253,12 +255,6 @@ public class FxFXMLController implements RobotView.RobotManager
                     // Stop early at he max specified time given in the GUI
                     if (recentEvent.t < timeToEndSimulation.get()) {
                         simulateNextEvent();
-                    } else {
-                        // Else stop simulating, goal has been reached
-                        endButton.setText("End:");
-                        playButton.setDisable(false);
-                        nextButton.setDisable(false);
-                        simulatingTillEnd = false;
                     }
 
                     // Update progressbar
@@ -295,28 +291,12 @@ public class FxFXMLController implements RobotView.RobotManager
         robotView.drawSEC.bind(drawSECButton.selectedProperty());
         robotView.drawRadii.bind(drawRadiiButton.selectedProperty());
 
-        playButton.textProperty().bind(Bindings.createStringBinding(() -> isPaused.get() ? "Play" : "Pause", isPaused));
-
-    }
-
-    private Popup warningPopup = new Popup();
-    private void showWarningPopUp(String warning) {
-        Label label = new Label(warning);
-        Button button = new Button("OK");
-        warningPopup.getContent().add(label);
-        warningPopup.getContent().add(button);
-        label.setMinWidth(80);
-        label.setMinHeight(50);
-        label.setStyle(" -fx-background-color: white;");
-        button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                hideWarningPopUp();
-            }
-        });
-
-        warningPopup.show(GUI.stage);
-
+        playButtonText = Bindings.createStringBinding(() -> isPaused.get() ? "Play" : "Pause", isPaused);
+        endButtonText = Bindings.createStringBinding(() -> simulatingTillEnd.get() ? "Stop" : "End:", simulatingTillEnd);
+        playButton.textProperty().bind(playButtonText);
+        playButton.disableProperty().bind(simulatingTillEnd);
+        nextButton.disableProperty().bind(simulatingTillEnd.or(isPaused.not()));
+        endButton.disableProperty().bind(isPaused.not());
     }
 
     public boolean canEditRobots() {
@@ -356,10 +336,6 @@ public class FxFXMLController implements RobotView.RobotManager
         simulator.setState(localRobots, new ArrayList<>(), 0);
     }
 
-    private void hideWarningPopUp() {
-        warningPopup.hide();
-    }
-
     /**
      * When not paused, called once every frame to update the state of the bar at the bottom of the screen showing
      * which time point in the simulation is visible.
@@ -371,7 +347,10 @@ public class FxFXMLController implements RobotView.RobotManager
         if (calculatedEvents.size() == 0) {
             simulateNextEvent();
             calculatedEvents = simulator.getCalculatedEvents();
-        }
+            if (calculatedEvents.size() == 0) {
+                return;
+            }
+         }
 
         List<Event> recentEvents = calculatedEvents.get((calculatedEvents.size()-1)).events;
 
@@ -544,9 +523,6 @@ public class FxFXMLController implements RobotView.RobotManager
     @FXML
     private void onDragDetected() {
         isPaused.set(true);
-        playButton.setText("Play");
-        endButton.setDisable(false);
-        nextButton.setDisable(false);
     }
 
     /**
@@ -558,7 +534,7 @@ public class FxFXMLController implements RobotView.RobotManager
     private void nextSimulation() {
         // If called whilst browsing history, reset the future
         if (dragBarSimulation.getValue() < dragBarSimulation.getMax()) {
-            resetSimulation();
+//            resetSimulation();
             simulateNextEvent();
         }
         // Should not be possible, added just in case
@@ -584,14 +560,6 @@ public class FxFXMLController implements RobotView.RobotManager
 
         // toggle the isPaused global variable also set the buttontext and disable the end/nextbuttons
         isPaused.set(!isPaused.get());
-        if (isPaused.get()) {
-            endButton.setDisable(false);
-            nextButton.setDisable(false);
-        }
-        else {
-            endButton.setDisable(true);
-            nextButton.setDisable(true);
-        }
     }
 
     /**
@@ -637,11 +605,7 @@ public class FxFXMLController implements RobotView.RobotManager
         paddedLastEvent = false;
 
         isPaused.set(true);
-        playButton.setText("Play");
         endButton.setText("End:");
-        nextButton.setDisable(false);
-        endButton.setDisable(false);
-        playButton.setDisable(false);
     }
 
     /**
@@ -675,7 +639,6 @@ public class FxFXMLController implements RobotView.RobotManager
      */
     private boolean simulateNextEvent() {
         // Start simulating the next event
-        hideWarningPopUp();
 
         // Compute next events
         progressBarSimulation.setProgress(0);
@@ -684,6 +647,7 @@ public class FxFXMLController implements RobotView.RobotManager
         try {
             simulator.simulateTillNextEvent();
         } catch (Exception e) {
+            isPaused.setValue(true);
             new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
             e.printStackTrace();
         }
@@ -696,10 +660,12 @@ public class FxFXMLController implements RobotView.RobotManager
         // Check if an additional event was added. If not, then don't add anything to the list
         if (calculatedEvents.size() == last_size_calc_events || isScheduleDone) {
             isDoneSimulating = checkIsDoneSimulating(calculatedEvents);
+            if (isScheduleDone) new Alert(Alert.AlertType.ERROR, "No new event was generated").show();
             isScheduleDone = true;
-            showWarningPopUp("No new event was generated");
             return false;
         }
+        isScheduleDone = false;
+
         last_size_calc_events = calculatedEvents.size();
         progressBarSimulation.setProgress(0.75);
 
@@ -761,19 +727,7 @@ public class FxFXMLController implements RobotView.RobotManager
     @FXML
     private void endSimulation() {
         // Switch on/off.
-        simulatingTillEnd = !simulatingTillEnd;
-
-        // Update buttons.
-        if (simulatingTillEnd) {
-            endButton.setText("Stop"); // Same button can be used to stop running simulating at max speed.
-            playButton.setDisable(true); // Cannot play at regular speed if running at max speed.
-            nextButton.setDisable(true); // Cannot play event-by-event if running at max speed.
-        }
-        else {
-            endButton.setText("End:");
-            playButton.setDisable(false);
-            nextButton.setDisable(false);
-        }
+        simulatingTillEnd.setValue(!simulatingTillEnd.getValue());
     }
 
     /**
@@ -983,6 +937,7 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void onFileScheduler(ActionEvent actionEvent) {
+        resetSimulation(0d);
         final FileChooser fc = new FileChooser();
         File file = fc.showOpenDialog(null);
         onSelectScheduler(actionEvent, () -> {

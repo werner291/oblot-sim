@@ -42,7 +42,7 @@ public class EventsView extends ScrollPane {
             int eventIndex = 1;
             for (CalculatedEvent cevt : events.get()) {
                 for (Event evt : cevt.events) {
-                    list.getChildren().add(createEventButton(eventIndex++, evt.type.toString(), evt.t));
+                    list.getChildren().add(createEventButton(evt.r.id, evt.type.toString(), evt.t));
                 }
             }
 
