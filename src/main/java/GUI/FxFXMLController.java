@@ -777,12 +777,15 @@ public class FxFXMLController implements RobotView.RobotManager
      */
 
     private void recomputeRobots(double timestamp) {
+        boolean paddedOne = false;
+
+        List<CalculatedEvent> calcEvents = simulator.getCalculatedEvents();
         // Change robots for the draw function
         for (Robot robot : localRobots) {
             int robotIndex = getRobotIndex(robot);
             Vector robotPosition = startRobots[robotIndex].pos;
 
-            CalculatedEvent currentRobotCevent = getLatestRobotEvent(robot, timestamp);
+            CalculatedEvent currentRobotCevent = getLatestRobotEvent(robot, calcEvents, timestamp);
 
             Event currentRobotEvent = null;
             if (currentRobotCevent != null) currentRobotEvent = getRobotEvent(robot, currentRobotCevent.events);
@@ -817,6 +820,10 @@ public class FxFXMLController implements RobotView.RobotManager
                 }
             }
         }
+
+//        if (paddedOne) {
+//            paddedLastEvent = true;
+//        }
     }
 
     private Event getRobotEvent(Robot robot, List<Event> eventList) {
@@ -846,172 +853,17 @@ public class FxFXMLController implements RobotView.RobotManager
     /**
      * Return the Current calcevent for the given robot
      * @param robot robot to find the current and next event for
+     * @param calcEvents the calculated events to search in
      * @param timestamp timestamp interested in
      * @return two events, the current one and the next one containing the robot r
      * if null, no such event exists
      */
-    private CalculatedEvent getLatestRobotEvent(Robot robot, double timestamp) {
-       List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
-        if (calculatedEvents.size() == 0) {
-            // Only occurs if nothing has been simulated yet
-            return null;
-        }
-
-        CalculatedEvent currentEvent = null;
-        List<CalculatedEvent> pastEvents = new ArrayList<>();
-
-        for (int i = 0; i < calculatedEvents.size(); i++) {
-            double calculatedEventsTime = calculatedEvents.get(i).events.get(0).t;
-            List<Event> calculatedEventEvents = calculatedEvents.get(i).events;
-
-            // The event with this timestamp happened after or at the selected timestamp
-            if (calculatedEventsTime >= timestamp && eventContainsRobot(robot, calculatedEventEvents)) {
-                Collections.reverse(pastEvents);
-                currentEvent = returnFirstRobotEvent(robot, pastEvents);
-                break;
-            }
-            // Don't add it to the list unless we guarantee that it's not the event past the timestamp were interested in
-            pastEvents.add(calculatedEvents.get(i));
-
-            // If we reach the end then look in the past for the most recent event anyways
-            if (i == calculatedEvents.size() - 1) {
-                Collections.reverse(pastEvents);
-                currentEvent = returnFirstRobotEvent(robot, pastEvents);
-                break;
-
-            }
-        }
-
-        return currentEvent;
+    private CalculatedEvent getLatestRobotEvent(Robot robot, List<CalculatedEvent> calcEvents, double timestamp) {
+        return calcEvents.stream()
+                .filter(ce -> ce.events.get(0).t <= timestamp)
+                .filter(ce -> eventContainsRobot(robot, ce.events))
+                .reduce((a, b) -> b).orElse(null);
     }
-
-    private CalculatedEvent returnFirstRobotEvent(Robot robot, List<CalculatedEvent> calculatedEvents) {
-        for (CalculatedEvent calculatedEvent : calculatedEvents) {
-            if (eventContainsRobot(robot, calculatedEvent.events)) return calculatedEvent;
-        }
-
-        return null;
-    }
-
-    /**
-     * Return the Next calcevent for the given robot
-     * @param robot robot to find the current and next event for
-     * @param timestamp timestamp interested in
-     * @return two events, the current one and the next one containing the robot r
-     * if null, no such event exists
-     */
-    private CalculatedEvent getNextRobotEvent(Robot robot, double timestamp) {
-        List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
-        if (calculatedEvents.size() == 0) {
-            // Only occurs if nothing has been simulated yet
-            return null;
-        }
-
-        CalculatedEvent nextEvent = null;
-
-        for (int i = 0; i < calculatedEvents.size(); i++) {
-            double calculatedEventsTime = calculatedEvents.get(i).events.get(0).t;
-            List<Event> calculatedEventEvents = calculatedEvents.get(i).events;
-
-            // If the previous event is non-existant due to the first event being the next event
-            if (i == 0 && calculatedEventsTime > timestamp && eventContainsRobot(robot, calculatedEventEvents)) {
-                nextEvent = calculatedEvents.get(i);
-                break;
-            }
-
-            // The event with this timestamp happened after the selected timestamp
-            if (calculatedEventsTime > timestamp && eventContainsRobot(robot, calculatedEventEvents)) {
-                // If there is no previous event simply use the first event, only occurs when the first timestamp an
-                // event occurs is selected to be simulated. Otherwise pick the most recent event
-                nextEvent = calculatedEvents.get(i);
-
-                // Stop after finding first candidate
-                break;
-            }
-
-            // The event with this timestamp happens at the selected timestamp
-            if (i == calculatedEvents.size() - 1 && eventContainsRobot(robot, calculatedEventEvents)) {
-                nextEvent = null;
-                break;
-            }
-        }
-        return nextEvent;
-    }
-//
-//
-//    /**
-//     * Creates a new {@link CalculatedEvent} at the end of the current timeline that is a sufficiently
-//     * sensible continuation of the current timeline. This is mostly done in response to the user choosing
-//     * to view a time beyond the end of the current timeline.
-//     *
-//     * Mutates the current list of calculated events! Note that the simulator will destroy this event
-//     * if it is set back before it and started.
-//     *
-//     * @return The event that was created. This is now also the last event in the timeline.
-//     */
-//    private CalculatedEvent makeSyntheticNextEvent() {
-//        System.out.println("Synthetic.");
-//        CalculatedEvent currentEvent = simulator.calculatedEvents.get(simulator.calculatedEvents.size()-1);
-//        CalculatedEvent nextEvent = currentEvent.copyDeep();
-//
-//        Vector[] positions = new Vector[localRobots.length];
-//
-//        double maxEndTime = currentEvent.getTimestamp() + 1;
-//
-//        int eventIndex = 0;
-//        for (Event robotEvent : currentEvent.events) {
-//            int robotIndexTemp = getRobotIndex(robotEvent.r);
-//            Robot robot = localRobots[robotIndexTemp];
-//
-//            Event nextRobotEvent = nextEvent.events.get(robotIndexTemp);
-//            RobotPath nextRobotPath = nextEvent.robotPaths[robotIndexTemp];
-//
-//            // If no more calculated events came up and we haven't finished padding till all robots stop do this
-//            if (!isDoneSimulating && isScheduleDone && !paddedLastEvent) {
-//
-//                Event robotCurrentEvent = currentEvent.events.get(robotIndexTemp);
-//                switch (robotCurrentEvent.type) {
-//                    // If robots have started moving then finish the movement to their goal and calculate how much time this takes. TODO: Make sure this takes the current scheduler into account
-//                    case START_MOVING:
-//                        nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
-//                        double endTime = nextRobotPath.getEndTime(nextRobotEvent.t, robot.speed);
-//                        if (endTime > maxEndTime) maxEndTime = endTime;
-//                        break;
-//
-//                        // If robots have started computing, finish the compute cycle and afterwards should start moving to final goal.
-//                    case START_COMPUTE:
-//                        nextRobotEvent.t = nextRobotEvent.t + 1;
-//                        break;
-//
-//                    case END_MOVING:
-//                        // If robots have started stopped moving, but are not yet at their goal start computing next round.
-//                        nextRobotEvent.t = nextRobotEvent.t + 1;
-//                        nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
-//                        break;
-//                }
-//
-//                nextRobotEvent.type = EventType.next(robotCurrentEvent.type);
-//
-//                System.out.println(eventIndex + " ? " + (nextEvent.events.size()-1));
-//                if (eventIndex == nextEvent.events.size()-1) {
-//                    dragBarSimulation.setMax(maxEndTime);
-//                    dragBarSimulation.setValue(maxEndTime);
-//
-//                    // Set the time of all robots events to the max time till now
-//                    for (Event event : nextEvent.events) {
-//                        event.t = maxEndTime;
-//                    }
-//                    simulator.getCalculatedEvents().add(nextEvent);
-//                    regenerateEventList(simulator.getCalculatedEvents(), false);
-//                    if (nextEvent.events.get(robotIndexTemp).type.equals(EventType.END_MOVING)) {
-//                        paddedLastEvent = true;
-//                    }
-//                }
-//            }
-//            eventIndex++;
-//        }
-//        return nextEvent;
-//    }
 
     /**
      * Gather the previous and next event given a timestamp.
