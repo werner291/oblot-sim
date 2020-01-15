@@ -175,10 +175,6 @@ public class FxFXMLController implements RobotView.RobotManager
                     robotView.paintCanvas();
                 }
 
-//                if (System.currentTimeMillis() > lastsimTime + simTimeMillis) {
-//                    lastsimTime = System.currentTimeMillis();
-//                }
-
                 // If the simulation is simulating till a certain timestamp then follow that
                 if (simulatingTillEnd) {
                     List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
@@ -811,10 +807,9 @@ public class FxFXMLController implements RobotView.RobotManager
                 robot.pos = currentPath.end;
             } else {
                 if (robot.state == State.MOVING) {
-                    if (currentPath.startTime == -1) currentPath.startTime = startTime;
-                    robot.pos = currentPath.interpolate(currentPath.startTime, endTimePath, timestamp);
+                    robot.pos = currentPath.interpolate(startTime, endTimePath, timestamp);
                 } else if (robot.state == State.SLEEPING) {
-                    robot.pos = currentPath.interpolate(currentPath.startTime, endTimePath, startTime);
+                    robot.pos = currentRobotCevent.positions[robotIndex];
                 } else {
                     robot.pos = currentPath.start;
                 }
@@ -955,17 +950,17 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void onFSync(ActionEvent actionEvent) {
-        resetSimulation(0d);
+//        resetSimulation(0d);
         onSelectScheduler(actionEvent, FSyncScheduler::new, false);
     }
 
     public void onSSync(ActionEvent actionEvent) {
-        resetSimulation(0d);
+//        resetSimulation(0d);
         onSelectScheduler(actionEvent, SSyncScheduler::new, false);
     }
 
     public void onASync(ActionEvent actionEvent) {
-        resetSimulation(0d);
+//        resetSimulation(0d);
         onSelectScheduler(actionEvent, AsyncScheduler::new, false);
     }
 
