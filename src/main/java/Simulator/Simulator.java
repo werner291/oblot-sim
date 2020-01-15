@@ -239,4 +239,12 @@ public class Simulator {
     public void setScheduler(Scheduler s) {
         this.scheduler = s;
     }
+
+    /**
+     * Gets the internal time of the simulator.
+     * @return the internal time of the simulator
+     */
+    public double getTime() {
+        return this.currentTime;
+    }
 }

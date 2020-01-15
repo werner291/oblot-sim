@@ -99,7 +99,7 @@ public class Robot {
 
     @Override
     public String toString() {
-        return "Robot: " + pos.toString() + " state: "+ state;
+        return "Robot: " + id + " state: "+ state;
     }
 
     /**

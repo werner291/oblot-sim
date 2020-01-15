@@ -2,6 +2,7 @@ import Algorithms.*;
 import PositionTransformations.RotationTransformation;
 import Schedulers.FSyncScheduler;
 import Schedulers.FileScheduler;
+import Schedulers.ManualScheduler;
 import Schedulers.Scheduler;
 import Simulator.Simulator;
 import Simulator.Robot;
@@ -23,9 +24,11 @@ public class Main{
         System.out.println("Most awesome simulator ever.");
         Robot[] robots = loadTestRobots();
 
-        Scheduler s = new FSyncScheduler(1, 1, 1, 1);
+//        Scheduler s = new FSyncScheduler(1, 1, 1, 1);
+        Scheduler s = new FSyncScheduler();
         Util.Config c = new Util.Config(true, -1, true);
         Simulator simulator = new Simulator(c, robots, s);
+        simulator.setScheduler(new ManualScheduler(simulator));
 
         Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class, GoToRightMost.class, MoveAlongSEC.class};
 

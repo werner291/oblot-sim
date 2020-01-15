@@ -13,6 +13,10 @@ import javafx.beans.binding.*;
 import javafx.beans.property.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -1039,7 +1043,7 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void onManualScheduler(ActionEvent actionEvent) {
-        onSelectScheduler(actionEvent, ManualScheduler::new, false);
+        onSelectScheduler(actionEvent, () -> new ManualScheduler(simulator), false);
     }
 
     public void onSelectScheduler(ActionEvent actionEvent, Supplier<Scheduler> schedulerSupplier, boolean force) {
