@@ -623,7 +623,8 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     /**
-     * Returns whether or not every robot has reached their goal
+     * Returns whether or not every robot has reached their goal.
+     *
      * @param calculatedEvents list of all events until now, used to check if the last event made the robots reach their goals
      * @return true if the robots have all reached their goal, false if one or more have not
      */
@@ -634,11 +635,8 @@ public class FxFXMLController implements RobotView.RobotManager
         }
         CalculatedEvent lastEvent = calculatedEvents.get(calculatedEvents.size()-1);
 
-        for (int i = 0; i < lastEvent.events.size(); i++) {
-            if (lastEvent.positions[i] != lastEvent.robotPaths[i].end) return false;
-        }
-
-        return true;
+        return IntStream.range(0, lastEvent.events.size())
+                .noneMatch(i -> lastEvent.positions[i] != lastEvent.robotPaths[i].end);
     }
 
     /**
