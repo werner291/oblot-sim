@@ -396,7 +396,6 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     public void setSimulator(Simulator sim) {
-        System.out.println("test");
         this.simulator = sim;
         localRobots = simulator.getRobots();
 
