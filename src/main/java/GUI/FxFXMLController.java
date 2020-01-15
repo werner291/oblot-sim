@@ -602,6 +602,7 @@ public class FxFXMLController implements RobotView.RobotManager
         } else {
             // Reset Calculated Events to given timestamp
             CalculatedEvent latestEvent = events[0];
+            // Get the list of events upto the most recent event directly precending or at this event.
             newList = removeInvalidCalcEvents(simulator.calculatedEvents, latestEvent);
         }
 
@@ -903,6 +904,7 @@ public class FxFXMLController implements RobotView.RobotManager
      * Gather the events directly preceding/succeeding a timestamp.
      *
      * The preceding (first in array) event may have the timestamp given as query parameter.
+     * Note that either event can be null if we are before the start or after the end of the events list.
      *
      * @param timestamp timestamp to find the prev and next events for
      * @return a length 2 array containing the previous and next event in order
