@@ -799,14 +799,17 @@ public class FxFXMLController implements RobotView.RobotManager
         CalculatedEvent currentEvent = eventsFound[0];
         CalculatedEvent nextEvent = eventsFound[1];
 
-        if (currentEvent == null) { // If the next event is the first event, make up the prev event as sleeping until the first event.
+        // If the next event is the first event, make up the prev event as sleeping until the first event.
+        if (currentEvent == null) {
             currentEvent = nextEvent.copyDeep();
             for (Event event : currentEvent.events) {
                 event.t = 0;
                 event.type = EventType.END_MOVING;
             }
         }
-        if (nextEvent == null) { // If the last event is the prev event, make up the next event until sleep.
+
+        // If the last event is the prev event, make up the next event until sleep.
+        if (nextEvent == null) {
             nextEvent = currentEvent.copyDeep();
 
             // If no more calculatedevents came up and we haven't finished padding till all robots stop do this
@@ -850,9 +853,12 @@ public class FxFXMLController implements RobotView.RobotManager
             int robotIndex = getRobotIndex(nextRobotEvent.r);
             Robot robot = localRobots[robotIndex];
 
+            // Get timestamp of event just preceding timestamp param.
             double startTime = currentEvent.events.get(0).t;
+            // Position of the robot at the time of the nextEvent
             Vector endPos = nextEvent.positions[robotIndex];
             double endTime = nextRobotEvent.t;
+            // Path being followed by the robot.
             RobotPath currentPath = currentEvent.robotPaths[robotIndex];
             // could be that the robot already earlier reached its goal. We want to show this as well in the gui
             double possiblyEarlierEndtime = currentPath.getEndTime(startTime, robot.speed);
@@ -975,6 +981,7 @@ public class FxFXMLController implements RobotView.RobotManager
 
     }
 
+    //region Select/update scheduler.
     public void onFSync(ActionEvent actionEvent) {
         resetSimulation(0d);
         onSelectScheduler(actionEvent, FSyncScheduler::new, false);
@@ -1011,7 +1018,9 @@ public class FxFXMLController implements RobotView.RobotManager
             System.out.println("The scheduler changed. This may affect still moving robots and they may be interrupted even if the config says they should not be interrupted.");
         }
     }
+    //endregion
 
+    //region Simulator config options setting/updating.
     public void onMultiplicity(ActionEvent actionEvent) {
         simulator.config.multiplicity = multiplicityToggle.isSelected();
     }
@@ -1024,6 +1033,7 @@ public class FxFXMLController implements RobotView.RobotManager
         simulator.config.interuptable = interruptableToggle.isSelected();
     }
 
+
     public void onInfiniteVisibility(ActionEvent actionEvent) {
         if (infiniteVisibilityToggle.isSelected()) {
             simulator.config.visibility = -1;
@@ -1034,4 +1044,5 @@ public class FxFXMLController implements RobotView.RobotManager
         }
         visibilityTextBox.setDisable(infiniteVisibilityToggle.isSelected());
     }
+    //endregion
 }
