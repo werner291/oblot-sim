@@ -1,5 +1,6 @@
 import Algorithms.*;
 import PositionTransformations.RotationTransformation;
+import Schedulers.AsyncScheduler;
 import Schedulers.FSyncScheduler;
 import Schedulers.FileScheduler;
 import Schedulers.Scheduler;
@@ -23,7 +24,7 @@ public class Main{
         System.out.println("Most awesome simulator ever.");
         Robot[] robots = loadTestRobots();
 
-        Scheduler s = new FSyncScheduler(1, 1, 1, 1);
+        Scheduler s = new AsyncScheduler(1, 1, 1, 1);
         Util.Config c = new Util.Config(true, -1, true);
         Simulator simulator = new Simulator(c, robots, s);
 
@@ -43,12 +44,12 @@ public class Main{
         }
         Robot[] robots = new Robot[0];
         try {
-            robots = Robot.fromFile(new MoveAlongSEC(), null, new File(filePath.toURI()));
+            robots = Robot.fromFile(new GoToRightMost(), null, new File(filePath.toURI()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         for (Robot r : robots) {
-            r.trans = new RotationTransformation().randomize(false, false, false);
+            r.trans = new RotationTransformation().randomize(true, true, true);
         }
         return robots;
     }

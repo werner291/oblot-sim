@@ -67,7 +67,7 @@ public class Simulator {
             simulateEvents(events);
             events = scheduler.getNextEvent(robots, currentTime);
         }
-        interpolateRobots(currentTime, t);
+        interpolateRobots(t);
         currentTime = t;
     }
 
@@ -91,7 +91,7 @@ public class Simulator {
         double previousTime = currentTime;
         currentTime = nextEvents.get(0).t;
 
-        interpolateRobots(previousTime, currentTime);
+        interpolateRobots(currentTime);
 
         for (Event e : nextEvents) { // process all events
             switch (e.type) {
@@ -147,10 +147,9 @@ public class Simulator {
 
     /**
      * moves the robots to the position of the given timestamp.
-     * @param startTime The time they started moving (time of the last event)
      * @param interpolateTime The time until they want to move
      */
-    public void interpolateRobots(double startTime, double interpolateTime) {
+    public void interpolateRobots(double interpolateTime) {
         RobotPath[] robotPaths;
         if (!calculatedEvents.isEmpty()) {
             robotPaths = calculatedEvents.get(calculatedEvents.size()-1).robotPaths;
@@ -163,6 +162,7 @@ public class Simulator {
         for (int i = 0; i < robots.length; i++) {
             Robot robot = robots[i];
             if (robot.state == State.MOVING) {
+                double startTime = getLastEventTime(robot);
                 RobotPath robotPath = robotPaths[i];
                 double endTime = robotPath.getEndTime(startTime, robot.speed);
                 if (endTime < interpolateTime) {
@@ -172,6 +172,19 @@ public class Simulator {
                 }
             }
         }
+    }
+
+    /**
+     * Find the last timestamp a robot had an event
+     * @param r the robot to get the timestamp for
+     * @return the time of the latest event for this robot
+     */
+    private double getLastEventTime(Robot r) {
+        for (int i = calculatedEvents.size() - 1; i >= 0; i--) {
+            CalculatedEvent e = calculatedEvents.get(i);
+            if (e.containsRobot(r)) return e.getTimestamp();
+        }
+        return 0;
     }
 
     /**

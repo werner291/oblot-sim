@@ -167,8 +167,8 @@ public class FxFXMLController implements RobotView.RobotManager
                     lastframeTime = System.currentTimeMillis();
                     // If the bar is playing increment it
                     if (!isPaused) {
-                        recomputeRobots(dragBarSimulation.getValue());
                         playDragBar();
+                        recomputeRobots(dragBarSimulation.getValue());
                     } else {
                         recomputeRobots(dragBarSimulation.getValue());
                     }
@@ -566,9 +566,6 @@ public class FxFXMLController implements RobotView.RobotManager
             newList = removeInvalidCalcEvents(simulator.calculatedEvents, latestEvent);
         }
 
-        // Reset robots to given timestamp
-        recomputeRobots(localTimeStamp);
-
         // Set the reset robots and calculatedevents to the state of the sim
         simulator.setState(localRobots.clone(), newList, localTimeStamp);
         regenerateEventList(simulator.getCalculatedEvents(), true);
@@ -576,6 +573,9 @@ public class FxFXMLController implements RobotView.RobotManager
         // Reset the simulation drag bar as well
         dragBarSimulation.setMax(localTimeStamp);
         dragBarSimulation.setValue(dragBarSimulation.getMax());
+
+        // Reset robots to given timestamp
+        recomputeRobots(localTimeStamp);
 
         // Reset global variable used to check if a simulateNext() call actually adds a new event
         last_size_calc_events = 0;
@@ -775,7 +775,7 @@ public class FxFXMLController implements RobotView.RobotManager
     private void recomputeRobots(double timestamp) {
         boolean paddedOne = false;
 
-        List<CalculatedEvent> calcEvents = simulator.getCalculatedEvents();
+       List<CalculatedEvent> calcEvents = simulator.getCalculatedEvents();
         // Change robots for the draw function
         for (Robot robot : localRobots) {
             int robotIndex = getRobotIndex(robot);
@@ -832,19 +832,6 @@ public class FxFXMLController implements RobotView.RobotManager
         return null;
     }
 
-    private boolean eventContainsRobot(Robot robot, List<Event> eventList) {
-        boolean robotFound = false;
-
-        for (Event event : eventList) {
-            if (event.r.equals(robot)) {
-                robotFound = true;
-                break;
-            }
-        }
-
-        return robotFound;
-    }
-
     /**
      * Return the Current calcevent for the given robot
      * @param robot robot to find the current and next event for
@@ -854,10 +841,12 @@ public class FxFXMLController implements RobotView.RobotManager
      * if null, no such event exists
      */
     private CalculatedEvent getLatestRobotEvent(Robot robot, List<CalculatedEvent> calcEvents, double timestamp) {
-        return calcEvents.stream()
-                .filter(ce -> ce.events.get(0).t <= timestamp)
-                .filter(ce -> eventContainsRobot(robot, ce.events))
-                .reduce((a, b) -> b).orElse(null);
+        for (int i = calcEvents.size() - 1; i >= 0; i--) {
+            CalculatedEvent e = calcEvents.get(i);
+            if (e.events.get(0).t > timestamp) continue;
+            if (e.containsRobot(robot)) return e;
+        }
+        return null;
     }
 
     /**

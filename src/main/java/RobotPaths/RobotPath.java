@@ -7,7 +7,6 @@ public abstract class RobotPath {
 
     public Vector start;
     public Vector end;
-    public double startTime = -1d;
 
     public RobotPath(Vector start, Vector end) {
         this.start = start;
