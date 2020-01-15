@@ -124,6 +124,29 @@ public class AsyncScheduler extends Scheduler {
             }
         }
 
+        if (availableRobots.size()==0) {
+            double earliestMinNextEventTime = Double.MAX_VALUE;
+            Robot earliestMinNextEventRobot = null;
+            for (Robot robot: robots) {
+                switch (robot.state) {
+                    case COMPUTING:
+                        if (robot.lastStateChange + minComputeTime < earliestMinNextEventTime) {
+                            earliestMinNextEventTime = robot.lastStateChange + minComputeTime;
+                            earliestMinNextEventRobot = robot;
+                        }
+                    case MOVING:
+                        if (robot.lastStateChange + minMoveTime < earliestMinNextEventTime) {
+                            earliestMinNextEventTime = robot.lastStateChange + minMoveTime;
+                            earliestMinNextEventRobot = robot;
+                        }
+
+                }
+            }
+            EventType eventType = getNextEventType(earliestMinNextEventRobot);
+            events.add(new Event(eventType, earliestMinNextEventTime, earliestMinNextEventRobot));
+            return events;
+        }
+
         Robot chosenRobot = availableRobots.get(random.nextInt(availableRobots.size()));
         EventType eventType = getNextEventType(chosenRobot);
         double eventTime = t + (earliestNextEventTime - t) * random.nextDouble();
