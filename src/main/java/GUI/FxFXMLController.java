@@ -703,7 +703,16 @@ public class FxFXMLController implements RobotView.RobotManager
         return true;
     }
 
-    private List<CalculatedEvent> removeInvalidCalcEvents(List<CalculatedEvent> calculatedEvents, CalculatedEvent latestEvent) {
+    /**
+     * Cut off the given list of {@link CalculatedEvent} at the timestamp of the one provided, including the one with that timestamp.
+     *
+     * @param calculatedEvents  List of events to filter.
+     * @param latestEvent       Event whose timestamp to use as a cutoff point.
+     * @return                  Entries of calculatedEvents upto and including the one with latestEvent's timestamp.
+     */
+    private List<CalculatedEvent> removeInvalidCalcEvents(List<CalculatedEvent> calculatedEvents,
+                                                          CalculatedEvent latestEvent) {
+
         List<CalculatedEvent> tempCalcEvents = new ArrayList<>();
 
         for (CalculatedEvent calculatedEvent : calculatedEvents) {
@@ -714,28 +723,39 @@ public class FxFXMLController implements RobotView.RobotManager
         return tempCalcEvents;
     }
 
+    /**
+     * Increase the playback speed by 1.
+     */
     @FXML
     private void forwardAction() {
         playBackSpeed.set(playBackSpeed.get() + 1);
     }
 
+    /**
+     * Decrease the playback speed by 1.
+     */
     @FXML
     private void backwardsAction() {
         playBackSpeed.set(playBackSpeed.get() - 1);
     }
 
     /**
+     *
+     * Start/stop running the simulation at maximum speed until we either run out of events,
+     * or we hit the maximum running time specified by this.timeToEndSimulation
+     *
      * TODO: Computes until all the robots have stopped moving and are sleeping, might never finish
      */
     @FXML
     private void endSimulation() {
-        // Whilst the robots have not reached their path
+        // Switch on/off.
         simulatingTillEnd = !simulatingTillEnd;
 
+        // Update buttons.
         if (simulatingTillEnd) {
-            endButton.setText("Stop");
-            playButton.setDisable(true);
-            nextButton.setDisable(true);
+            endButton.setText("Stop"); // Same button can be used to stop running simulating at max speed.
+            playButton.setDisable(true); // Cannot play at regular speed if running at max speed.
+            nextButton.setDisable(true); // Cannot play event-by-event if running at max speed.
         }
         else {
             endButton.setText("End:");
@@ -745,9 +765,10 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     /**
-     * Return the index number of a robot robotToMatch
+     * Return the index number of a robot in the localRobots.
+     *
      * @param robotToMatch, robot to find the correct index number for to match CalculatedEvent.positions/goals with
-     * @return index used to retrieve the position and goals of a robot with
+     * @return index used to retrieve the position and goals of a robot with.
      */
     private int getRobotIndex(Robot robotToMatch){
         int robotIndex = 0;
@@ -761,10 +782,13 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     /**
-     * Compute the position and state of robots from a timestamp in the past
-     * @param timestamp Timestamp of the simulation to display on the canvas
+     * Compute the position and state of robots from a timestamp in the past, and set the localRobots to this state.
+     *
+     * Note: this is different from Simulator.interpolateRobots since
+     * this event works with the historical list of events!
+     *
+     * @param timestamp Timestamp of the simulation to display on the canvas.
      */
-
     private void recomputeRobots(double timestamp) {
         // Gather the most recent and the next event if available
         CalculatedEvent[] eventsFound = gatherRecentEvents(timestamp);
@@ -871,80 +895,6 @@ public class FxFXMLController implements RobotView.RobotManager
             }
         }
     }
-//
-//    /**
-//     * Creates a new {@link CalculatedEvent} at the end of the current timeline that is a sufficiently
-//     * sensible continuation of the current timeline. This is mostly done in response to the user choosing
-//     * to view a time beyond the end of the current timeline.
-//     *
-//     * Mutates the current list of calculated events! Note that the simulator will destroy this event
-//     * if it is set back before it and started.
-//     *
-//     * @return The event that was created. This is now also the last event in the timeline.
-//     */
-//    private CalculatedEvent makeSyntheticNextEvent() {
-//        System.out.println("Synthetic.");
-//        CalculatedEvent currentEvent = simulator.calculatedEvents.get(simulator.calculatedEvents.size()-1);
-//        CalculatedEvent nextEvent = currentEvent.copyDeep();
-//
-//        Vector[] positions = new Vector[localRobots.length];
-//
-//        double maxEndTime = currentEvent.getTimestamp() + 1;
-//
-//        int eventIndex = 0;
-//        for (Event robotEvent : currentEvent.events) {
-//            int robotIndexTemp = getRobotIndex(robotEvent.r);
-//            Robot robot = localRobots[robotIndexTemp];
-//
-//            Event nextRobotEvent = nextEvent.events.get(robotIndexTemp);
-//            RobotPath nextRobotPath = nextEvent.robotPaths[robotIndexTemp];
-//
-//            // If no more calculated events came up and we haven't finished padding till all robots stop do this
-//            if (!isDoneSimulating && isScheduleDone && !paddedLastEvent) {
-//
-//                Event robotCurrentEvent = currentEvent.events.get(robotIndexTemp);
-//                switch (robotCurrentEvent.type) {
-//                    // If robots have started moving then finish the movement to their goal and calculate how much time this takes. TODO: Make sure this takes the current scheduler into account
-//                    case START_MOVING:
-//                        nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
-//                        double endTime = nextRobotPath.getEndTime(nextRobotEvent.t, robot.speed);
-//                        if (endTime > maxEndTime) maxEndTime = endTime;
-//                        break;
-//
-//                        // If robots have started computing, finish the compute cycle and afterwards should start moving to final goal.
-//                    case START_COMPUTE:
-//                        nextRobotEvent.t = nextRobotEvent.t + 1;
-//                        break;
-//
-//                    case END_MOVING:
-//                        // If robots have started stopped moving, but are not yet at their goal start computing next round.
-//                        nextRobotEvent.t = nextRobotEvent.t + 1;
-//                        nextEvent.positions[robotIndexTemp] = nextRobotPath.end;
-//                        break;
-//                }
-//
-//                nextRobotEvent.type = EventType.next(robotCurrentEvent.type);
-//
-//                System.out.println(eventIndex + " ? " + (nextEvent.events.size()-1));
-//                if (eventIndex == nextEvent.events.size()-1) {
-//                    dragBarSimulation.setMax(maxEndTime);
-//                    dragBarSimulation.setValue(maxEndTime);
-//
-//                    // Set the time of all robots events to the max time till now
-//                    for (Event event : nextEvent.events) {
-//                        event.t = maxEndTime;
-//                    }
-//                    simulator.getCalculatedEvents().add(nextEvent);
-//                    regenerateEventList(simulator.getCalculatedEvents(), false);
-//                    if (nextEvent.events.get(robotIndexTemp).type.equals(EventType.END_MOVING)) {
-//                        paddedLastEvent = true;
-//                    }
-//                }
-//            }
-//            eventIndex++;
-//        }
-//        return nextEvent;
-//    }
 
     /**
      * Gather the previous and next event given a timestamp.
