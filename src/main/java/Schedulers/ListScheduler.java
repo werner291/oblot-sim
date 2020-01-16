@@ -21,7 +21,7 @@ public class ListScheduler extends Scheduler {
      * sequential access is the most likely use case.
      * If this is events.size, this means that the last timestamp requested was after the last event
      */
-    private int currentIndex;
+    protected int currentIndex;
 
     /**
      * Check if a list of events is sorted on timestamp
@@ -130,6 +130,9 @@ public class ListScheduler extends Scheduler {
         // There can be many events, while the most likely access is in sequential order.
         // Therefore, we maintain the current index and first check if it is the next one.
         // In all other cases, we do a binary search.
+        if (events.size() == 0) {
+            return null;
+        }
 
         if (currentIndex == events.size() && events.get(currentIndex - 1).t <= t) {
             return null;

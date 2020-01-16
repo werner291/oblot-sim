@@ -14,7 +14,7 @@ This project can be built through the Gradle build system through the command `g
 
 This library can then be linked into a project of one's choice. It contains the following classes that are immediately relevant:
 
-- `Simulator` which represents a single simulation. To use it, construct an object, passing it an array of `Robot` instances, a set of configuration settings (such as whether robots can detect multilicity), and the scheduler to be used. The simulation can be controlled through the various methods in this class.
+- `Simulator` which represents a single simulation. To use it, construct an object, passing it an array of `Robot` instances, a set of configuration settings (such as whether robots can detect multiplicity), and the scheduler to be used. The simulation can be controlled through the various methods in this class.
 
 - `Robot` which represents a single robot during a simulation. Robots take a starting position within the simulation as well as:
     - An `Algorithm` that determines their behavior,which is an abstract class that features a function that maps from a set of positions (that represent what the robot sees) to a single position which tells the simulator where the robot wishes to move.

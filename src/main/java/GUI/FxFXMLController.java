@@ -301,6 +301,11 @@ public class FxFXMLController implements RobotView.RobotManager
         endButton.disableProperty().bind(isPaused.not());
 
         eventList.vvalueProperty().bind(eventList.list.heightProperty());
+
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            new Alert(Alert.AlertType.ERROR, throwable.getMessage()).show();
+            throwable.printStackTrace();
+        });
     }
 
     public boolean canEditRobots() {
@@ -336,6 +341,7 @@ public class FxFXMLController implements RobotView.RobotManager
         simulator.setState(newRobots, new ArrayList<>(), 0);
         localRobots = newRobots;
         dragBarSimulation.setValue(0);
+        resetSimulation();
     }
 
     public void addRobot(Robot newRobot) {
@@ -345,7 +351,8 @@ public class FxFXMLController implements RobotView.RobotManager
         localRobots = copy;
         Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
         dragBarSimulation.setValue(0);
-        simulator.setState(localRobots, new ArrayList<>(), 0);
+        simulator.setState(localRobots);
+        resetSimulation();
     }
 
     /**
@@ -543,7 +550,7 @@ public class FxFXMLController implements RobotView.RobotManager
      * So the simulation is done again from the nextevent onwards
      */
     @FXML
-    private void nextSimulation() {
+    public void nextSimulation() {
         // If called whilst browsing history, reset the future
         if (dragBarSimulation.getValue() < dragBarSimulation.getMax()) {
             setSimulation(dragBarSimulation.getValue());
@@ -652,7 +659,8 @@ public class FxFXMLController implements RobotView.RobotManager
 
         // Compute next events
         progressBarSimulation.setProgress(0);
-        statusLabel.setText("Computing Next Event");
+        String statusString = simulator.scheduler instanceof ManualScheduler ? "Waiting for next event" : "Computing next event";
+        statusLabel.setText(statusString);
 
         try {
             simulator.simulateTillNextEvent();
@@ -669,7 +677,10 @@ public class FxFXMLController implements RobotView.RobotManager
         progressBarSimulation.setProgress(0.5);
         // Check if an additional event was added. If not, then don't add anything to the list
         if (calculatedEvents.size() == last_size_calc_events) {
-            new Alert(Alert.AlertType.ERROR, "No new event was generated").show();
+            isPaused.setValue(true);
+            if (!(simulator.scheduler instanceof ListScheduler)) {
+                new Alert(Alert.AlertType.ERROR, "No new event was generated").show();
+            }
             return false;
         }
         if (calculatedEvents.size() == 0) {

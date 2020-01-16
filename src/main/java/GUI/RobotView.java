@@ -1,10 +1,7 @@
 package GUI;
 
 import PositionTransformations.PositionTransformation;
-import Schedulers.Event;
-import Schedulers.EventType;
-import Schedulers.ManualScheduler;
-import Schedulers.Scheduler;
+import Schedulers.*;
 import Simulator.Robot;
 import Simulator.State;
 import Util.Circle;
@@ -106,6 +103,7 @@ public class RobotView extends Region {
         Robot[] getRobots();
         double getTime();
         Scheduler getScheduler();
+        void nextSimulation();
     }
 
     public void setRobotManager(RobotManager robotManager) {
@@ -440,8 +438,7 @@ public class RobotView extends Region {
         setOnContextMenuRequested(e -> {
             // Only show if we can currently edit the robots.
             if (!robotManager.canEditRobots()) {
-                System.err.println("Cannot currently edit the robots while the simulation is running.");
-                return;
+                throw new IllegalArgumentException("Cannot currently edit the robots while the simulation is running.");
             }
 
             // check if we clicked on a robot
@@ -461,6 +458,9 @@ public class RobotView extends Region {
                     System.err.println("Simulation was started before robot could be added.");
                     return;
                 }
+                if (robotManager.getScheduler() instanceof FileScheduler) {
+                    throw new IllegalArgumentException("Robots cannot be added when using the filescheduler.");
+                }
                 robotManager.addRobot(newRobot);
             });
 
@@ -471,6 +471,9 @@ public class RobotView extends Region {
                     if (!robotManager.canEditRobots()) {
                         System.err.println("Simulation was started before robot could be removed.");
                         return;
+                    }
+                    if (robotManager.getScheduler() instanceof FileScheduler) {
+                        throw new IllegalArgumentException("Robots cannot be added when using the filescheduler.");
                     }
                     robotManager.removeRobot(picked);
                 }

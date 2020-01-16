@@ -19,10 +19,10 @@ public class GatheringWithMultiplicity extends Algorithm {
     @Override
     public RobotPath doAlgorithm(Vector[] snapshot) {
         if (snapshot.length == 2) {
-            throw new IllegalArgumentException("Does not support 2 robots");
+            throw new IllegalArgumentException("Gathering with multiplicity does not support 2 robots");
         }
         if (snapshot.length % 2 != 0) {
-            throw new IllegalArgumentException("Does not support an uneven amount of robots");
+            throw new IllegalArgumentException("Gathering with multiplicity Does not (yet) support an uneven amount of robots. Please pick another algorithm.");
         }
 
         // make a frequency map of elements

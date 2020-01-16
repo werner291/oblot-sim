@@ -2,12 +2,9 @@ package Simulator;
 
 import RobotPaths.LinearPath;
 import RobotPaths.RobotPath;
-import Schedulers.CalculatedEvent;
-import Schedulers.EventType;
+import Schedulers.*;
 import Util.Config;
 import Util.Vector;
-import Schedulers.Event;
-import Schedulers.Scheduler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -235,6 +232,9 @@ public class Simulator {
         this.robots = robots;
         this.calculatedEvents = calculatedEvents;
         this.currentTime = time;
+        if (time == 0 && scheduler instanceof ManualScheduler) {
+            ((ManualScheduler)scheduler).reset();
+        }
     }
 
     /**
@@ -242,7 +242,7 @@ public class Simulator {
      * @param robots the new robots
      */
     public void setState(Robot[] robots) {
-        this.robots = robots;
+        setState(robots, calculatedEvents, currentTime);
     }
 
     /**
