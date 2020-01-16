@@ -222,6 +222,7 @@ public class FxFXMLController implements RobotView.RobotManager
     private void initialize()
     {
         robotView.setRobotManager(this);
+        eventList.timePickedCB = dragBarSimulation.valueProperty()::set;
 
         // draw the canvas on a timer
         AnimationTimer timer = new AnimationTimer() {
