@@ -7,12 +7,15 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.DoubleConsumer;
 
 /**
@@ -30,19 +33,40 @@ public class EventsView extends ScrollPane {
      */
     public final ListProperty<CalculatedEvent> events = new SimpleListProperty<>(FXCollections.observableArrayList());
 
-    public EventsView() {
-        // Each time that the list changes, regenerate the list of events.
-        events.addListener((observableValue, calculatedEvents, t1) -> {
-            VBox list = new VBox();
+    public VBox list;
 
-            // set the values for the events scrollpane
+    /**
+     * Function that should be called to rebuild the eventlist from scratch. Necessary when the past changes.
+     */
+    private void rebuildList() {
+        list = new VBox();
+        for (CalculatedEvent cevt : events.get()) {
+            for (Event evt : cevt.events) {
+                list.getChildren().add(createEventButton(evt.r.id + 1, evt.type.toString(), evt.t));
+            }
+        }
+    }
+
+    public EventsView() {
+        // set the values for the events scrollpane
+        if (list == null) {
+            list = new VBox();
             list.setSpacing(1);
             list.setPadding(new Insets(1));
+        }
+        // Each time that the list changes, regenerate the list of events.
+        events.addListener((ListChangeListener<CalculatedEvent>) c -> {
 
-            int eventIndex = 1;
-            for (CalculatedEvent cevt : events.get()) {
-                for (Event evt : cevt.events) {
-                    list.getChildren().add(createEventButton(evt.r.id, evt.type.toString(), evt.t));
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    for (CalculatedEvent cevt : c.getAddedSubList()) {
+                        for (Event evt : cevt.events) {
+                            list.getChildren().add(createEventButton(evt.r.id + 1, evt.type.toString(), evt.t));
+                        }
+                    }
+                }
+                if (c.wasRemoved()) {
+                    rebuildList();
                 }
             }
 
