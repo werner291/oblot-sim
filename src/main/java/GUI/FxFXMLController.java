@@ -4,34 +4,26 @@ import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
 import RobotPaths.RobotPath;
 import Schedulers.*;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import Simulator.Simulator;
 import Simulator.Robot;
-import Simulator.Simulator;
 import Simulator.State;
-import Util.Vector;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.*;
 import javafx.beans.property.*;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Popup;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -248,6 +240,7 @@ public class FxFXMLController implements RobotView.RobotManager
                         calculatedEvents = simulator.getCalculatedEvents();
                         if (calculatedEvents.size() == 0) {
                             isPaused.setValue(true);
+                            simulatingTillEnd.setValue(false);
                         }
                     }
 
@@ -263,7 +256,7 @@ public class FxFXMLController implements RobotView.RobotManager
                     progressBarSimulation.setProgress((recentEvent.t / (double) timeToEndSimulation.get()));
                     int timeToDisplay = (int)(recentEvent.t*100);
                     float timeToDisplayFloat = (float)(timeToDisplay)/100;
-                    statusLabel.setText("Computing: " + timeToDisplayFloat + "/" + timeToEndSimulation);
+                    statusLabel.setText("Computing: " + timeToDisplayFloat + "/" + timeToEndSimulation.getValue());
                 }
             }
         };
@@ -296,6 +289,7 @@ public class FxFXMLController implements RobotView.RobotManager
         playButtonText = Bindings.createStringBinding(() -> isPaused.get() ? "Play" : "Pause", isPaused);
         endButtonText = Bindings.createStringBinding(() -> simulatingTillEnd.get() ? "Stop" : "End:", simulatingTillEnd);
         playButton.textProperty().bind(playButtonText);
+        endButton.textProperty().bind(endButtonText);
         playButton.disableProperty().bind(simulatingTillEnd);
         nextButton.disableProperty().bind(simulatingTillEnd.or(isPaused.not()));
         endButton.disableProperty().bind(isPaused.not());
@@ -349,7 +343,7 @@ public class FxFXMLController implements RobotView.RobotManager
         // Get list of computed events
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
         if (calculatedEvents.size() == 0) {
-            simulateNextEvent();
+            if (!simulateNextEvent()) isPaused.setValue(true);
             calculatedEvents = simulator.getCalculatedEvents();
             if (calculatedEvents.size() == 0) {
                 return;
@@ -538,7 +532,7 @@ public class FxFXMLController implements RobotView.RobotManager
     private void nextSimulation() {
         // If called whilst browsing history, reset the future
         if (dragBarSimulation.getValue() < dragBarSimulation.getMax()) {
-            resetSimulation();
+            setSimulation(dragBarSimulation.getValue());
             simulateNextEvent();
         }
         // Should not be possible, added just in case
@@ -559,7 +553,7 @@ public class FxFXMLController implements RobotView.RobotManager
     private void playSimulation() {
         // If called whilst browsing history, reset the future, only when starting to play, not pausing
         if (dragBarSimulation.getValue() < dragBarSimulation.getMax() && isPaused.get()) {
-            resetSimulation();
+            setSimulation(dragBarSimulation.getValue());
         }
 
         // toggle the isPaused global variable also set the buttontext and disable the end/nextbuttons
@@ -569,8 +563,7 @@ public class FxFXMLController implements RobotView.RobotManager
     /**
      * Helper function that resets the simulation to the current dragbar timestamp or the given timestamp if it is given
      */
-    private void resetSimulation(double localTimeStamp) {
-
+    private void setSimulation(double localTimeStamp) {
         // get most recent event for given timestamp
         CalculatedEvent[] events = gatherRecentEvents(localTimeStamp);
         List<CalculatedEvent> newList;
@@ -608,7 +601,6 @@ public class FxFXMLController implements RobotView.RobotManager
         paddedLastEvent = false;
 
         isPaused.setValue(true);
-        endButton.setText("End:");
     }
 
     /**
@@ -616,18 +608,25 @@ public class FxFXMLController implements RobotView.RobotManager
      */
     private void resetSimulation() {
         // Get current selected timestamp
-        resetSimulation(dragBarSimulation.getValue());
+        setSimulation(0d);
     }
 
     /**
      * Returns whether or not every robot has reached their goal.
      *
-     * @param lastEvent last event
+     * @param calculatedEvents last event
      * @return true if the robots have all reached their goal, false if one or more have not
      */
-    private boolean checkIsDoneSimulating(CalculatedEvent lastEvent) {
-        return IntStream.range(0, lastEvent.events.size())
-                .noneMatch(i -> lastEvent.positions[i] != lastEvent.robotPaths[i].end);
+    private boolean checkIsDoneSimulating(List<CalculatedEvent> calculatedEvents, double localTimeStamp) {
+        for (Robot robot : localRobots) {
+            int robotIndex = getRobotIndex(robot);
+            CalculatedEvent calculatedEvent = getLatestRobotEvent(robot, calculatedEvents, localTimeStamp);
+            if (calculatedEvent == null) continue;
+            if (!calculatedEvent.positions[robotIndex].equals(calculatedEvent.robotPaths[robotIndex].end)) return false;
+        }
+//        return IntStream.range(0, lastEvent.events.size())
+//                .noneMatch(i -> lastEvent.positions[i].equals(lastEvent.robotPaths[i].end) && lastEvent.events.get(i).type == EventType.);
+        return true;
     }
 
     /**
@@ -656,7 +655,6 @@ public class FxFXMLController implements RobotView.RobotManager
         progressBarSimulation.setProgress(0.5);
         // Check if an additional event was added. If not, then don't add anything to the list
         if (calculatedEvents.size() == last_size_calc_events) {
-            isPaused.setValue(true);
             new Alert(Alert.AlertType.ERROR, "No new event was generated").show();
             return false;
         }
@@ -667,7 +665,10 @@ public class FxFXMLController implements RobotView.RobotManager
 
         // Check if robots have reached their goals
         CalculatedEvent latestCalculatedEvent = calculatedEvents.get(calculatedEvents.size()-1);
-        isDoneSimulating = checkIsDoneSimulating(latestCalculatedEvent);
+        if (checkIsDoneSimulating(calculatedEvents, dragBarSimulation.getMax())) {
+            // Done simulating
+//            return false;
+        }
 
         last_size_calc_events = calculatedEvents.size();
         progressBarSimulation.setProgress(0.75);
@@ -925,22 +926,22 @@ public class FxFXMLController implements RobotView.RobotManager
 
     //region Select/update scheduler.
     public void onFSync(ActionEvent actionEvent) {
-        resetSimulation(0d);
+        setSimulation(0d);
         onSelectScheduler(actionEvent, FSyncScheduler::new, false);
     }
 
     public void onSSync(ActionEvent actionEvent) {
-        resetSimulation(0d);
+        setSimulation(0d);
         onSelectScheduler(actionEvent, SSyncScheduler::new, false);
     }
 
     public void onASync(ActionEvent actionEvent) {
-        resetSimulation(0d);
+        setSimulation(0d);
         onSelectScheduler(actionEvent, AsyncScheduler::new, false);
     }
 
     public void onFileScheduler(ActionEvent actionEvent) {
-        resetSimulation(0d);
+        setSimulation(0d);
         final FileChooser fc = new FileChooser();
         File file = fc.showOpenDialog(null);
         onSelectScheduler(actionEvent, () -> {
