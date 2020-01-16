@@ -27,7 +27,7 @@ public class EventsView extends ScrollPane {
      * Property that holds the time picking listener.
      * It will be called with a timestamp whenever the user picks an event.
      */
-    public final Property<DoubleConsumer> timePickedCB = new SimpleObjectProperty<>(v -> {/* Do nothing */});
+    public DoubleConsumer timePickedCB = v -> {/* Do nothing */};
     /**
      * List of {@link CalculatedEvent} to display. These are flattened out automatically.
      */
@@ -48,6 +48,7 @@ public class EventsView extends ScrollPane {
     }
 
     public EventsView() {
+
         // set the values for the events scrollpane
         if (list == null) {
             list = new VBox();
@@ -84,7 +85,7 @@ public class EventsView extends ScrollPane {
         EventButton eventButton = new EventButton( "Robot: " + robotnr + " | " + eventName + " | @: " + timeStamp, timeStamp);
         eventButton.fontProperty().set(Font.font(12.0));
         eventButton.prefWidthProperty().bind(widthProperty());
-        eventButton.setOnAction(actionEvent -> timePickedCB.getValue().accept(timeStamp));
+        eventButton.setOnAction(actionEvent -> timePickedCB.accept(timeStamp));
         return eventButton;
     }
 }
