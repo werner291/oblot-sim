@@ -246,6 +246,9 @@ public class FxFXMLController implements RobotView.RobotManager
                     if (calculatedEvents.size() == 0) {
                         simulateNextEvent();
                         calculatedEvents = simulator.getCalculatedEvents();
+                        if (calculatedEvents.size() == 0) {
+                            isPaused.setValue(true);
+                        }
                     }
 
                     // Most recent Event
@@ -535,7 +538,7 @@ public class FxFXMLController implements RobotView.RobotManager
     private void nextSimulation() {
         // If called whilst browsing history, reset the future
         if (dragBarSimulation.getValue() < dragBarSimulation.getMax()) {
-//            resetSimulation();
+            resetSimulation();
             simulateNextEvent();
         }
         // Should not be possible, added just in case
