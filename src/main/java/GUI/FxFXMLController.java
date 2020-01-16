@@ -62,7 +62,6 @@ public class FxFXMLController implements RobotView.RobotManager
     public CheckBox multiplicityToggle;
     //endregion
 
-    boolean isScheduleDone = false;
     boolean isDoneSimulating = false;
     boolean paddedLastEvent = false;
 
@@ -74,7 +73,7 @@ public class FxFXMLController implements RobotView.RobotManager
     BooleanProperty isPaused = new SimpleBooleanProperty(true);
     BooleanProperty simulatingTillEnd = new SimpleBooleanProperty(false);
 
-    int last_size_calc_events = 0;
+    int last_size_calc_events = -1;
 
     /**
      * The slider at the bottom of the screen that tracks the currently-displayed simulation timestamp.
@@ -297,6 +296,8 @@ public class FxFXMLController implements RobotView.RobotManager
         playButton.disableProperty().bind(simulatingTillEnd);
         nextButton.disableProperty().bind(simulatingTillEnd.or(isPaused.not()));
         endButton.disableProperty().bind(isPaused.not());
+
+        eventList.vvalueProperty().bind(eventList.list.heightProperty());
     }
 
     public boolean canEditRobots() {
@@ -596,15 +597,14 @@ public class FxFXMLController implements RobotView.RobotManager
         recomputeRobots(localTimeStamp);
 
         // Reset global variable used to check if a simulateNext() call actually adds a new event
-        last_size_calc_events = 0;
+        last_size_calc_events = -1;
 
         // Set global variable which will enforce the list of events on the left to be recomputed from scratch
         resetEvents = true;
         isDoneSimulating = false;
-        isScheduleDone = false;
         paddedLastEvent = false;
 
-        isPaused.set(true);
+        isPaused.setValue(true);
         endButton.setText("End:");
     }
 
@@ -619,16 +619,10 @@ public class FxFXMLController implements RobotView.RobotManager
     /**
      * Returns whether or not every robot has reached their goal.
      *
-     * @param calculatedEvents list of all events until now, used to check if the last event made the robots reach their goals
+     * @param lastEvent last event
      * @return true if the robots have all reached their goal, false if one or more have not
      */
-    private boolean checkIsDoneSimulating(List<CalculatedEvent> calculatedEvents) {
-        if (calculatedEvents.size() == 0) {
-            System.err.println("No events have occurred yet");
-            return false;
-        }
-        CalculatedEvent lastEvent = calculatedEvents.get(calculatedEvents.size()-1);
-
+    private boolean checkIsDoneSimulating(CalculatedEvent lastEvent) {
         return IntStream.range(0, lastEvent.events.size())
                 .noneMatch(i -> lastEvent.positions[i] != lastEvent.robotPaths[i].end);
     }
@@ -658,19 +652,25 @@ public class FxFXMLController implements RobotView.RobotManager
 
         progressBarSimulation.setProgress(0.5);
         // Check if an additional event was added. If not, then don't add anything to the list
-        if (calculatedEvents.size() == last_size_calc_events || isScheduleDone) {
-            isDoneSimulating = checkIsDoneSimulating(calculatedEvents);
-            if (isScheduleDone) new Alert(Alert.AlertType.ERROR, "No new event was generated").show();
-            isScheduleDone = true;
+        if (calculatedEvents.size() == last_size_calc_events) {
+            isPaused.setValue(true);
+            new Alert(Alert.AlertType.ERROR, "No new event was generated").show();
             return false;
         }
-        isScheduleDone = false;
+        if (calculatedEvents.size() == 0) {
+            // No events have been generated yet
+            return false;
+        }
+
+        // Check if robots have reached their goals
+        CalculatedEvent latestCalculatedEvent = calculatedEvents.get(calculatedEvents.size()-1);
+        isDoneSimulating = checkIsDoneSimulating(latestCalculatedEvent);
 
         last_size_calc_events = calculatedEvents.size();
         progressBarSimulation.setProgress(0.75);
 
-        // Rebuild the Vbox with all events
-        eventList.events.setAll(calculatedEvents);
+        // Add the new calculatedEvent
+        eventList.events.add(latestCalculatedEvent);
 
         double recentTimeStamp = calculatedEvents.get(calculatedEvents.size()-1).getTimestamp();
         dragBarSimulation.setMax(recentTimeStamp);
