@@ -5,6 +5,8 @@ import PositionTransformations.RotationTransformation;
 import RobotPaths.RobotPath;
 import Schedulers.*;
 import javafx.animation.Interpolator;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import Simulator.Simulator;
@@ -227,7 +229,7 @@ public class FxFXMLController implements RobotView.RobotManager
                     if (!isPaused.get()) {
                         playDragBar();
                         recomputeRobots(dragBarSimulation.getValue());
-                    } else recomputeRobots(dragBarSimulation.getValue());
+                    }
                     robotView.paintCanvas();
                 }
 
@@ -281,6 +283,12 @@ public class FxFXMLController implements RobotView.RobotManager
         // Fill remaining height.
         canvasBackground.heightProperty().addListener((ov, oldValue, newValue) -> {
             robotView.setHeight(newValue.doubleValue() - dragBarSimulation.getHeight());
+        });
+        dragBarSimulation.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                recomputeRobots(newValue.doubleValue());
+            }
         });
 
         robotView.drawCoordinateSystems.bind(drawCoordinateSystemsButton.selectedProperty());
@@ -589,6 +597,7 @@ public class FxFXMLController implements RobotView.RobotManager
         // Reset the simulation drag bar as well
         dragBarSimulation.setMax(localTimeStamp);
         dragBarSimulation.setValue(dragBarSimulation.getMax());
+        recomputeRobots(dragBarSimulation.getValue());
 
         // Reset robots to given timestamp
         recomputeRobots(localTimeStamp);
@@ -652,9 +661,9 @@ public class FxFXMLController implements RobotView.RobotManager
         progressBarSimulation.setProgress(0.5);
         // Check if an additional event was added. If not, then don't add anything to the list
         if (calculatedEvents.size() == last_size_calc_events) {
-            CalculatedEvent possibleSynthEvent = makeSyntheticEvent(calculatedEvents);
-            if (possibleSynthEvent != null) {
-                simulator.calculatedEvents.add(possibleSynthEvent);
+            List<CalculatedEvent> possibleSynthEvent = makeSyntheticEvent(calculatedEvents);
+            if (possibleSynthEvent.size() > 0) {
+                simulator.calculatedEvents.addAll(possibleSynthEvent);
                 calculatedEvents = simulator.getCalculatedEvents();
             }
             else {
@@ -679,14 +688,16 @@ public class FxFXMLController implements RobotView.RobotManager
         double recentTimeStamp = calculatedEvents.get(calculatedEvents.size()-1).getTimestamp();
         dragBarSimulation.setMax(recentTimeStamp);
         dragBarSimulation.setValue(dragBarSimulation.getMax());
+        recomputeRobots(dragBarSimulation.getValue());
+
         progressBarSimulation.setProgress(1);
         statusLabel.setText("Idle");
 
         return true;
     }
 
-    private CalculatedEvent makeSyntheticEvent(List<CalculatedEvent> calculatedEvents) {
-        CalculatedEvent cendMoveEvent = null;
+    private List<CalculatedEvent> makeSyntheticEvent(List<CalculatedEvent> calculatedEvents) {
+        List<CalculatedEvent> cendMoveEvent = new ArrayList<>();
         for (Robot robot : localRobots) {
             if (robot.state == State.MOVING) {
                 int robotIndex = getRobotIndex(robot);
@@ -698,13 +709,13 @@ public class FxFXMLController implements RobotView.RobotManager
                 CalculatedEvent latestCalcEvent = calculatedEvents.get(calculatedEvents.size() - 1);
 
                 RobotPath currentPath = latestCalculatedRobotEvent.robotPaths[robotIndex];
-                double startMovingTime = latestRobotEvent.t;
+                double startMovingTime = latestCalcEvent.getTimestamp();
                 double endMovingTime = currentPath.getEndTime(startMovingTime, robot.speed);
                 Event endMoveEvent = new Event(EventType.END_MOVING, endMovingTime, robot);
                 List<Event> listEndMoveEvent = new ArrayList<>();
                 listEndMoveEvent.add(endMoveEvent);
 
-                cendMoveEvent = new CalculatedEvent(listEndMoveEvent, latestCalcEvent.positions, latestCalcEvent.robotPaths);
+                cendMoveEvent.add(new CalculatedEvent(listEndMoveEvent, latestCalcEvent.positions, latestCalcEvent.robotPaths));
             }
         }
 
