@@ -237,6 +237,7 @@ public class FxFXMLController implements RobotView.RobotManager
 
                 // Prevents trying to draw the simulator before it's fully initialized. (race condition)
                 if (simulator != null && System.currentTimeMillis() > lastFrametime + 1000.0f / frameRate.get()) {
+                    lastFrametime = System.currentTimeMillis();
                     // If the bar is playing increment it
                     if (!isPaused.get()) {
                         playDragBar();
