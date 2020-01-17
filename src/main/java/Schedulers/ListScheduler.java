@@ -133,33 +133,33 @@ public class ListScheduler extends Scheduler {
         if (events.size() == 0) {
             return null;
         }
-
-        if (currentIndex == events.size() && events.get(currentIndex - 1).t <= t) {
-            return null;
-        }
-        if (currentIndex == events.size() - 1 && events.get(currentIndex).t <= t) {
-            currentIndex++;
-            return null;
-        }
-        if (currentIndex == 0 && events.get(currentIndex).t > t) {
-            return getSameEvents(currentIndex);
-        }
-
-        if (currentIndex != events.size()) {
-            // if there are multiple events with the same timestamp, increase currentIndex until the last one
-            while (currentIndex < events.size() - 1 && events.get(currentIndex).t == events.get(currentIndex + 1).t) {
-                currentIndex++;
-            }
-            // if we now are at the end of the events, there are no new events anymore.
-            if (currentIndex == events.size() - 1) {
-                return null;
-            }
-
-            // check the easy case if the next is the following event
-            if (events.get(currentIndex).t <= t && events.get(currentIndex + 1).t > t) {
-                return getSameEvents(++currentIndex);
-            }
-        }
+//
+//        if (currentIndex == events.size() && events.get(currentIndex - 1).t <= t) {
+//            return null;
+//        }
+//        if (currentIndex == events.size() - 1 && events.get(currentIndex).t <= t) {
+//            currentIndex++;
+//            return null;
+//        }
+//        if (currentIndex == 0 && events.get(currentIndex).t > t) {
+//            return getSameEvents(currentIndex);
+//        }
+//
+//        if (currentIndex != events.size()) {
+//            // if there are multiple events with the same timestamp, increase currentIndex until the last one
+//            while (currentIndex < events.size() - 1 && events.get(currentIndex).t == events.get(currentIndex + 1).t) {
+//                currentIndex++;
+//            }
+//            // if we now are at the end of the events, there are no new events anymore.
+//            if (currentIndex == events.size() - 1) {
+//                return null;
+//            }
+//
+//            // check the easy case if the next is the following event
+//            if (events.get(currentIndex).t <= t && events.get(currentIndex + 1).t > t) {
+//                return getSameEvents(++currentIndex);
+//            }
+//        }
 
         // If the checks with the currentIndex fail, fall back to binary search
         currentIndex = binarySearch(t);
