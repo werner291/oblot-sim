@@ -17,6 +17,7 @@ import javafx.beans.binding.*;
 import javafx.beans.property.*;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
@@ -24,6 +25,9 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Supplier;
@@ -235,6 +239,11 @@ public class FxFXMLController implements RobotView.RobotManager
 
                 // If the simulation is simulating till a certain timestamp then follow that
                 if (simulatingTillEnd.getValue()) {
+                    // If called whilst browsing history, reset the future, only when starting to play, not pausing
+                    if (dragBarSimulation.getValue() < dragBarSimulation.getMax() && isPaused.get()) {
+                        setSimulation(dragBarSimulation.getValue());
+                    }
+
                     List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
 
                     // If no events exist yet atleast simulate one event
@@ -253,6 +262,11 @@ public class FxFXMLController implements RobotView.RobotManager
                     // Stop early at he max specified time given in the GUI
                     if (recentEvent.t < timeToEndSimulation.get()) {
                         simulateNextEvent();
+                    } else {
+                        // Pause the simulation
+                        isPaused.setValue(true);
+                        simulatingTillEnd.setValue(false);
+                        new Alert(Alert.AlertType.INFORMATION, "Done Simulating").show();
                     }
 
                     // Update progressbar
@@ -304,6 +318,18 @@ public class FxFXMLController implements RobotView.RobotManager
         endButton.disableProperty().bind(isPaused.not());
 
         eventList.vvalueProperty().bind(eventList.list.heightProperty());
+
+        isPaused.addListener((observableValue, aBoolean, t1) -> canPickAlgorithm(!t1));
+        simulatingTillEnd.addListener((observableValue, aBoolean, t1) -> canPickAlgorithm(t1));
+    }
+
+    private void canPickAlgorithm(boolean isPlaying) {
+        for (Node node : algorithmsVBox.getChildren()) {
+            assert (node.getClass() == Button.class);
+
+            Button button = (Button)node;
+            button.setDisable(isPlaying);
+        }
     }
 
     public boolean canEditRobots() {
@@ -328,9 +354,10 @@ public class FxFXMLController implements RobotView.RobotManager
             robot.state = State.SLEEPING;
             return robot;
         }).toArray(Robot[]::new);
-        simulator.setState(newRobots, new ArrayList<>(), 0);
+//        simulator.setState(newRobots, new ArrayList<>(), 0);
         localRobots = newRobots;
-        dragBarSimulation.setValue(0);
+        resetSimulation();
+//        dragBarSimulation.setValue(0);
     }
 
     public void addRobot(Robot newRobot) {
@@ -339,8 +366,9 @@ public class FxFXMLController implements RobotView.RobotManager
         copy[copy.length - 1] = newRobot;
         localRobots = copy;
         Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
-        dragBarSimulation.setValue(0);
-        simulator.setState(localRobots, new ArrayList<>(), 0);
+//        dragBarSimulation.setValue(0);
+        resetSimulation();
+//        simulator.setState(localRobots, new ArrayList<>(), 0);
     }
 
     /**
@@ -506,6 +534,7 @@ public class FxFXMLController implements RobotView.RobotManager
     @FXML
     private void onClear()
     {
+        resetSimulation();
         System.out.println("Clear");
     }
 
@@ -516,14 +545,22 @@ public class FxFXMLController implements RobotView.RobotManager
     }
 
     @FXML
-    private void onGettingStarted()
-    {
+    private void onGettingStarted() throws URISyntaxException, IOException {
+        URI uriReadme = new URI("https://github.com/ifidefix/2IMG00/blob/master/README.md");
+        java.awt.Desktop.getDesktop().browse(uriReadme);
         System.out.println("Getting Started");
     }
 
     @FXML
     private void onAbout()
     {
+        new Alert(Alert.AlertType.INFORMATION, "This project was made possible due to the 2IMG00 Course. \n" +
+                                                            "Developed by: \n" +
+                                                            "Bart Smit \n" +
+                                                            "Daan Drijver \n" +
+                                                            "Tom Peters \n" +
+                                                            "Werner Kroneman \n" +
+                                                            "Thank you for using our Simulator!").show();
         System.out.println("About");
     }
 
@@ -650,6 +687,7 @@ public class FxFXMLController implements RobotView.RobotManager
             simulator.simulateTillNextEvent();
         } catch (Exception e) {
             isPaused.setValue(true);
+            simulatingTillEnd.setValue(false);
             new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
             e.printStackTrace();
         }
@@ -667,7 +705,7 @@ public class FxFXMLController implements RobotView.RobotManager
                 calculatedEvents = simulator.getCalculatedEvents();
             }
             else {
-                new Alert(Alert.AlertType.ERROR, "No new event was generated").show();
+                new Alert(Alert.AlertType.INFORMATION, "Simulation Finished").show();
                 return false;
             }
         }

@@ -39,8 +39,8 @@ public class GUI extends Application {
             stage.setTitle("Oblivious Point Robot Simulator.Simulator");
             stage.initStyle(StageStyle.DECORATED);
             stage.setScene(new Scene(root));
-            stage.setWidth(1920);
-            stage.setHeight(1080);
+            stage.setWidth(1600);
+            stage.setHeight(900);
             // Show GUI
             stage.show();
         } catch (IOException e) {
