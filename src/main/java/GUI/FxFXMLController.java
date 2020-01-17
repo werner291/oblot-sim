@@ -37,6 +37,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -718,15 +719,17 @@ public class FxFXMLController implements RobotView.RobotManager
         progressBarSimulation.setProgress(0.5);
         // Check if an additional event was added. If not, then don't add anything to the list
         if (calculatedEvents.size() == last_size_calc_events) {
-            List<CalculatedEvent> possibleSynthEvent = makeSyntheticEvent(calculatedEvents);
-            if (possibleSynthEvent.size() > 0) {
-                simulator.calculatedEvents.addAll(possibleSynthEvent);
+            CalculatedEvent possibleSynthEvent = makeSyntheticEvent(calculatedEvents);
+            if (possibleSynthEvent != null) {
+                simulator.calculatedEvents.add(possibleSynthEvent);
                 calculatedEvents = simulator.getCalculatedEvents();
             }
             else {
-                if (!(simulator.scheduler instanceof ListScheduler)) {
+                if (!(simulator.scheduler instanceof ManualScheduler)) {
                     new Alert(Alert.AlertType.INFORMATION, "Simulation Finished").show();
                 }
+                statusLabel.setText("Idle");
+                progressBarSimulation.setProgress(1);
                 return false;
             }
         }
@@ -754,7 +757,7 @@ public class FxFXMLController implements RobotView.RobotManager
         return true;
     }
 
-    private List<CalculatedEvent> makeSyntheticEvent(List<CalculatedEvent> calculatedEvents) {
+    private CalculatedEvent makeSyntheticEvent(List<CalculatedEvent> calculatedEvents) {
         List<CalculatedEvent> cendMoveEvent = new ArrayList<>();
         for (Robot robot : localRobots) {
             if (robot.state == State.MOVING) {
@@ -769,15 +772,36 @@ public class FxFXMLController implements RobotView.RobotManager
                 RobotPath currentPath = latestCalculatedRobotEvent.robotPaths[robotIndex];
                 double startMovingTime = latestCalcEvent.getTimestamp();
                 double endMovingTime = currentPath.getEndTime(startMovingTime, robot.speed);
+                if (startMovingTime == endMovingTime) endMovingTime = startMovingTime+1;
                 Event endMoveEvent = new Event(EventType.END_MOVING, endMovingTime, robot);
                 List<Event> listEndMoveEvent = new ArrayList<>();
                 listEndMoveEvent.add(endMoveEvent);
 
-                cendMoveEvent.add(new CalculatedEvent(listEndMoveEvent, latestCalcEvent.positions, latestCalcEvent.robotPaths));
+                CalculatedEvent newCalcEvent = checkIfSameTime(calculatedEvents, endMovingTime);
+                if (newCalcEvent == null) {
+                    newCalcEvent = new CalculatedEvent(listEndMoveEvent, latestCalcEvent.positions, latestCalcEvent.robotPaths);
+                    newCalcEvent.positions[robotIndex] = currentPath.end;
+                    cendMoveEvent.add(newCalcEvent);
+                } else {
+                    newCalcEvent.events.add(endMoveEvent);
+                    newCalcEvent.robotPaths[robotIndex] = currentPath;
+                    newCalcEvent.positions[robotIndex] = currentPath.end;
+                }
+
             }
         }
 
-        return cendMoveEvent;
+        cendMoveEvent.sort(Comparator.comparingDouble(CalculatedEvent::getTimestamp));
+        if (cendMoveEvent.size() == 0) return null;
+        return cendMoveEvent.get(0);
+    }
+
+    private CalculatedEvent checkIfSameTime(List<CalculatedEvent> calculatedEvents, double localTimeStamp) {
+        for(CalculatedEvent calculatedEvent : calculatedEvents) {
+            if (calculatedEvent.getTimestamp() == localTimeStamp) return calculatedEvent;
+        }
+
+        return null;
     }
 
     /**
