@@ -4,6 +4,7 @@ import Algorithms.Algorithm;
 import PositionTransformations.RotationTransformation;
 import RobotPaths.RobotPath;
 import Schedulers.*;
+import Util.Config;
 import javafx.animation.Interpolator;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -715,13 +716,23 @@ public class FxFXMLController implements RobotView.RobotManager
 
         // Get list of computed events
         List<CalculatedEvent> calculatedEvents = simulator.getCalculatedEvents();
+        if (calculatedEvents.size() == 0) {
+            // No events have been generated yet
+            return false;
+        }
+
+        // Check if robots have reached their goals
+        List<CalculatedEvent> latestCalculatedEvent = new ArrayList<>();
+        latestCalculatedEvent.add(calculatedEvents.get(calculatedEvents.size()-1));
 
         progressBarSimulation.setProgress(0.5);
         // Check if an additional event was added. If not, then don't add anything to the list
         if (calculatedEvents.size() == last_size_calc_events) {
-            CalculatedEvent possibleSynthEvent = makeSyntheticEvent(calculatedEvents);
-            if (possibleSynthEvent != null) {
-                simulator.calculatedEvents.add(possibleSynthEvent);
+            List<CalculatedEvent> possibleSynthEvents = makeSyntheticEvent(calculatedEvents);
+            if (possibleSynthEvents.size() > 0) {
+                simulator.calculatedEvents.addAll(possibleSynthEvents);
+                latestCalculatedEvent.clear();
+                latestCalculatedEvent.addAll(possibleSynthEvents);
                 calculatedEvents = simulator.getCalculatedEvents();
             }
             else {
@@ -733,19 +744,12 @@ public class FxFXMLController implements RobotView.RobotManager
                 return false;
             }
         }
-        if (calculatedEvents.size() == 0) {
-            // No events have been generated yet
-            return false;
-        }
-
-        // Check if robots have reached their goals
-        CalculatedEvent latestCalculatedEvent = calculatedEvents.get(calculatedEvents.size()-1);
 
         last_size_calc_events = calculatedEvents.size();
         progressBarSimulation.setProgress(0.75);
 
         // Add the new calculatedEvent
-        eventList.events.add(latestCalculatedEvent);
+        eventList.events.addAll(latestCalculatedEvent);
 
         double recentTimeStamp = calculatedEvents.get(calculatedEvents.size()-1).getTimestamp();
         dragBarSimulation.setMax(recentTimeStamp);
@@ -757,8 +761,10 @@ public class FxFXMLController implements RobotView.RobotManager
         return true;
     }
 
-    private CalculatedEvent makeSyntheticEvent(List<CalculatedEvent> calculatedEvents) {
+    private List<CalculatedEvent> makeSyntheticEvent(List<CalculatedEvent> calculatedEvents) {
         List<CalculatedEvent> cendMoveEvent = new ArrayList<>();
+        CalculatedEvent latestCalcEvent = calculatedEvents.get(calculatedEvents.size() - 1);
+
         for (Robot robot : localRobots) {
             if (robot.state == State.MOVING) {
                 int robotIndex = getRobotIndex(robot);
@@ -767,33 +773,26 @@ public class FxFXMLController implements RobotView.RobotManager
                 Event latestRobotEvent = getRobotEvent(robot, latestCalculatedRobotEvent.events);
                 if (latestRobotEvent == null) continue;
 
-                CalculatedEvent latestCalcEvent = calculatedEvents.get(calculatedEvents.size() - 1);
-
                 RobotPath currentPath = latestCalculatedRobotEvent.robotPaths[robotIndex];
                 double startMovingTime = latestCalcEvent.getTimestamp();
                 double endMovingTime = currentPath.getEndTime(startMovingTime, robot.speed);
-                if (startMovingTime == endMovingTime) endMovingTime = startMovingTime+1;
+
                 Event endMoveEvent = new Event(EventType.END_MOVING, endMovingTime, robot);
                 List<Event> listEndMoveEvent = new ArrayList<>();
                 listEndMoveEvent.add(endMoveEvent);
 
-                CalculatedEvent newCalcEvent = checkIfSameTime(cendMoveEvent, endMovingTime);
-                if (newCalcEvent == null) {
-                    newCalcEvent = new CalculatedEvent(listEndMoveEvent, latestCalcEvent.positions, latestCalcEvent.robotPaths);
-                    newCalcEvent.positions[robotIndex] = currentPath.end;
-                    cendMoveEvent.add(newCalcEvent);
-                } else {
-                    newCalcEvent.events.add(endMoveEvent);
-                    newCalcEvent.robotPaths[robotIndex] = currentPath;
-                    newCalcEvent.positions[robotIndex] = currentPath.end;
-                }
+                CalculatedEvent newCalcEvent = new CalculatedEvent(listEndMoveEvent, latestCalcEvent.positions, latestCalcEvent.robotPaths);
+                newCalcEvent.positions[robotIndex] = currentPath.end;
 
+                cendMoveEvent.add(newCalcEvent);
             }
         }
-
         cendMoveEvent.sort(Comparator.comparingDouble(CalculatedEvent::getTimestamp));
-        if (cendMoveEvent.size() == 0) return null;
-        return cendMoveEvent.get(0);
+        return cendMoveEvent;
+    }
+
+    private boolean equalsTimeStamp(double a1, double a2) {
+        return (a1 <= a2 + Config.EPSILON) && (a1 >= a2 - Config.EPSILON);
     }
 
     private CalculatedEvent checkIfSameTime(List<CalculatedEvent> calculatedEvents, double localTimeStamp) {
