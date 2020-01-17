@@ -29,7 +29,6 @@ public class Main{
         Scheduler s = new FSyncScheduler();
         Util.Config c = new Util.Config(true, -1, true);
         Simulator simulator = new Simulator(c, robots, s);
-        simulator.setScheduler(new ManualScheduler(simulator));
 
         Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class, GoToRightMost.class, MoveAlongSEC.class};
 
@@ -47,7 +46,7 @@ public class Main{
         }
         Robot[] robots = new Robot[0];
         try {
-            robots = Robot.fromFile(new GatheringWithMultiplicity(), null, new File(filePath.toURI()));
+            robots = Robot.fromFile(new MoveAlongSEC(), null, new File(filePath.toURI()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
