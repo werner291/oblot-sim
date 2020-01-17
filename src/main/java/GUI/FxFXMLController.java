@@ -777,7 +777,7 @@ public class FxFXMLController implements RobotView.RobotManager
                 List<Event> listEndMoveEvent = new ArrayList<>();
                 listEndMoveEvent.add(endMoveEvent);
 
-                CalculatedEvent newCalcEvent = checkIfSameTime(calculatedEvents, endMovingTime);
+                CalculatedEvent newCalcEvent = checkIfSameTime(cendMoveEvent, endMovingTime);
                 if (newCalcEvent == null) {
                     newCalcEvent = new CalculatedEvent(listEndMoveEvent, latestCalcEvent.positions, latestCalcEvent.robotPaths);
                     newCalcEvent.positions[robotIndex] = currentPath.end;
