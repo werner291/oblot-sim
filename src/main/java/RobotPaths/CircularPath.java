@@ -48,8 +48,8 @@ public class CircularPath extends RobotPath {
     @Override
     public Vector interpolate(double tStart, double tEnd, double t) {
         if (tStart == tEnd) {
-            if (start.equals(end)) {
-                return start;
+            if (getStart().equals(getEnd())) {
+                return getStart();
             } else {
                 throw new IllegalArgumentException("Start and end are not the same, but the timestamps are");
             }
@@ -58,9 +58,9 @@ public class CircularPath extends RobotPath {
             throw new IllegalArgumentException("tStart should be strictly smaller than tEnd");
         }
         if (t <= tStart - Config.EPSILON) {
-            return start;
+            return getStart();
         } else if (t >= tEnd + Config.EPSILON) {
-            return end;
+            return getEnd();
         }
         if (tStart > t || t > tEnd) {
             throw new IllegalArgumentException("the timestamp to interpolate to should lie strictly in" +
@@ -71,20 +71,20 @@ public class CircularPath extends RobotPath {
         if (!clockwise) {
             angleToMove = -angleToMove;
         }
-        return start.rotate(angleToMove, center);
+        return getStart().rotate(angleToMove, center);
     }
 
     @Override
     public double getLength() {
-        double totalLength = 2 * Math.PI * end.dist(center);
+        double totalLength = 2 * Math.PI * getEnd().dist(center);
         double fraction = angle / (2 * Math.PI);
         return totalLength * fraction;
     }
 
     @Override
     public void convertFromLocalToGlobal(PositionTransformation trans, Vector origin) {
-        Vector newStart = trans.localToGlobal(start, origin);
-        Vector newEnd = trans.localToGlobal(end, origin);
+        Vector newStart = trans.localToGlobal(getStart(), origin);
+        Vector newEnd = trans.localToGlobal(getEnd(), origin);
         Vector newCenter = trans.localToGlobal(center, origin);
         double newAngle = calculateAngle(newStart, newCenter, newEnd);
         // the new angle and the old angle should be the same (+- 2PI)

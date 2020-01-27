@@ -7,19 +7,10 @@ import Simulator.Robot;
  */
 public class Event {
 
-    /**
-     * The type of the event.
-     */
-    public EventType type;
-    /**
-     * The timestamp of the event.
-     */
-    public double t;
+    private EventType type;
+    private double t;
 
-    /**
-     * The {@link Robot} this event belongs to.
-     */
-    public Robot r;
+    private int targetId;
 
     /**
      * Creates a new event
@@ -27,34 +18,35 @@ public class Event {
      * @param t the timestamp of the event
      * @param r the {@link Robot} this event belongs to
      */
-    public Event(EventType type, double t, Robot r) {
+    public Event(EventType type, double t, int targetRobotId) {
         this.type = type;
         this.t = t;
-        this.r = r;
+        this.targetId = targetRobotId;
     }
 
     @Override
     public String toString() {
-        return String.format("Event: %s, %s, %f", type, r, t);
+        return String.format("Event: %s, %d, %f", type, targetId, t);
     }
-
-    public Event copyEvent() {
-        return new Event(this.type, this.t, this.r.copy());
-    }
-
 
     /**
-     * Generate the next event for the same robot, respecting the rotation in event type and increasing the timestamp.
-     *
-     * Note that the reference to the {@link Robot} is shared.
-     *
-     * @param deltaT Amount to add to event timestamp.
-     *
-     * @return The generated {@link Event}
+     * The type of the event.
      */
-    public Event nextWithDelay(double deltaT) {
-        assert deltaT > 0;
+    public EventType getType() {
+        return type;
+    }
 
-        return new Event(EventType.next(this.type), this.t + deltaT, this.r);
+    /**
+     * The timestamp of the event.
+     */
+    public double getT() {
+        return t;
+    }
+
+    /**
+     * The {@link Robot} this event belongs to.
+     */
+    public int getTargetId() {
+        return targetId;
     }
 }

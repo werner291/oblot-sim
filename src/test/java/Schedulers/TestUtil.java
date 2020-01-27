@@ -5,6 +5,7 @@ import PositionTransformations.RotationTransformation;
 import RobotPaths.LinearPath;
 import RobotPaths.RobotPath;
 import Simulator.Robot;
+import Simulator.State;
 import Util.Vector;
 
 import java.util.Arrays;
@@ -37,7 +38,7 @@ public class TestUtil {
             robots[i] = new Robot(i, algo,
                                 new Vector(2.0 * edgeLen * (Math.random() - 0.5),
                                 2.0 * edgeLen * (Math.random() - 0.5)),
-                                new RotationTransformation());
+                                new RotationTransformation(), null, State.SLEEPING, 1.0, 0.0);
         }
         return robots;
     }

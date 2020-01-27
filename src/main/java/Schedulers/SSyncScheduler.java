@@ -52,9 +52,9 @@ public class SSyncScheduler extends Scheduler {
         for (Robot robot: robots) {
             if (nextType == null || nextType == EventType.START_COMPUTE) {
                 nextType = getEventType(robot);
-            }else if (nextType == EventType.START_MOVING && robot.state == State.MOVING) {
+            }else if (nextType == EventType.START_MOVING && robot.getState() == State.MOVING) {
                 throw new IllegalStateException("One robot is moving and one is computing which is not possible in Sync");
-            }else if (nextType == EventType.END_MOVING && robot.state == State.COMPUTING) {
+            }else if (nextType == EventType.END_MOVING && robot.getState() == State.COMPUTING) {
                 throw new IllegalStateException("One robot is moving and one is computing which is not possible in Sync");
             }
         }
@@ -72,15 +72,15 @@ public class SSyncScheduler extends Scheduler {
 
                 double computeStart = t + random.nextDouble();
                 for (Robot robot: chosenRobots) {
-                    events.add(new Event(nextType, computeStart, robot));
+                    events.add(new Event(nextType, computeStart, robot.getId()));
                 }
                 break;
             case START_MOVING:
                 double computeTime = minComputeTime + (maxComputeTime - minMoveTime) * random.nextDouble();
 
                 for (Robot robot: robots) {
-                    if (robot.state == State.COMPUTING) {
-                        events.add(new Event(nextType, t + computeTime, robot));
+                    if (robot.getState() == State.COMPUTING) {
+                        events.add(new Event(nextType, t + computeTime, robot.getId()));
                     }
                 }
                 break;
@@ -93,8 +93,8 @@ public class SSyncScheduler extends Scheduler {
                 }
 
                 for (Robot robot: robots) {
-                    if (robot.state == State.MOVING) {
-                        events.add(new Event(nextType, endTime, robot));
+                    if (robot.getState() == State.MOVING) {
+                        events.add(new Event(nextType, endTime, robot.getId()));
                     }
                 }
                 break;
@@ -110,7 +110,7 @@ public class SSyncScheduler extends Scheduler {
      * @return the next event for a specific robot
      */
     protected EventType getEventType(Robot robot) {
-        switch (robot.state) {
+        switch (robot.getState()) {
             case SLEEPING:
                 return EventType.START_COMPUTE;
             case COMPUTING:
@@ -122,10 +122,9 @@ public class SSyncScheduler extends Scheduler {
         }
     }
 
-    @Override
     public void addEvent(Event e) {
-        if (e.type == EventType.END_MOVING && e.t > nextEndMoving) {
-            nextEndMoving = e.t;
+        if (e.getType() == EventType.END_MOVING && e.getT() > nextEndMoving) {
+            nextEndMoving = e.getT();
         }
     }
 }

@@ -1,29 +1,26 @@
 package GUI;
 
 import PositionTransformations.PositionTransformation;
-import Schedulers.*;
 import Simulator.Robot;
-import Simulator.State;
 import Util.Circle;
 import Util.SmallestEnclosingCircle;
 import Util.Vector;
+import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,6 +45,12 @@ public class RobotView extends Region {
     private final double MIN_SCALE = 10; // the minimum scale of the coordinate system
 
 
+    public ListProperty<Robot> getRobotsProperty() {
+        return robotsProperty;
+    }
+
+    private ListProperty<Robot> robotsProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
+
     /**
      * Determines whether the robots' local coordinate systems are visualized,
      * indicating how their view of the world around them is transformed.
@@ -70,47 +73,6 @@ public class RobotView extends Region {
     public SimpleBooleanProperty drawRobotLabel = new SimpleBooleanProperty(true);
 
     private Canvas canvas;
-
-    /**
-     * Interface for any object that manages an editable set of robots.
-     */
-    public interface RobotManager {
-
-        /**
-         * Add a robot to the simulation.
-         *
-         * canEditRobots will be checked beforehand whether this method can safely be called.
-         */
-        void addRobot(Robot toAdd);
-
-        /**
-         * Remove a robot to the simulation.
-         *
-         * canEditRobots will be checked beforehand whether this method can safely be called.
-         */
-        void removeRobot(Robot toRemove);
-
-        /**
-         * @return Wether it is currently safe to call addRobot/removeRobot.
-         */
-        boolean canEditRobots();
-
-        /**
-         * Return a reference to the current array of robots.
-         *
-         * The RobotView will not keep a reference to this or modify it.
-         */
-        Robot[] getRobots();
-        double getTime();
-        Scheduler getScheduler();
-        void nextSimulation();
-    }
-
-    public void setRobotManager(RobotManager robotManager) {
-        this.robotManager = robotManager;
-    }
-
-    private RobotManager robotManager;
 
     public RobotView() {
 
@@ -141,7 +103,7 @@ public class RobotView extends Region {
      * Draws a grid in the canvas based on the viewX, viewY and the scale, using a given set of robots.
      */
     public void paintCanvas() {
-        Robot[] robots = robotManager.getRobots();
+
         GraphicsContext gc = canvas.getGraphicsContext2D();
         double portHeight = canvas.getHeight();
         double portWidth = canvas.getWidth();
@@ -154,15 +116,15 @@ public class RobotView extends Region {
         drawGrid(gc, portHeight, portWidth);
 
         // Draw the robots and any associated graphics.
-        drawRobots(robots, gc, portHeight);
+        drawRobots(robotsProperty, gc, portHeight);
 
         if (drawRobotLabel.get()) {
             gc.setLineWidth(1);
-            for (Robot r : robots) {
+            for (Robot r : robotsProperty) {
                 double offset = 2.5;
-                double xCoord = (r.pos.x - viewX) * scale;
-                double yCoord = (r.pos.y - viewY) * -scale + (portHeight - 1);
-                gc.strokeText((r.id + 1) + "", xCoord - offset, yCoord + offset);
+                double xCoord = (r.getPos().x - viewX) * scale;
+                double yCoord = (r.getPos().y - viewY) * -scale + (portHeight - 1);
+                gc.strokeText((r.getId() + 1) + "", xCoord - offset, yCoord + offset);
             }
         }
 
@@ -171,7 +133,7 @@ public class RobotView extends Region {
 
     }
 
-    public void drawRobots(Robot[] robots, GraphicsContext gc, double portHeight) {
+    public void drawRobots(Collection<Robot> robots, GraphicsContext gc, double portHeight) {
         Affine tOld = gc.getTransform();
         Affine t = new Affine();
         // set the transform to a new transform
@@ -188,7 +150,7 @@ public class RobotView extends Region {
         // Pre-compute the smallest enclosing circle.
         Circle SEC = null;
         if (drawSEC || drawRadii) {
-            List<Vector> robotPositions = Arrays.stream(robots).map(r -> r.pos).collect(Collectors.toList());
+            List<Vector> robotPositions = robots.stream().map(Robot::getPos).collect(Collectors.toList());
             SEC = SmallestEnclosingCircle.makeCircle(robotPositions);
         }
 
@@ -205,7 +167,7 @@ public class RobotView extends Region {
         // draw on the coordinate system
         for (Robot r : robots) {
             if (drawCoordinateSystems) {
-                visualizeTransform(gc, r.pos, r.trans);
+                visualizeTransform(gc, r.getPos(), r.getTrans());
             }
             drawRobot(gc, r);
         }
@@ -232,10 +194,10 @@ public class RobotView extends Region {
     }
 
     public void drawRobotToSECRadius(GraphicsContext gc, boolean drawSEC, Circle SEC, Robot r) {
-        if (r.pos.equals(SEC.c)) return;
+        if (r.getPos().equals(SEC.c)) return;
         gc.setLineWidth(0.03);
         gc.setStroke(Color.BLACK);
-        Vector onCircle = drawSEC ? SEC.getPointOnCircle(r.pos) : r.pos;
+        Vector onCircle = drawSEC ? SEC.getPointOnCircle(r.getPos()) : r.getPos();
         gc.strokeLine(onCircle.x, onCircle.y, SEC.c.x, SEC.c.y);
     }
 
@@ -257,7 +219,7 @@ public class RobotView extends Region {
     private void drawRobot(GraphicsContext gc, Robot r) {
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(0.05);
-        switch (r.state) { // Color-coded robot based on current state.
+        switch (r.getState()) { // Color-coded robot based on current state.
             case SLEEPING:
                 gc.setFill(Color.WHITE);
                 break;
@@ -269,8 +231,8 @@ public class RobotView extends Region {
                 break;
         }
         double robotWidth = 0.5;
-        gc.fillOval(r.pos.x - robotWidth / 2, r.pos.y - robotWidth / 2, robotWidth, robotWidth);
-        gc.strokeOval(r.pos.x - robotWidth / 2, r.pos.y - robotWidth / 2, robotWidth, robotWidth);
+        gc.fillOval(r.getPos().x - robotWidth / 2, r.getPos().y - robotWidth / 2, robotWidth, robotWidth);
+        gc.strokeOval(r.getPos().x - robotWidth / 2, r.getPos().y - robotWidth / 2, robotWidth, robotWidth);
     }
 
     /**
@@ -434,87 +396,87 @@ public class RobotView extends Region {
      * Sets up the context menu for the canvas.
      */
     private void setUpContextMenu() {
-        // setup the contextmenu
-        setOnContextMenuRequested(e -> {
-            // Only show if we can currently edit the robots.
-            if (!robotManager.canEditRobots()) {
-                throw new IllegalArgumentException("Cannot currently edit the robots while the simulation is running.");
-            }
-
-            // check if we clicked on a robot
-            Vector mouseClick = new Vector(e.getX(), e.getY());
-            Robot picked = pickRobot(mouseClick);
-
-            cM = new ContextMenu();
-            cM.setAutoHide(true);
-
-            // When clicked, add a new robot in the place that the context menu was opened at.
-            MenuItem addRobotMenuItem = new MenuItem("Add robot");
-            addRobotMenuItem.setOnAction(actionEvent -> {
-                Robot[] localRobots = robotManager.getRobots();
-                int maxID = Arrays.stream(localRobots).max((a, b) -> Integer.compare(a.id, b.id)).get().id;
-                Robot newRobot = new Robot(maxID + 1, localRobots[0].algo, canvasToRobotCoords(mouseClick), localRobots[0].trans);
-                if (!robotManager.canEditRobots()) {
-                    System.err.println("Simulation was started before robot could be added.");
-                    return;
-                }
-                if (robotManager.getScheduler() instanceof FileScheduler) {
-                    throw new IllegalArgumentException("Robots cannot be added when using the filescheduler.");
-                }
-                robotManager.addRobot(newRobot);
-            });
-
-            // When clicked, remove a robot that is close to the clicked position.
-            MenuItem removeRobotItem = new MenuItem("Remove robot");
-            removeRobotItem.setOnAction(actionEvent -> {
-                if (picked != null) { // there is a robot that we should remove
-                    if (!robotManager.canEditRobots()) {
-                        System.err.println("Simulation was started before robot could be removed.");
-                        return;
-                    }
-                    if (robotManager.getScheduler() instanceof FileScheduler) {
-                        throw new IllegalArgumentException("Robots cannot be added when using the filescheduler.");
-                    }
-                    robotManager.removeRobot(picked);
-                }
-            });
-            MenuItem nextEventMenuItem = new MenuItem("Next event (this robot)");
-            nextEventMenuItem.setOnAction(actionEvent -> {
-                if (picked != null) { // if there is a robot to schedule this event for
-                    double t = robotManager.getTime();
-                    Event enteredEvent = new Event(picked.getNextEventType(), t, picked);
-                    robotManager.getScheduler().addEvent(enteredEvent);
-                }
-            });
-            MenuItem nextEventAllRobotsMenuItem = new MenuItem("Next event (all robots)");
-            nextEventAllRobotsMenuItem.setOnAction(actionEvent -> {
-                double t = robotManager.getTime();
-                for (Robot r : robotManager.getRobots()) {
-                    Event enteredEvent = new Event(r.getNextEventType(), t, r);
-                    robotManager.getScheduler().addEvent(enteredEvent);
-                }
-            });
-
-            // setup the correct menu items
-            if (picked != null) {
-                if (robotManager.getScheduler() instanceof ManualScheduler) {
-                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, removeRobotItem, nextEventMenuItem, nextEventAllRobotsMenuItem);
-                    cM.getItems().setAll(items);
-                } else {
-                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, removeRobotItem);
-                    cM.getItems().setAll(items);
-                }
-            } else {
-                if (robotManager.getScheduler() instanceof ManualScheduler) {
-                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, nextEventAllRobotsMenuItem);
-                    cM.getItems().setAll(items);
-                } else {
-                    List<MenuItem> items = Arrays.asList(addRobotMenuItem);
-                    cM.getItems().setAll(items);
-                }
-            }
-            cM.show(this, e.getScreenX(), e.getScreenY());
-        });
+//        // setup the contextmenu
+//        setOnContextMenuRequested(e -> {
+//            // Only show if we can currently edit the robots.
+//            if (!robotManager.canEditRobots()) {
+//                throw new IllegalArgumentException("Cannot currently edit the robots while the simulation is running.");
+//            }
+//
+//            // check if we clicked on a robot
+//            Vector mouseClick = new Vector(e.getX(), e.getY());
+//            Robot picked = pickRobot(mouseClick);
+//
+//            cM = new ContextMenu();
+//            cM.setAutoHide(true);
+//
+//            // When clicked, add a new robot in the place that the context menu was opened at.
+//            MenuItem addRobotMenuItem = new MenuItem("Add robot");
+//            addRobotMenuItem.setOnAction(actionEvent -> {
+//                Robot[] localRobots = robotManager.getRobots();
+//                int maxID = Arrays.stream(localRobots).max((a, b) -> Integer.compare(a.getId(), b.getId())).get().getId();
+////                Robot newRobot = new Robot(maxID + 1, localRobots[0].getAlgo(), canvasToRobotCoords(mouseClick), localRobots[0].getTrans(), path, State.SLEEPING, 1.0, 0.0);
+////                if (!robotManager.canEditRobots()) {
+////                    System.err.println("Simulation was started before robot could be added.");
+////                    return;
+////                }
+////                if (robotManager.getScheduler() instanceof FileScheduler) {
+////                    throw new IllegalArgumentException("Robots cannot be added when using the filescheduler.");
+////                }
+////                robotManager.addRobot(newRobot);
+//            });
+//
+//            // When clicked, remove a robot that is close to the clicked position.
+//            MenuItem removeRobotItem = new MenuItem("Remove robot");
+//            removeRobotItem.setOnAction(actionEvent -> {
+//                if (picked != null) { // there is a robot that we should remove
+//                    if (!robotManager.canEditRobots()) {
+//                        System.err.println("Simulation was started before robot could be removed.");
+//                        return;
+//                    }
+//                    if (robotManager.getScheduler() instanceof FileScheduler) {
+//                        throw new IllegalArgumentException("Robots cannot be added when using the filescheduler.");
+//                    }
+//                    robotManager.removeRobot(picked);
+//                }
+//            });
+//            MenuItem nextEventMenuItem = new MenuItem("Next event (this robot)");
+//            nextEventMenuItem.setOnAction(actionEvent -> {
+//                if (picked != null) { // if there is a robot to schedule this event for
+//                    double t = robotManager.getTime();
+//                    Event enteredEvent = new Event(picked.getNextEventType(), t, picked);
+//                    robotManager.getScheduler().addEvent(enteredEvent);
+//                }
+//            });
+//            MenuItem nextEventAllRobotsMenuItem = new MenuItem("Next event (all robots)");
+//            nextEventAllRobotsMenuItem.setOnAction(actionEvent -> {
+//                double t = robotManager.getTime();
+//                for (Robot r : robotManager.getRobots()) {
+//                    Event enteredEvent = new Event(r.getNextEventType(), t, r);
+//                    robotManager.getScheduler().addEvent(enteredEvent);
+//                }
+//            });
+//
+//            // setup the correct menu items
+//            if (picked != null) {
+//                if (robotManager.getScheduler() instanceof ManualScheduler) {
+//                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, removeRobotItem, nextEventMenuItem, nextEventAllRobotsMenuItem);
+//                    cM.getItems().setAll(items);
+//                } else {
+//                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, removeRobotItem);
+//                    cM.getItems().setAll(items);
+//                }
+//            } else {
+//                if (robotManager.getScheduler() instanceof ManualScheduler) {
+//                    List<MenuItem> items = Arrays.asList(addRobotMenuItem, nextEventAllRobotsMenuItem);
+//                    cM.getItems().setAll(items);
+//                } else {
+//                    List<MenuItem> items = Arrays.asList(addRobotMenuItem);
+//                    cM.getItems().setAll(items);
+//                }
+//            }
+//            cM.show(this, e.getScreenX(), e.getScreenY());
+//        });
     }
 
     /**
@@ -525,8 +487,8 @@ public class RobotView extends Region {
      */
     Robot pickRobot(Vector mouseClick) {
         Vector clickedPosition = canvasToRobotCoords(mouseClick);
-        return Arrays.stream(robotManager.getRobots())
-                .filter(r -> Math.abs(r.pos.x - clickedPosition.x) < 0.5 && Math.abs(r.pos.y - clickedPosition.y) < 0.5)
+        return robotsProperty.stream()
+                .filter(r -> Math.abs(r.getPos().x - clickedPosition.x) < 0.5 && Math.abs(r.getPos().y - clickedPosition.y) < 0.5)
                 .findFirst()
                 .orElse(null);
     }

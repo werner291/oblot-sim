@@ -1,11 +1,11 @@
 # Simulator for Oblivious Robots
 
-This project features a simulator for oblivious point robots.
+This project features a simulation for oblivious point robots.
 
 It contains:
 
 - Framework code that can be used to implement new robot control algorithms.
-- A headless, event-based simulator that can be used to simulate a number of robots interacting with eachother.
+- A headless, event-based simulation that can be used to simulate a number of robots interacting with eachother.
 - A GUI that can be used to visualise a simulation, including replaying the simulation through time, editing the timeline with new events, etc...
 
 ## Usage
@@ -17,7 +17,7 @@ This library can then be linked into a project of one's choice. It contains the 
 - `Simulator` which represents a single simulation. To use it, construct an object, passing it an array of `Robot` instances, a set of configuration settings (such as whether robots can detect multiplicity), and the scheduler to be used. The simulation can be controlled through the various methods in this class.
 
 - `Robot` which represents a single robot during a simulation. Robots take a starting position within the simulation as well as:
-    - An `Algorithm` that determines their behavior,which is an abstract class that features a function that maps from a set of positions (that represent what the robot sees) to a single position which tells the simulator where the robot wishes to move.
+    - An `Algorithm` that determines their behavior,which is an abstract class that features a function that maps from a set of positions (that represent what the robot sees) to a single position which tells the simulation where the robot wishes to move.
 
     - `PositionTransformation` which optionally distorts or transforms the way the robot perceives the world. For instance, this allows one to test an algorithm's robustness against robots not sharing a common frame of reference.
     
@@ -107,7 +107,7 @@ Simulator sim = new Simulator(config, robots, );
 sim.simulateTillTimestamp(1000.0);
 ```
 
-We can then inspect the simulation results. For instance, we can extract the array of robots from the simulator
+We can then inspect the simulation results. For instance, we can extract the array of robots from the simulation
 and verify whether their positions are all the same, which would imply that the gathering algorithm worked correctly.
 
 Note: In most cases, the array of `Robot[]` is the same as the one passed into the simulation, but the Simulation API does
@@ -146,7 +146,7 @@ and scrub through the timeline using the slider. Note that the positions of robo
 and does not affect the outcome of the simulation.
 
 On the right-hand side of the screen (4), you can configure different options, such as choosing which algorithm is used
-to control the robots, and where you can choose a few other configuration options for the simulator. Note that if an algorithm
+to control the robots, and where you can choose a few other configuration options for the simulation. Note that if an algorithm
 and configuration settings were chosen through code before opening the GUI, these will still be used in the simulation until this is changed.
 
 Furthermore, at the top of the screen, we can find:

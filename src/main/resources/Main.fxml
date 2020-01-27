@@ -104,7 +104,7 @@
                 <AnchorPane fx:id="canvasBackground" minHeight="100.0" minWidth="100.0" prefHeight="547.0" prefWidth="500.0">
                     <children>
                         <RobotView fx:id="robotView" prefWidth="-Infinity" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-                        <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="0.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
+                        <Slider fx:id="dragBarSimulation" blockIncrement="1.0" majorTickUnit="5.0" max="100.0" maxHeight="40.0" minHeight="40.0" minorTickCount="1" onDragDetected="#onDragDetected" prefHeight="40.0" showTickLabels="true" showTickMarks="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
                     </children>
                 </AnchorPane>
                 <AnchorPane maxWidth="400.0" minHeight="400.0" minWidth="280.0" prefWidth="280.0">

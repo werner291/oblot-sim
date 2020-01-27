@@ -33,8 +33,8 @@ public class FSyncScheduler extends SSyncScheduler {
         for (Robot robot: robots) {
             if (nextType == null) {
                 nextType = getEventType(robot);
-                currentState = robot.state;
-            } else if (currentState != robot.state) {
+                currentState = robot.getState();
+            } else if (currentState != robot.getState()) {
                 throw new IllegalStateException("not all the robots have the same state");
             }
         }
@@ -44,15 +44,15 @@ public class FSyncScheduler extends SSyncScheduler {
             case START_COMPUTE:
                 double computeStart = t + random.nextDouble();
                 for (Robot robot: robots) {
-                    events.add(new Event(nextType, computeStart, robot));
+                    events.add(new Event(nextType, computeStart, robot.getId()));
                 }
                 break;
             case START_MOVING:
                 double computeTime = minComputeTime + (maxComputeTime - minMoveTime) * random.nextDouble();
 
                 for (Robot robot: robots) {
-                    if (robot.state == State.COMPUTING) {
-                        events.add(new Event(nextType, t + computeTime, robot));
+                    if (robot.getState() == State.COMPUTING) {
+                        events.add(new Event(nextType, t + computeTime, robot.getId()));
                     }
                 }
                 break;
@@ -65,8 +65,8 @@ public class FSyncScheduler extends SSyncScheduler {
                 }
 
                 for (Robot robot: robots) {
-                    if (robot.state == State.MOVING) {
-                        events.add(new Event(nextType, endTime, robot));
+                    if (robot.getState() == State.MOVING) {
+                        events.add(new Event(nextType, endTime, robot.getId()));
                     }
                 }
                 break;

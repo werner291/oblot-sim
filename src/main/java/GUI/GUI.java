@@ -1,7 +1,6 @@
 package GUI;
 
-import Algorithms.Algorithm;
-import Simulator.Simulator;
+import Simulator.Simulation;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,7 +18,7 @@ import java.net.URL;
  */
 public class GUI extends Application {
     // only one simulator for every gui. Needs to be static because Application.launch launches a new GUI instance
-    private static Simulator simulator;
+    private static Simulation simulation;
     private static Class[] algorithms;
 
     public static Stage stage;
@@ -32,7 +31,7 @@ public class GUI extends Application {
             }
             FXMLLoader loader = new FXMLLoader(fxmlFile);
             Parent root = loader.load();
-            loader.<FxFXMLController>getController().setSimulator(GUI.simulator); // set the simulator of the controller
+            loader.<FxFXMLController>getController().setSimulation(GUI.simulation); // set the simulator of the controller
             loader.<FxFXMLController>getController().setAlgorithms(GUI.algorithms); // set the simulator of the controller
 
             GUI.stage = stage;
@@ -51,10 +50,10 @@ public class GUI extends Application {
     /**
      * Starts the gui. Does not return until the gui is exited.
      * @param args the arguments to start the application
-     * @param simulator the simulator to start the application with
+     * @param simulation the simulator to start the application with
      */
-    public static void runGUI(String[] args, Simulator simulator, Class[] algorithms) {
-        GUI.simulator = simulator;
+    public static void runGUI(String[] args, Simulation simulation, Class[] algorithms) {
+        GUI.simulation = simulation;
         GUI.algorithms = algorithms;
         Application.launch(args);
     }

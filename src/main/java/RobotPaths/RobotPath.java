@@ -5,8 +5,8 @@ import Util.Vector;
 
 public abstract class RobotPath {
 
-    public Vector start;
-    public Vector end;
+    protected Vector start;
+    protected Vector end;
 
     public RobotPath(Vector start, Vector end) {
         this.start = start;
@@ -58,5 +58,13 @@ public abstract class RobotPath {
         double timeTraveling = dist / speed;
         // return the arrival time
         return start + timeTraveling;
+    }
+
+    public Vector getStart() {
+        return start;
+    }
+
+    public Vector getEnd() {
+        return end;
     }
 }

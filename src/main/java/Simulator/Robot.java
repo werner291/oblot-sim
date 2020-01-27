@@ -3,6 +3,7 @@ package Simulator;
 import Algorithms.Algorithm;
 import PositionTransformations.PositionTransformation;
 import RobotPaths.RobotPath;
+import Schedulers.Event;
 import Schedulers.EventType;
 import Util.Vector;
 
@@ -10,66 +11,48 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.OptionalDouble;
 import java.util.Scanner;
+import java.util.function.Supplier;
 
 /**
- * A class containing one oblivious robot
+ * A class containing the state and metadata of one oblivious robot.
+ *
+ * Immutable: it is safe to store references to this.
  */
 public class Robot {
 
-    /**
-     * The id of the robot
-     */
-    public int id;
+    private int id;
+    private Vector pos;
+    private State state;
+    private double inCurrentStateSince;
+    private double speed;
+    private PositionTransformation trans;
+    private Algorithm algo;
 
-    /**
-     * The current position of the robot.
-     */
-    public Vector pos;
-    /**
-     * The current state of this robot.
-     */
-    public State state;
-
-    /**
-     * The timestamp of the last change in state
-     */
-    public double lastStateChange;
-    /**
-     * The speed of the robot.
-     */
-    public double speed;
-
-    /**
-     * The transformation object to transform global to local coordinates.
-     */
-    public PositionTransformation trans;
-    /**
-     * The algorithm the robot will run.
-     */
-    public Algorithm algo;
-
-    /**
-     * The starting position of this robot
-     */
-    private final Vector startPos;
-
+    // Invariant: This is non-null if and only if state == MOVING
+    // Maybe subclassing the state is better?
+    private RobotPath path;
 
     /**
      * Creates a new robot
      * @param algo the algorithm the robot will be using
-     * @param startPos the starting position of the robot
+     * @param pos the starting position of the robot
      * @param trans the transformation the robot will use to convert to local coordinates
+     * @param path
+     * @param state
+     * @param speed
+     * @param inCurrentStateSince
      */
-    public Robot(int id, Algorithm algo, Vector startPos, PositionTransformation trans) {
+    public Robot(int id, Algorithm algo, Vector pos, PositionTransformation trans, RobotPath path, State state, double speed, double inCurrentStateSince) {
         this.id = id;
         this.algo = algo;
-        this.pos = startPos;
-        this.startPos = startPos;
+        this.pos = pos;
         this.trans = trans;
-        this.state = State.SLEEPING;
-        this.speed = 1.0;
-        this.lastStateChange = 0.0;
+        this.path = path;
+        this.state = state;
+        this.speed = speed;
+        this.inCurrentStateSince = inCurrentStateSince;
     }
 
     /**
@@ -87,7 +70,7 @@ public class Robot {
             w.println(robots.length); // Print number of robots first.
 
             for (Robot robot : robots) {
-                w.println(robot.pos.x + ", " + robot.pos.y); // Then x and y positions, 1 per line.
+                w.println(robot.getPos().x + ", " + robot.getPos().y); // Then x and y positions, 1 per line.
             }
         }
     }
@@ -98,15 +81,15 @@ public class Robot {
      * @return A list of positions the robot wants to go to.
      */
     public RobotPath calculate(Vector[] snapshot) {
-        Vector[] localSnapshot = trans.globalToLocal(snapshot, pos);
-        RobotPath calculatedPath = algo.doAlgorithm(localSnapshot);
-        calculatedPath.convertFromLocalToGlobal(this.trans, this.pos);
+        Vector[] localSnapshot = getTrans().globalToLocal(snapshot, getPos());
+        RobotPath calculatedPath = getAlgo().doAlgorithm(localSnapshot);
+        calculatedPath.convertFromLocalToGlobal(this.getTrans(), this.getPos());
         return calculatedPath;
     }
 
     @Override
     public String toString() {
-        return "Robot: " + id + " state: "+ state;
+        return "Robot: " + getId() + " state: "+ getState();
     }
 
     /**
@@ -122,7 +105,7 @@ public class Robot {
      * @param file the file to read the starting configuration from
      * @return a list of robots that start on the positions specified in the file
      */
-    public static Robot[] fromFile(Algorithm algo, PositionTransformation t, File file) {
+    public static Robot[] robotsFromFile(Algorithm algo, Supplier<PositionTransformation> t, File file) {
         try {
             Scanner s = new Scanner(file);
             int n = Integer.parseInt(s.nextLine());
@@ -134,7 +117,7 @@ public class Robot {
                 double x = Double.parseDouble(coordsString[0]);
                 double y = Double.parseDouble(coordsString[1]);
                 Vector pos = new Vector(x, y);
-                robots[i] = new Robot(i, algo, pos, t);
+                robots[i] = new Robot(i, algo, pos, t.get(), null, State.SLEEPING, 1.0, 0.0);
                 i++;
             }
             return robots;
@@ -147,64 +130,86 @@ public class Robot {
         return null;
     }
 
-    public Robot copy() {
-        return new Robot(this.id, this.algo, this.pos, this.trans);
-    }
-
-    public void setAlgorithm(Algorithm a) {
-        this.algo = a;
-    }
-
-    public void setTransformation(PositionTransformation pt) {
-        this.trans = pt;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj instanceof Robot) {
-            Robot other = (Robot) obj;
-            return this.id == other.id;
-        } else {
-            return false;
-        }
+    public Algorithm getAlgorithm() {
+        return getAlgo();
     }
 
     /**
-     * Return the next event type this robot requires
-     * @return the next event type based on the state of the robot
+     * The id of the robot
      */
-    public EventType getNextEventType() {
-        EventType type = null;
-        switch (state) {
-            case MOVING:
-                type = EventType.END_MOVING;
-                break;
-            case COMPUTING:
-                type = EventType.START_MOVING;
-                break;
-            case SLEEPING:
-                type = EventType.START_COMPUTE;
-                break;
-        }
-        return type;
+    public int getId() {
+        return id;
     }
 
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(id);
+    /**
+     * The current position of the robot.
+     */
+    public Vector getPos() {
+        return pos;
     }
 
-    public Algorithm getAlgorithm() {
+    /**
+     * The current state of this robot.
+     */
+    public State getState() {
+        return state;
+    }
+
+    /**
+     * The timestamp of the last change in state
+     */
+    public double getInCurrentStateSince() {
+        return inCurrentStateSince;
+    }
+
+    /**
+     * The speed of the robot.
+     */
+    public double getSpeed() {
+        return speed;
+    }
+
+    /**
+     * The transformation object to transform global to local coordinates.
+     */
+    public PositionTransformation getTrans() {
+        return trans;
+    }
+
+    /**
+     * The algorithm the robot will run.
+     */
+    public Algorithm getAlgo() {
         return algo;
     }
 
+    public RobotPath getPath() {
+        return path;
+    }
+
+    public Robot movedTo(Vector pos) {
+        return new Robot(id, algo, pos, trans, path, state, speed, inCurrentStateSince);
+    }
+
+    public Vector positionAtTimeWithoutStateChange(double timestamp) {
+        if (state == State.MOVING) {
+            double movementEndTime = path.getEndTime(inCurrentStateSince, speed);
+
+            return timestamp > movementEndTime ? path.getEnd() : path.interpolate(inCurrentStateSince, movementEndTime, timestamp);
+        } else {
+            return this.pos;
+        }
+    }
+
+    public Robot extrapolatedToTime(double timestamp) {
+        return new Robot(id, algo, positionAtTimeWithoutStateChange(timestamp), trans, path, state, speed, inCurrentStateSince);
+    }
+
     /**
-     * Set this robot to its starting position
+     * Timestamp after which this robot is sure to have stopped moving on its' own (barring other events).
+     * If it is not moving, NONE will be returned.
      */
-    public void setToStart() {
-        this.pos = this.startPos;
+    public OptionalDouble willStopBefore() {
+        return state == State.MOVING ? OptionalDouble.of(path.getEndTime(inCurrentStateSince, speed)) : OptionalDouble.empty();
     }
 }

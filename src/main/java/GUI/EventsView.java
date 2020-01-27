@@ -3,9 +3,7 @@ package GUI;
 import Schedulers.CalculatedEvent;
 import Schedulers.Event;
 import javafx.beans.property.ListProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
@@ -14,8 +12,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.DoubleConsumer;
 
 /**
@@ -41,8 +37,8 @@ public class EventsView extends ScrollPane {
     private void rebuildList() {
         list = new VBox();
         for (CalculatedEvent cevt : events.get()) {
-            for (Event evt : cevt.events) {
-                list.getChildren().add(createEventButton(evt.r.id + 1, evt.type.toString(), evt.t));
+            for (Event evt : cevt.getEvents()) {
+                list.getChildren().add(createEventButton(evt.getTargetId() + 1, evt.getType().toString(), evt.getT()));
             }
         }
     }
@@ -61,8 +57,8 @@ public class EventsView extends ScrollPane {
             while (c.next()) {
                 if (c.wasAdded()) {
                     for (CalculatedEvent cevt : c.getAddedSubList()) {
-                        for (Event evt : cevt.events) {
-                            list.getChildren().add(createEventButton(evt.r.id + 1, evt.type.toString(), evt.t));
+                        for (Event evt : cevt.getEvents()) {
+                            list.getChildren().add(createEventButton(evt.getTargetId() + 1, evt.getType().toString(), evt.getT()));
                         }
                     }
                 }

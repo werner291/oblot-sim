@@ -16,10 +16,10 @@ public class CombinedPath extends RobotPath {
      * @param paths a list of paths. The start of every path should match the end of the previous path.
      */
     public CombinedPath(List<RobotPath> paths) {
-        super(paths.get(0).start, paths.get(paths.size() - 1).end);
+        super(paths.get(0).getStart(), paths.get(paths.size() - 1).getEnd());
         for (int i = 0; i < paths.size() - 1; i++) {
-            Vector end = paths.get(i).end;
-            Vector start = paths.get(i + 1).start;
+            Vector end = paths.get(i).getEnd();
+            Vector start = paths.get(i + 1).getStart();
             if (!end.equals(start)) {
                 throw new IllegalArgumentException("The end of some path does not match the start of the next");
             }
@@ -30,8 +30,8 @@ public class CombinedPath extends RobotPath {
     @Override
     public Vector interpolate(double tStart, double tEnd, double t) {
         if (tStart == tEnd) {
-            if (start.equals(end)) {
-                return start;
+            if (getStart().equals(getEnd())) {
+                return getStart();
             } else {
                 throw new IllegalArgumentException("Start and end are not the same, but the timestamps are");
             }
@@ -40,9 +40,9 @@ public class CombinedPath extends RobotPath {
             throw new IllegalArgumentException("tStart should be strictly smaller than tEnd");
         }
         if (t <= tStart - Config.EPSILON) {
-            return start;
+            return getStart();
         } else if (t >= tEnd + Config.EPSILON) {
-            return end;
+            return getEnd();
         }
         if (tStart > t || t > tEnd) {
             throw new IllegalArgumentException("the timestamp to interpolate to should lie strictly in" +
@@ -84,8 +84,8 @@ public class CombinedPath extends RobotPath {
 
     @Override
     public void convertFromLocalToGlobal(PositionTransformation trans, Vector origin) {
-        this.start = trans.localToGlobal(this.start, origin);
-        this.end = trans.localToGlobal(this.end, origin);
+        this.start = trans.localToGlobal(this.getStart(), origin);
+        this.end = trans.localToGlobal(this.getEnd(), origin);
         for (RobotPath p : paths) {
             p.convertFromLocalToGlobal(trans, origin);
         }

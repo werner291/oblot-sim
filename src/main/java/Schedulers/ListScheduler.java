@@ -4,7 +4,6 @@ import Simulator.Robot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A scheduler that produces events based on a list of events.
@@ -33,7 +32,7 @@ public class ListScheduler extends Scheduler {
         for (Event e : l) {
             if (lastEvent == null) {
                 lastEvent = e;
-            } else if (lastEvent.t > e.t) {
+            } else if (lastEvent.getT() > e.getT()) {
                 return false;
             }
         }
@@ -68,7 +67,7 @@ public class ListScheduler extends Scheduler {
             } else {
                 // cannot happen both because k = a.length + b.length, so in this case we have
                 // i < a.length && j < b.length
-                if (a.get(i).t < b.get(j).t) {
+                if (a.get(i).getT() < b.get(j).getT()) {
                     result.add(a.get(i));
                     i++;
                 } else { // in case they are equal it does not matter
@@ -101,20 +100,20 @@ public class ListScheduler extends Scheduler {
             int mid = l + (r - l) / 2;
 
             // check the special case at the beginning
-            if (mid == 0 && events.get(0).t > t) {
+            if (mid == 0 && events.get(0).getT() > t) {
                 return 0;
             }
 
             // check the special cases at the end
-            if (mid == events.size() - 2 && events.get(mid+1).t <= t) { // -2 because mid calculation will always be rounded down
+            if (mid == events.size() - 2 && events.get(mid + 1).getT() <= t) { // -2 because mid calculation will always be rounded down
                 return events.size();
             }
-            if (events.get(mid).t <= t && events.get(mid+1).t > t) {
+            if (events.get(mid).getT() <= t && events.get(mid + 1).getT() > t) {
                 return mid+1;
             }
 
             // recurse on left or right part of the array
-            if (events.get(mid).t > t) {
+            if (events.get(mid).getT() > t) {
                 return binarySearch(l, mid, t);
             } else {
                 return binarySearch(mid, r, t);
@@ -179,24 +178,23 @@ public class ListScheduler extends Scheduler {
     private List<Event> getSameEvents(int start) {
         List<Event> eventsFound = new ArrayList<>();
         int i = start;
-        while (i < events.size() && events.get(i).t == events.get(start).t) {
+        while (i < events.size() && events.get(i).getT() == events.get(start).getT()) {
             eventsFound.add(events.get(i));
             i++;
         }
         return eventsFound;
     }
 
-    @Override
     public void addEvent(Event e) {
         List<Event> toAdd = new ArrayList<>();
         toAdd.add(e);
 
-        Event nextEventForRobot = events.stream().filter(event -> event.r.equals(e.r) && event.t >= e.t).findFirst().orElse(null);
+        Event nextEventForRobot = events.stream().filter(event -> event.getTargetId() == e.getTargetId() && event.getT() >= e.getT()).findFirst().orElse(null);
         if (nextEventForRobot == null) {
             events = merge(events, toAdd);
         } else {
-            EventType nextEventType = nextEventForRobot.type;
-            if (nextEventType == e.type) { // if the event is of the correct type
+            EventType nextEventType = nextEventForRobot.getType();
+            if (nextEventType == e.getType()) { // if the event is of the correct type
                 // remove the next event for this robot and add the new one
                 events.remove(nextEventForRobot);
                 events = merge(events, toAdd);

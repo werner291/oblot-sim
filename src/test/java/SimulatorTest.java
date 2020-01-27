@@ -1,6 +1,6 @@
 import Schedulers.FSyncScheduler;
 import Schedulers.TestUtil;
-import Simulator.Simulator;
+import Simulator.Simulation;
 import Simulator.Robot;
 import Util.Config;
 import Util.Vector;
@@ -29,7 +29,7 @@ class SimulatorTest {
         // Under an FSYNC scheduler, we expect the robots to eventually reach the center of gravity.
         // `.get()` is safe since we know there is at least one robot.
         //noinspection OptionalGetWithoutIsPresent
-        Vector expected = Arrays.stream(robots).map(robot -> robot.pos).reduce((vA, vB) -> vA.add(vB)).get().mult(1 / (double) robots.length);
+        Vector expected = Arrays.stream(robots).map(robot -> robot.getPos()).reduce((vA, vB) -> vA.add(vB)).get().mult(1 / (double) robots.length);
 
         // Initialize the simulator.
         // Multiplicity doesn't matter, but we set it to true since this is a simpler option.
@@ -37,14 +37,14 @@ class SimulatorTest {
         Config config = new Config(true, Double.POSITIVE_INFINITY, true);
 
         // Perhaps consider making this a single static method?
-        Simulator sim = new Simulator(config, robots, new FSyncScheduler());
+        Simulation sim = new Simulation(config, robots, new FSyncScheduler());
 
         // Run until it all stops. Note that this implies that it stops.
         sim.simulateTillTimestamp(Double.POSITIVE_INFINITY);
 
         // Expect the robots to have gathered exactly at the COG.
         for (Robot r : robots) {
-            assertEquals(robots[0].pos, r.pos);
+            assertEquals(robots[0].getPos(), r.getPos());
         }
 
     }

@@ -46,7 +46,7 @@ public class AsyncScheduler extends Scheduler {
     }
 
     private EventType getNextEventType (Robot robot) {
-        switch (robot.state) {
+        switch (robot.getState()) {
             case SLEEPING:
                 return EventType.START_COMPUTE;
             case COMPUTING:
@@ -67,14 +67,14 @@ public class AsyncScheduler extends Scheduler {
         Robot earliestNextEventRobot = null;
         List<Event> events = new ArrayList<>();
         for (Robot robot: robots) {
-            if (robot.state == State.COMPUTING) {
-                if (robot.lastStateChange + maxComputeTime < earliestNextEventTime) {
-                    earliestNextEventTime = robot.lastStateChange + maxComputeTime;
+            if (robot.getState() == State.COMPUTING) {
+                if (robot.getInCurrentStateSince() + maxComputeTime < earliestNextEventTime) {
+                    earliestNextEventTime = robot.getInCurrentStateSince() + maxComputeTime;
                     earliestNextEventRobot = robot;
                 }
-            }else if (robot.state == State.MOVING) {
-                if (robot.lastStateChange + maxMoveTime < earliestNextEventTime) {
-                    earliestNextEventTime = robot.lastStateChange + maxMoveTime;
+            }else if (robot.getState() == State.MOVING) {
+                if (robot.getInCurrentStateSince() + maxMoveTime < earliestNextEventTime) {
+                    earliestNextEventTime = robot.getInCurrentStateSince() + maxMoveTime;
                     earliestNextEventRobot = robot;
                 }
             }
@@ -87,7 +87,7 @@ public class AsyncScheduler extends Scheduler {
 
         if (earliestNextEventTime - t < 0.2) {
             EventType eventType = getNextEventType(earliestNextEventRobot);
-            events.add(new Event(eventType, earliestNextEventTime, earliestNextEventRobot));
+            events.add(new Event(eventType, earliestNextEventTime, earliestNextEventRobot.getId()));
             return events;
         }
 
@@ -101,23 +101,23 @@ public class AsyncScheduler extends Scheduler {
         }
 
         if (forcedEvent) {
-            events.add(new Event(EventType.END_MOVING, earliestNextEventTime, earliestNextEventRobot));
+            events.add(new Event(EventType.END_MOVING, earliestNextEventTime, earliestNextEventRobot.getId()));
             return events;
         }
 
         List<Robot> availableRobots = new ArrayList<>();
         for (Robot robot: robots) {
-            switch (robot.state) {
+            switch (robot.getState()) {
                 case SLEEPING:
                     availableRobots.add(robot);
                     break;
                 case COMPUTING:
-                    if (robot.lastStateChange + minComputeTime < t) {
+                    if (robot.getInCurrentStateSince() + minComputeTime < t) {
                         availableRobots.add(robot);
                     }
                     break;
                 case MOVING:
-                    if (robot.lastStateChange + minMoveTime < t && !endMovingTimes.containsKey(robot)) {
+                    if (robot.getInCurrentStateSince() + minMoveTime < t && !endMovingTimes.containsKey(robot)) {
                         availableRobots.add(robot);
                     }
                     break;
@@ -128,43 +128,42 @@ public class AsyncScheduler extends Scheduler {
             double earliestMinNextEventTime = Double.MAX_VALUE;
             Robot earliestMinNextEventRobot = null;
             for (Robot robot: robots) {
-                switch (robot.state) {
+                switch (robot.getState()) {
                     case COMPUTING:
-                        if (robot.lastStateChange + minComputeTime < earliestMinNextEventTime) {
-                            earliestMinNextEventTime = robot.lastStateChange + minComputeTime;
+                        if (robot.getInCurrentStateSince() + minComputeTime < earliestMinNextEventTime) {
+                            earliestMinNextEventTime = robot.getInCurrentStateSince() + minComputeTime;
                             earliestMinNextEventRobot = robot;
                         }
                     case MOVING:
-                        if (robot.lastStateChange + minMoveTime < earliestMinNextEventTime) {
-                            earliestMinNextEventTime = robot.lastStateChange + minMoveTime;
+                        if (robot.getInCurrentStateSince() + minMoveTime < earliestMinNextEventTime) {
+                            earliestMinNextEventTime = robot.getInCurrentStateSince() + minMoveTime;
                             earliestMinNextEventRobot = robot;
                         }
 
                 }
             }
             EventType eventType = getNextEventType(earliestMinNextEventRobot);
-            events.add(new Event(eventType, earliestMinNextEventTime, earliestMinNextEventRobot));
+            events.add(new Event(eventType, earliestMinNextEventTime, earliestMinNextEventRobot.getId()));
             return events;
         }
 
         Robot chosenRobot = availableRobots.get(random.nextInt(availableRobots.size()));
         EventType eventType = getNextEventType(chosenRobot);
         double eventTime = t + (earliestNextEventTime - t) * random.nextDouble();
-        events.add(new Event(eventType, eventTime, chosenRobot));
+        events.add(new Event(eventType, eventTime, chosenRobot.getId()));
 
         lastRequestedEventTime = t;
         lastReturnedEvents = events;
         return events;
     }
 
-    @Override
-    public void addEvent(Event e) {
-        if (e.type==EventType.END_MOVING) {
-            if (!endMovingTimes.containsKey(e.r)) {
-                endMovingTimes.put(e.r, e.t);
-            }else if (e.t > endMovingTimes.get(e.r)) {
-                endMovingTimes.put(e.r, e.t);
-            }
-        }
-    }
+//    public void addEvent(Event e) {
+//        if (e.getType() ==EventType.END_MOVING) {
+//            if (!endMovingTimes.containsKey(e.r)) {
+//                endMovingTimes.put(e.r, e.getT());
+//            }else if (e.getT() > endMovingTimes.get(e.r)) {
+//                endMovingTimes.put(e.r, e.getT());
+//            }
+//        }
+//    }
 }

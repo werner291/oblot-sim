@@ -51,7 +51,7 @@ public class FileScheduler extends ListScheduler {
                 List<Event> eventsForRobot = new ArrayList<>(timestamps.length);
                 EventType currentType = EventType.START_COMPUTE;
                 for (double timestamp : timestamps) {
-                    eventsForRobot.add(new Event(currentType, timestamp, robots[lineIndex]));
+                    eventsForRobot.add(new Event(currentType, timestamp, robots[lineIndex].getId()));
                     currentType = EventType.next(currentType);
                 }
                 events = merge(events, eventsForRobot);

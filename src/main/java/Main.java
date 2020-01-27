@@ -1,11 +1,8 @@
 import Algorithms.*;
 import PositionTransformations.RotationTransformation;
-import Schedulers.AsyncScheduler;
 import Schedulers.FSyncScheduler;
-import Schedulers.FileScheduler;
-import Schedulers.ManualScheduler;
 import Schedulers.Scheduler;
-import Simulator.Simulator;
+import Simulator.Simulation;
 import Simulator.Robot;
 import GUI.GUI;
 
@@ -28,11 +25,11 @@ public class Main{
 //        Scheduler s = new FSyncScheduler(1, 1, 1, 1);
         Scheduler s = new FSyncScheduler();
         Util.Config c = new Util.Config(true, -1, true);
-        Simulator simulator = new Simulator(c, robots, s);
+        Simulation simulation = new Simulation(c, robots, s);
 
         Class[] algorithms = new Class[]{GatheringWithMultiplicity.class, GoToCoG.class, GoToRightMost.class, MoveAlongSEC.class};
 
-        GUI.runGUI(args, simulator, algorithms);
+        GUI.runGUI(args, simulation, algorithms);
     }
 
     /**
@@ -44,14 +41,15 @@ public class Main{
         if (filePath == null) {
             System.err.println("Cannot find resource testRobots2");
         }
+        final RotationTransformation basisTransform = new RotationTransformation();
         Robot[] robots = new Robot[0];
         try {
-            robots = Robot.fromFile(new MoveAlongSEC(), null, new File(filePath.toURI()));
+            robots = Robot.robotsFromFile(
+                    new MoveAlongSEC(),
+                    () -> basisTransform.randomize(false, false, false),
+                    new File(filePath.toURI()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
-        }
-        for (Robot r : robots) {
-            r.trans = new RotationTransformation().randomize(false, false, false);
         }
         return robots;
     }
