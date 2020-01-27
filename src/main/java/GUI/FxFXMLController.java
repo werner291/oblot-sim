@@ -1,13 +1,9 @@
 package GUI;
 
-import Algorithms.Algorithm;
 import PositionTransformations.PositionTransformation;
 import Schedulers.*;
 import Util.Config;
 import javafx.animation.AnimationTimer;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import Simulator.Simulation;
@@ -15,7 +11,6 @@ import Simulator.Robot;
 import javafx.beans.binding.*;
 import javafx.beans.property.*;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
@@ -39,8 +34,7 @@ import java.util.function.Supplier;
  * The controller behind the {@link GUI}. The functions here define what happens when
  * the GUI is manipulated using button presses, slider changes etc.
  */
-public class FxFXMLController
-{
+public class FxFXMLController {
     //region Config option checkboxes.
     /**
      * Checkbox whether the robot movements are interruptible.
@@ -204,13 +198,11 @@ public class FxFXMLController
     //endregion
 
     // Add a public no-args constructor
-    public FxFXMLController()
-    {
+    public FxFXMLController() {
     }
 
     @FXML
-    private void initialize()
-    {
+    private void initialize() {
 
 //        eventList.timePickedCB = dragBarSimulation.valueProperty()::set;
 
@@ -252,19 +244,20 @@ public class FxFXMLController
 //            }
 //        });
 //
-//        robotView.drawCoordinateSystems.bind(drawCoordinateSystemsButton.selectedProperty());
-//        robotView.drawSEC.bind(drawSECButton.selectedProperty());
-//        robotView.drawRadii.bind(drawRadiiButton.selectedProperty());
+        robotView.drawCoordinateSystems.bind(drawCoordinateSystemsButton.selectedProperty());
+        robotView.drawSEC.bind(drawSECButton.selectedProperty());
+        robotView.drawRadii.bind(drawRadiiButton.selectedProperty());
 //
-//        playButtonText = Bindings.createStringBinding(() -> isPaused.get() ? "Play" : "Pause", isPaused);
-////        endButtonText = Bindings.createStringBinding(() -> simulatingTillEnd.get() ? "Stop" : "End:", simulatingTillEnd);
-//        playButton.textProperty().bind(playButtonText);
-////        endButton.textProperty().bind(endButtonText);
-////        playButton.disableProperty().bind(simulatingTillEnd);
-////        nextButton.disableProperty().bind(simulatingTillEnd.or(isPaused.not()));
+        playButtonText = Bindings.createStringBinding(() -> isPaused.get() ? "Play" : "Pause", isPaused);
+//        endButtonText = Bindings.createStringBinding(() -> simulatingTillEnd.get() ? "Stop" : "End:", simulatingTillEnd);
+        playButton.textProperty().bind(playButtonText);
+//        endButton.textProperty().bind(endButtonText);
+//        playButton.disableProperty().bind(simulatingTillEnd);
+//        nextButton.disableProperty().bind(simulatingTillEnd.or(isPaused.not()));
 //        endButton.disableProperty().bind(isPaused.not());
 //
-//        eventList.vvalueProperty().bind(eventList.list.heightProperty());
+        eventList.vvalueProperty().bind(eventList.list.heightProperty());
+
 //
 //        isPaused.addListener((observableValue, aBoolean, t1) -> canPickAlgorithm(!t1));
 //        simulatingTillEnd.addListener((observableValue, aBoolean, t1) -> canPickAlgorithm(t1));
@@ -277,22 +270,16 @@ public class FxFXMLController
 
     private void stepTime() {
         if (!isPaused.get()) {
-            simulation.currentTimeProperty().set(simulation.getCurrentTime() + playBackSpeed.get() / frameRate.get());
-
-
+                    simulation.currentTimeProperty().set(simulation.getCurrentTime() + playBackSpeed.get() / frameRate.get());
         }
 
-        //
-//                // Prevents trying to draw the simulator before it's fully initialized. (race condition)
-                if (this.simulation != null && System.currentTimeMillis() > lastFrametime + 1000.0f / frameRate.get()) {
-//                    lastFrametime = System.currentTimeMillis();
-//                    // If the bar is playing increment it
-//                    if (!isPaused.get()) {
-//                        playDragBar();
-//                    }
-//                    recomputeRobots(dragBarSimulation.getValue());
-                    robotView.paintCanvas();
-                }
+        // Prevents trying to draw the simulator before it's fully initialized. (race condition)
+        if (this.simulation != null) {
+            // Deduplicate, we don't need such a high framerate
+            if (System.currentTimeMillis() > lastFrametime + 1000.0f / frameRate.get()) {
+                robotView.paintCanvas();
+            }
+        }
 //
 //                // If the simulation is simulating till a certain timestamp then follow that
 //                if (simulatingTillEnd.getValue()) {
@@ -341,7 +328,7 @@ public class FxFXMLController
         for (Node node : algorithmsVBox.getChildren()) {
             assert (node.getClass() == Button.class);
 
-            Button button = (Button)node;
+            Button button = (Button) node;
             button.setDisable(isPlaying);
         }
     }
@@ -435,8 +422,7 @@ public class FxFXMLController
     }
 
     @FXML
-    private void onSaveRun()
-    {
+    private void onSaveRun() {
 //        final FileChooser fc = new FileChooser();
 //
 //        File file = fc.showSaveDialog(null);
@@ -446,8 +432,7 @@ public class FxFXMLController
     }
 
     @FXML
-    private void onSaveRobots()
-    {
+    private void onSaveRobots() {
 //        final FileChooser fc = new FileChooser();
 //
 //        File file = fc.showSaveDialog(null);
@@ -462,8 +447,7 @@ public class FxFXMLController
     }
 
     @FXML
-    private void onLoadRun()
-    {
+    private void onLoadRun() {
 //        final FileChooser fc = new FileChooser();
 //        File file = fc.showOpenDialog(null);
 //        if (file != null) {
@@ -477,8 +461,7 @@ public class FxFXMLController
     }
 
     @FXML
-    private void onLoadRobots()
-    {
+    private void onLoadRobots() {
 
 //        // Only prompt if there is anything to be saved/discarded.
 //        if (! simulator.timeline.isEmpty()) {
@@ -524,15 +507,13 @@ public class FxFXMLController
     }
 
     @FXML
-    private void onClear()
-    {
+    private void onClear() {
 //        resetSimulation();
         System.out.println("Clear");
     }
 
     @FXML
-    private void onQuit()
-    {
+    private void onQuit() {
         System.exit(0);
     }
 
@@ -544,15 +525,14 @@ public class FxFXMLController
     }
 
     @FXML
-    private void onAbout()
-    {
+    private void onAbout() {
         new Alert(Alert.AlertType.INFORMATION, "This project was made possible due to the 2IMG00 Course. \n" +
-                                                            "Developed by: \n" +
-                                                            "Bart Smit \n" +
-                                                            "Daan Drijver \n" +
-                                                            "Tom Peters \n" +
-                                                            "Werner Kroneman \n" +
-                                                            "Thank you for using our Simulator!").show();
+                "Developed by: \n" +
+                "Bart Smit \n" +
+                "Daan Drijver \n" +
+                "Tom Peters \n" +
+                "Werner Kroneman \n" +
+                "Thank you for using our Simulator!").show();
         System.out.println("About");
     }
 
@@ -665,6 +645,7 @@ public class FxFXMLController
 
     /**
      * Called to gather the new events and add them to the eventlist, set the new timestep
+     *
      * @return true if the next event exists, false if it does not
      */
     private boolean simulateNextEvent() {
@@ -737,7 +718,7 @@ public class FxFXMLController
     }
 
     private CalculatedEvent checkIfSameTime(List<CalculatedEvent> calculatedEvents, double localTimeStamp) {
-        for(CalculatedEvent calculatedEvent : calculatedEvents) {
+        for (CalculatedEvent calculatedEvent : calculatedEvents) {
             if (calculatedEvent.getTimestamp() == localTimeStamp) return calculatedEvent;
         }
 
@@ -747,9 +728,9 @@ public class FxFXMLController
     /**
      * Cut off the given list of {@link CalculatedEvent} at the timestamp of the one provided, including the one with that timestamp.
      *
-     * @param calculatedEvents  List of events to filter.
-     * @param latestEvent       Event whose timestamp to use as a cutoff point.
-     * @return                  Entries of calculatedEvents upto and including the one with latestEvent's timestamp.
+     * @param calculatedEvents List of events to filter.
+     * @param latestEvent      Event whose timestamp to use as a cutoff point.
+     * @return Entries of calculatedEvents upto and including the one with latestEvent's timestamp.
      */
     private List<CalculatedEvent> removeInvalidCalcEvents(List<CalculatedEvent> calculatedEvents,
                                                           CalculatedEvent latestEvent) {
@@ -781,10 +762,9 @@ public class FxFXMLController
     }
 
     /**
-     *
      * Start/stop running the simulation at maximum speed until we either run out of events,
      * or we hit the maximum running time specified by this.timeToEndSimulation
-     *
+     * <p>
      * TODO: Computes until all the robots have stopped moving and are sleeping, might never finish
      */
     @FXML
@@ -795,9 +775,10 @@ public class FxFXMLController
 
     /**
      * Return the Current calcevent for the given robot
-     * @param robot robot to find the current and next event for
+     *
+     * @param robot      robot to find the current and next event for
      * @param calcEvents the calculated events to search in
-     * @param timestamp timestamp interested in
+     * @param timestamp  timestamp interested in
      * @return two events, the current one and the next one containing the robot r
      * if null, no such event exists
      */
@@ -888,7 +869,7 @@ public class FxFXMLController
     }
 
     public void onSelectScheduler(ActionEvent actionEvent, Supplier<Scheduler> schedulerSupplier, boolean force) {
-        String selectedText = ((RadioMenuItem)actionEvent.getSource()).getText();
+        String selectedText = ((RadioMenuItem) actionEvent.getSource()).getText();
         if (!selectedText.equals(lastSelectedScheduler) || force) {
             lastSelectedScheduler = selectedText;
 //            simulator.setScheduler(schedulerSupplier.get());
@@ -906,7 +887,7 @@ public class FxFXMLController
         if (Double.parseDouble(visibilityTextBox.getText()) < 0) {
 //            simulation.config.visibility = 0;
             visibilityTextBox.setText("0");
-        }else {
+        } else {
 //            simulation.config.visibility =  Double.parseDouble(visibilityTextBox.getText());
         }
     }
@@ -932,6 +913,7 @@ public class FxFXMLController
         robotView.getRobotsProperty().bind(this.simulation.robotsProperty());
         this.simulation.currentTimeProperty().bindBidirectional(dragBarSimulation.valueProperty());
         dragBarSimulation.maxProperty().bind(this.simulation.boundProperty());
+        eventList.events.bind(this.simulation.eventsProperty());
     }
     //endregion
 }

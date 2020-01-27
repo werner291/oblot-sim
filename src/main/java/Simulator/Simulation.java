@@ -7,6 +7,7 @@ import Util.Vector;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The main simulator. Works by extracting an event list of the schedule,
@@ -59,11 +60,15 @@ public class Simulation {
 
     /**
      * Extend the timeline until it covers at least the given time t.
+     *
+     * Returns a list of all events that occurred.
      */
-    public void simulateTillTimestamp(double t) {
+    public List<CalculatedEvent> simulateTillTimestamp(double t) {
+        List<CalculatedEvent> resultingEvents = new ArrayList<>();
         while (computedTimelineUntil() < t) {
-            simulateTillNextEvent();
+            simulateTillNextEvent().ifPresent(resultingEvents::add);
         }
+        return resultingEvents;
     }
 
     /**
@@ -79,11 +84,11 @@ public class Simulation {
      *
      * @return Wether a new event was actually computed (as opposed to no new events being available)
      */
-    public boolean simulateTillNextEvent() {
+    public Optional<CalculatedEvent> simulateTillNextEvent() {
 
         // Up no new events are coming up, don't compute any new events.
         if (upcomingEvents == null) {
-            return false;
+            return Optional.empty();
         }
 
         // Get the time at which the events will occur.
@@ -99,12 +104,13 @@ public class Simulation {
             robots.replace(event.getTargetId(), applyEventToRobot(event, robots.get(event.getTargetId()), snapshot));
         }
 
-        timeline.put(eventsTime, new CalculatedEvent(upcomingEvents, robots.values()));
+        final CalculatedEvent newEvent = new CalculatedEvent(upcomingEvents, robots.values());
+        timeline.put(eventsTime, newEvent);
 
         //noinspection Convert2MethodRef
         upcomingEvents = scheduler.getNextEvent(robots.values().toArray((int i) -> new Robot[i]), eventsTime);
 
-        return true;
+        return Optional.of(newEvent);
     }
 
     private Robot applyEventToRobot(Event event, Robot robot, Vector[] snapshot) {
