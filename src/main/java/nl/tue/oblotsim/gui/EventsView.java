@@ -1,7 +1,7 @@
-package GUI;
+package nl.tue.oblotsim.GUI;
 
-import Schedulers.CalculatedEvent;
-import Schedulers.Event;
+import nl.tue.oblotsim.Schedulers.CalculatedEvent;
+import nl.tue.oblotsim.Schedulers.Event;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;

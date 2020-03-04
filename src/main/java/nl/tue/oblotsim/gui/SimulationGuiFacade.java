@@ -1,16 +1,10 @@
-package GUI;
+package nl.tue.oblotsim.GUI;
 
-import GUI.FxFXMLController;
-import Schedulers.CalculatedEvent;
-import Simulator.Robot;
-import Simulator.Simulation;
-import javafx.animation.AnimationTimer;
+import nl.tue.oblotsim.Schedulers.CalculatedEvent;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Simulator.Simulation;
 import javafx.beans.property.*;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
-import java.util.List;
 
 /**
  * A class that bridges the property-based world of JavaFX and the functionally-immutuable Simulation object.

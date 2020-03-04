@@ -1,8 +1,8 @@
-package Algorithms;
+package nl.tue.oblotsim.Algorithms;
 
-import RobotPaths.RobotPath;
-import Simulator.Robot;
-import Util.Vector;
+import nl.tue.oblotsim.RobotPaths.RobotPath;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Util.Vector;
 
 /**
  * An abstract class that is a template for algorithms run by {@link Robot}

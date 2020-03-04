@@ -1,15 +1,5 @@
-package GUI;
-import Schedulers.Event;
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+package nl.tue.oblotsim.GUI;
 import javafx.scene.control.Button;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-
-import java.io.IOException;
-import java.net.URL;
 
 public class EventButton extends Button {
     private double timeStamp = 0;

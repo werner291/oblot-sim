@@ -1,15 +1,14 @@
-package GUI;
+package nl.tue.oblotsim.GUI;
 
-import PositionTransformations.PositionTransformation;
-import Simulator.Robot;
-import Util.Circle;
-import Util.SmallestEnclosingCircle;
-import Util.Vector;
+import nl.tue.oblotsim.PositionTransformations.PositionTransformation;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Util.Circle;
+import nl.tue.oblotsim.Util.SmallestEnclosingCircle;
+import nl.tue.oblotsim.Util.Vector;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -413,7 +412,7 @@ public class RobotView extends Region {
 //            // When clicked, add a new robot in the place that the context menu was opened at.
 //            MenuItem addRobotMenuItem = new MenuItem("Add robot");
 //            addRobotMenuItem.setOnAction(actionEvent -> {
-//                Robot[] localRobots = robotManager.getRobots();
+//                List<Robot> localRobots = robotManager.getRobots();
 //                int maxID = Arrays.stream(localRobots).max((a, b) -> Integer.compare(a.getId(), b.getId())).get().getId();
 ////                Robot newRobot = new Robot(maxID + 1, localRobots[0].getAlgo(), canvasToRobotCoords(mouseClick), localRobots[0].getTrans(), path, State.SLEEPING, 1.0, 0.0);
 ////                if (!robotManager.canEditRobots()) {

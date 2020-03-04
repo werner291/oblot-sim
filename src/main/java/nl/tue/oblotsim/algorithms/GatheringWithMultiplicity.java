@@ -1,11 +1,11 @@
-package Algorithms;
+package nl.tue.oblotsim.Algorithms;
 
-import RobotPaths.LinearPath;
-import RobotPaths.RobotPath;
-import Util.Circle;
-import Util.Config;
-import Util.SmallestEnclosingCircle;
-import Util.Vector;
+import nl.tue.oblotsim.RobotPaths.LinearPath;
+import nl.tue.oblotsim.RobotPaths.RobotPath;
+import nl.tue.oblotsim.Util.Circle;
+import nl.tue.oblotsim.Util.Config;
+import nl.tue.oblotsim.Util.SmallestEnclosingCircle;
+import nl.tue.oblotsim.Util.Vector;
 
 import java.util.*;
 import java.util.function.Function;

@@ -1,13 +1,13 @@
-package GUI;
+package nl.tue.oblotsim.GUI;
 
-import PositionTransformations.PositionTransformation;
-import Schedulers.*;
-import Util.Config;
+import nl.tue.oblotsim.PositionTransformations.PositionTransformation;
+import nl.tue.oblotsim.Schedulers.*;
+import nl.tue.oblotsim.Util.Config;
 import javafx.animation.AnimationTimer;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import Simulator.Simulation;
-import Simulator.Robot;
+import nl.tue.oblotsim.Simulator.Simulation;
+import nl.tue.oblotsim.Simulator.Robot;
 import javafx.beans.binding.*;
 import javafx.beans.property.*;
 import javafx.fxml.FXML;
@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 
 /**
  * The controller behind the {@link GUI}. The functions here define what happens when
- * the GUI is manipulated using button presses, slider changes etc.
+ * the nl.tue.oblotsim.GUI is manipulated using button presses, slider changes etc.
  */
 public class FxFXMLController {
     //region Config option checkboxes.
@@ -60,7 +60,7 @@ public class FxFXMLController {
     boolean paddedLastEvent = false;
 
     /**
-     * Property that, if true, means that the GUI is currently running non-stop until the end of the simulation.
+     * Property that, if true, means that the nl.tue.oblotsim.GUI is currently running non-stop until the end of the simulation.
      */
     boolean resetEvents = true;
 
@@ -158,7 +158,7 @@ public class FxFXMLController {
     private AnchorPane canvasBackground;
 
 
-    //region Buttons / checkboxes for PositionTransformations
+    //region Buttons / checkboxes for nl.tue.oblotsim.PositionTransformations
     @FXML
     private CheckMenuItem chiralityAxisButton;
     @FXML
@@ -180,7 +180,7 @@ public class FxFXMLController {
     private String lastSelectedScheduler;
 
     /**
-     * The Simulator currently computing the robot movements.
+     * The nl.tue.oblotsim.Simulator currently computing the robot movements.
      */
     private SimulationGuiFacade simulation;
 
@@ -303,7 +303,7 @@ public class FxFXMLController {
 //                    // Most recent Event
 //                    Event recentEvent = calculatedEvents.get(calculatedEvents.size() - 1).getEvents().get(0);
 //
-//                    // Stop early at he max specified time given in the GUI
+//                    // Stop early at he max specified time given in the nl.tue.oblotsim.GUI
 //                    if (recentEvent.getT() < timeToEndSimulation.get()) {
 //                        simulateNextEvent();
 //                    } else {
@@ -342,10 +342,10 @@ public class FxFXMLController {
 //        assert Arrays.stream(this.localRobots).anyMatch(robot -> robot == toRemove);
 //
 //        //noinspection SuspiciousToArrayCall This works, Intellij just complains about it for some reason.
-//        Robot[] newRobots = Arrays.stream(localRobots).filter(robot -> robot != toRemove).map(robot -> {
+//        List<Robot> newRobots = Arrays.stream(localRobots).filter(robot -> robot != toRemove).map(robot -> {
 //            robot.state = State.SLEEPING;
 //            return robot;
-//        }).toArray(Robot[]::new);
+//        }).toArray(List<Robot>::new);
 ////        simulator.setState(newRobots, new ArrayList<>(), 0);
 //        localRobots = newRobots;
 //        resetSimulation();
@@ -353,8 +353,8 @@ public class FxFXMLController {
     }
 
     public void addRobot(Robot newRobot) {
-//        Robot[] copy = new Robot[localRobots.length + 1];
-//        System.arraycopy(localRobots, 0, copy, 0, localRobots.length);
+//        List<Robot> copy = new Robot[localrobots.size() + 1];
+//        System.arraycopy(localRobots, 0, copy, 0, localrobots.size());
 //        copy[copy.length - 1] = newRobot;
 //        localRobots = copy;
 //        Arrays.stream(localRobots).forEach(r -> r.state = State.SLEEPING);
@@ -497,7 +497,7 @@ public class FxFXMLController {
 //        File robotsFile = fileChooser.showOpenDialog(null);
 //
 //        if (robotsFile != null) {
-//            Robot[] robots = Robot.robotsFromFile(simulator.getRobots()[0].getAlgorithm(), RotationTransformation.IDENTITY, robotsFile);
+//            List<Robot> robots = Robot.robotsFromFile(simulator.getRobots()[0].getAlgorithm(), RotationTransformation.IDENTITY, robotsFile);
 //
 //            /*empty*/
 //            simulator.setState(robots, List.of(/*empty*/), 0.0);
@@ -532,7 +532,7 @@ public class FxFXMLController {
                 "Daan Drijver \n" +
                 "Tom Peters \n" +
                 "Werner Kroneman \n" +
-                "Thank you for using our Simulator!").show();
+                "Thank you for using our nl.tue.oblotsim.Simulator!").show();
         System.out.println("About");
     }
 
@@ -599,8 +599,8 @@ public class FxFXMLController {
 //        recomputeRobots(localTimeStamp);
 //
 //        // Set the reset robots and calculatedevents to the state of the sim
-//        Robot[] copy = new Robot[this.localRobots.length];
-//        for (int i = 0; i < localRobots.length; i++) {
+//        List<Robot> copy = new Robot[this.localrobots.size()];
+//        for (int i = 0; i < localrobots.size(); i++) {
 //            copy[i] = localRobots[i].copy();
 //        }
 //        simulator.setState(copy, newList, localTimeStamp);
@@ -807,7 +807,7 @@ public class FxFXMLController {
 //        // cannot give NullPointer if the algorithms array is not changed in between
 //        System.out.println("Algorithm will be set to: " + algorithmClass.getName());
 //
-//        Robot[] robots = localRobots;
+//        List<Robot> robots = localRobots;
 //        for (Robot r : robots) {
 //            try {
 //                Algorithm algorithm = (Algorithm)algorithmClass.newInstance();
@@ -878,7 +878,7 @@ public class FxFXMLController {
     }
     //endregion
 
-    //region Simulator config options setting/updating.
+    //region nl.tue.oblotsim.Simulator config options setting/updating.
     public void onMultiplicity(ActionEvent actionEvent) {
 //        simulation.config.multiplicity = multiplicityToggle.isSelected();
     }

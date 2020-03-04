@@ -1,4 +1,4 @@
-package GUI;
+package nl.tue.oblotsim.GUI;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;

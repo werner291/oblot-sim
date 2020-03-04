@@ -1,6 +1,6 @@
-package GUI;
+package nl.tue.oblotsim.GUI;
 
-import Simulator.Simulation;
+import nl.tue.oblotsim.Simulator.Simulation;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,12 +12,12 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * Responsible for starting the GUI and fetching the Main.fxml layout file
+ * Responsible for starting the nl.tue.oblotsim.GUI and fetching the nl.tue.oblotsim.Main.fxml layout file
  * If you want to edit what the functions hooked up to gui elements do, look at the {@link FxFXMLController}
- * If you want to edit what functions GUI elements trigger either edit the Main.fxml file or the Controller file
+ * If you want to edit what functions nl.tue.oblotsim.GUI elements trigger either edit the nl.tue.oblotsim.Main.fxml file or the Controller file
  */
 public class GUI extends Application {
-    // only one simulator for every gui. Needs to be static because Application.launch launches a new GUI instance
+    // only one simulator for every gui. Needs to be static because Application.launch launches a new nl.tue.oblotsim.GUI instance
     private static Simulation simulation;
     private static Class[] algorithms;
 
@@ -27,7 +27,7 @@ public class GUI extends Application {
         try {
             URL fxmlFile = getClass().getClassLoader().getResource("Main.fxml");
             if (fxmlFile == null) {
-                throw new NullPointerException("The Main.fxml file does not exist.");
+                throw new NullPointerException("The nl.tue.oblotsim.Main.fxml file does not exist.");
             }
             FXMLLoader loader = new FXMLLoader(fxmlFile);
             Parent root = loader.load();
@@ -35,12 +35,12 @@ public class GUI extends Application {
             loader.<FxFXMLController>getController().setAlgorithms(GUI.algorithms); // set the simulator of the controller
 
             GUI.stage = stage;
-            stage.setTitle("Oblivious Point Robot Simulator.Simulator");
+            stage.setTitle("Oblivious Point Robot nl.tue.oblotsim.Simulator.nl.tue.oblotsim.Simulator");
             stage.initStyle(StageStyle.DECORATED);
             stage.setScene(new Scene(root));
             stage.setWidth(1600);
             stage.setHeight(900);
-            // Show GUI
+            // Show nl.tue.oblotsim.GUI
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,9 +52,9 @@ public class GUI extends Application {
      * @param args the arguments to start the application
      * @param simulation the simulator to start the application with
      */
-    public static void runGUI(String[] args, Simulation simulation, Class[] algorithms) {
+    public static void runGUI(Simulation simulation, Class[] algorithms) {
         GUI.simulation = simulation;
         GUI.algorithms = algorithms;
-        Application.launch(args);
+        Application.launch();
     }
 }

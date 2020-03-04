@@ -1,8 +1,8 @@
-package Algorithms;
+package nl.tue.oblotsim.Algorithms;
 
-import RobotPaths.LinearPath;
-import RobotPaths.RobotPath;
-import Util.Vector;
+import nl.tue.oblotsim.RobotPaths.LinearPath;
+import nl.tue.oblotsim.RobotPaths.RobotPath;
+import nl.tue.oblotsim.Util.Vector;
 
 /**
  * An algorithm that computes the center of gravity of all visible robots and goes there.

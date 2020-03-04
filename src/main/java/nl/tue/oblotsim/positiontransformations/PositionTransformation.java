@@ -1,7 +1,7 @@
-package PositionTransformations;
+package nl.tue.oblotsim.PositionTransformations;
 
-import Simulator.Robot;
-import Util.Vector;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Util.Vector;
 
 import java.util.Arrays;
 import java.util.List;

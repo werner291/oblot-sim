@@ -1,6 +1,6 @@
-package PositionTransformations;
+package nl.tue.oblotsim.PositionTransformations;
 
-import Util.Vector;
+import nl.tue.oblotsim.Util.Vector;
 
 /**
  * A transformation that scales and rotates the coordinate system.
