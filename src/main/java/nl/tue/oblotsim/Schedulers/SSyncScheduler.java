@@ -1,7 +1,7 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
-import Simulator.Robot;
-import Simulator.State;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Simulator.State;
 
 import java.util.*;
 
@@ -44,7 +44,7 @@ public class SSyncScheduler extends Scheduler {
     }
 
     @Override
-    public List<Event> getNextEvent(Robot[] robots, double t) {
+    public List<Event> getNextEvent(List<Robot> robots, double t) {
         if (lastRequestedEventTime == t) {
             return lastReturnedEvents;
         }
@@ -62,8 +62,8 @@ public class SSyncScheduler extends Scheduler {
         List<Event> events = new ArrayList<>();
         switch (nextType) {
             case START_COMPUTE:
-                int NROFRobots = random.nextInt(robots.length-1) + 1;
-                List<Robot> chosenRobots = new ArrayList<>(Arrays.asList(robots));
+                int NROFRobots = random.nextInt(robots.size()-1) + 1;
+                List<Robot> chosenRobots = List.copyOf(robots);
 
                 while (chosenRobots.size() > NROFRobots) {
                     int chosenRobot = random.nextInt(chosenRobots.size());

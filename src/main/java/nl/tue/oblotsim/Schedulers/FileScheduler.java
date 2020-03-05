@@ -1,13 +1,10 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
-import Simulator.Robot;
+import nl.tue.oblotsim.Simulator.Robot;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
-import java.util.stream.IntStream;
 
 /**
  * Scheduler that reads from a file input. The input should have the following format:<br>
@@ -30,13 +27,13 @@ public class FileScheduler extends ListScheduler {
      * @param file the file this scheduler should load
      * @param robots the list of robots for which this scheduler needs to load the schedule
      */
-    public FileScheduler(File file, Robot[] robots) throws FileNotFoundException, IllegalArgumentException {
+    public FileScheduler(File file, List<Robot> robots) throws FileNotFoundException, IllegalArgumentException {
         String filePath = file.getAbsolutePath(); // used for printing
         try {
             int lineIndex = 0;
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) { // while there are still lines
-                if (lineIndex >= robots.length) {
+                if (lineIndex >= robots.size()) {
                     throw new IllegalArgumentException(String.format("The amount of lines in the schedule file %s does not match " +
                             "the amount of given robots! (more lines)", filePath));
                 }
@@ -51,14 +48,14 @@ public class FileScheduler extends ListScheduler {
                 List<Event> eventsForRobot = new ArrayList<>(timestamps.length);
                 EventType currentType = EventType.START_COMPUTE;
                 for (double timestamp : timestamps) {
-                    eventsForRobot.add(new Event(currentType, timestamp, robots[lineIndex].getId()));
+                    eventsForRobot.add(new Event(currentType, timestamp, robots.get(lineIndex).getId()));
                     currentType = EventType.next(currentType);
                 }
                 events = merge(events, eventsForRobot);
                 lineIndex++;
             }
 
-            if (lineIndex != robots.length) {
+            if (lineIndex != robots.size()) {
                 throw new IllegalArgumentException(String.format("The amount of lines in the schedule file %s does not match " +
                         "the amount of given robots! (more robots)", filePath));
             }

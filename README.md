@@ -1,4 +1,4 @@
-# Simulator for Oblivious Robots
+# nl.tue.oblotsim.Simulator for Oblivious Robots
 
 This project features a simulation for oblivious point robots.
 
@@ -6,7 +6,7 @@ It contains:
 
 - Framework code that can be used to implement new robot control algorithms.
 - A headless, event-based simulation that can be used to simulate a number of robots interacting with eachother.
-- A GUI that can be used to visualise a simulation, including replaying the simulation through time, editing the timeline with new events, etc...
+- A nl.tue.oblotsim.GUI that can be used to visualise a simulation, including replaying the simulation through time, editing the timeline with new events, etc...
 
 ## Usage
 
@@ -14,7 +14,7 @@ This project can be built through the Gradle build system through the command `g
 
 This library can then be linked into a project of one's choice. It contains the following classes that are immediately relevant:
 
-- `Simulator` which represents a single simulation. To use it, construct an object, passing it an array of `Robot` instances, a set of configuration settings (such as whether robots can detect multiplicity), and the scheduler to be used. The simulation can be controlled through the various methods in this class.
+- `nl.tue.oblotsim.Simulator` which represents a single simulation. To use it, construct an object, passing it an array of `Robot` instances, a set of configuration settings (such as whether robots can detect multiplicity), and the scheduler to be used. The simulation can be controlled through the various methods in this class.
 
 - `Robot` which represents a single robot during a simulation. Robots take a starting position within the simulation as well as:
     - An `Algorithm` that determines their behavior,which is an abstract class that features a function that maps from a set of positions (that represent what the robot sees) to a single position which tells the simulation where the robot wishes to move.
@@ -23,7 +23,7 @@ This library can then be linked into a project of one's choice. It contains the 
     
 - `Scheduler` which determines when robots perceive the world around them, when they move and, optionally, when they stop moving.
     
-    4 Schedulers are provided:
+    4 nl.tue.oblotsim.Schedulers are provided:
     
     -   `FSyncScheduler`, which implements a fully-synchronous scheduler which guarantees that all robots look at the world at the same time and all stop moving at the same time.
     
@@ -35,7 +35,7 @@ This library can then be linked into a project of one's choice. It contains the 
     
 New schedulers can be written by extending the `Scheduler` abstract class.
 
-- `GUI` which implements an optional graphical interface through which the simulation can be evaluated. It can be started by calling the static method `runGUI`, passing in a `Simulation` object to be visualized and interacted with.
+- `nl.tue.oblotsim.GUI` which implements an optional graphical interface through which the simulation can be evaluated. It can be started by calling the static method `runGUI`, passing in a `Simulation` object to be visualized and interacted with.
     
 ## Simulation model
 
@@ -97,13 +97,13 @@ As with the robots, the `Scheduler` instance will potentially be mutated during 
 Scheduler scheduler = new FSyncScheduler()
 ```
 
-Finally, we can run the simulation by constructing an instance of `Simulator`, passing it the robots we defined earlier,
+Finally, we can run the simulation by constructing an instance of `nl.tue.oblotsim.Simulator`, passing it the robots we defined earlier,
 the configuration options and the scheduler to be used.
 
 The simulation is then run for 1000 time units.
 
 ```
-Simulator sim = new Simulator(config, robots, );
+nl.tue.oblotsim.Simulator sim = new nl.tue.oblotsim.Simulator(config, robots, );
 sim.simulateTillTimestamp(1000.0);
 ```
 
@@ -120,17 +120,17 @@ for (Robot r : robots) {
 }
 ```
 
-Finally, if you wish, you can run the GUI to visualise the simulation. 
+Finally, if you wish, you can run the nl.tue.oblotsim.GUI to visualise the simulation. 
 
 ```
-GUI.runGUI({}, sim);
+nl.tue.oblotsim.GUI.runGUI({}, sim);
 ```
 
-## How to use the GUI
+## How to use the nl.tue.oblotsim.GUI
 
 ![alt text](doc/screenshot.png "Logo Title Text 1")
 
-When opening the GUI, you will be presented with an overview of the current state of the simulation.
+When opening the nl.tue.oblotsim.GUI, you will be presented with an overview of the current state of the simulation.
 
 In the middle of the screen (2), you are presented with an overview of the robots, and their positions at the current timestamp. 
 The robots are drawn as disks with a black outline, their fill color corresponding to their current state: sleeping (white), moving (green) or computing (red).
@@ -147,7 +147,7 @@ and does not affect the outcome of the simulation.
 
 On the right-hand side of the screen (4), you can configure different options, such as choosing which algorithm is used
 to control the robots, and where you can choose a few other configuration options for the simulation. Note that if an algorithm
-and configuration settings were chosen through code before opening the GUI, these will still be used in the simulation until this is changed.
+and configuration settings were chosen through code before opening the nl.tue.oblotsim.GUI, these will still be used in the simulation until this is changed.
 
 Furthermore, at the top of the screen, we can find:
 

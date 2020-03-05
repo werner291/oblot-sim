@@ -1,4 +1,4 @@
-package Util;
+package nl.tue.oblotsim.Util;
 
 /**
  * A vector containing 2 doubles, used for example as position calculator
@@ -277,5 +277,16 @@ public class Vector {
     @Override
     public String toString() {
         return String.format("Vector (%f; %f)", x, y);
+    }
+
+    public Vector normalized() {
+
+        final double len = this.len();
+        return len == 0 ? this : this.mult(1.0/ len);
+    }
+
+    public Vector restrictLength(double maxLength) {
+        final double len = this.len();
+        return len > maxLength ? this.mult(maxLength / len) : this;
     }
 }

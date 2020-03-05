@@ -1,6 +1,6 @@
-package nl.tue.oblotsim.GUI;
+package nl.tue.oblotsim.gui;
 
-import nl.tue.oblotsim.PositionTransformations.PositionTransformation;
+import nl.tue.oblotsim.positiontransformations.PositionTransformation;
 import nl.tue.oblotsim.Simulator.Robot;
 import nl.tue.oblotsim.Util.Circle;
 import nl.tue.oblotsim.Util.SmallestEnclosingCircle;

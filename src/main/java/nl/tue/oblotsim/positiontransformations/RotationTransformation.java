@@ -1,4 +1,4 @@
-package nl.tue.oblotsim.PositionTransformations;
+package nl.tue.oblotsim.positiontransformations;
 
 import nl.tue.oblotsim.Util.Vector;
 

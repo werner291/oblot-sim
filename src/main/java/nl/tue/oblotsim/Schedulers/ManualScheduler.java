@@ -1,6 +1,6 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
-import Simulator.Simulation;
+import nl.tue.oblotsim.Simulator.Simulation;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-import Util.Vector;
+import nl.tue.oblotsim.Util.Vector;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.constraints.DoubleRange;

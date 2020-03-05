@@ -1,4 +1,4 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
 /**
  * The different types of events

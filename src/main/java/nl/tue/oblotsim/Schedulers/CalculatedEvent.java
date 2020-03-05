@@ -1,6 +1,6 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
-import Simulator.Robot;
+import nl.tue.oblotsim.Simulator.Robot;
 
 import java.io.*;
 import java.util.*;
@@ -36,7 +36,7 @@ public class CalculatedEvent implements Serializable {
 //     * @param calculatedEvents List of events that needs to be in the file
 //     * @param robots Array of robots that are used in the events
 //     */
-//    public static void toFile(File file, List<CalculatedEvent> calculatedEvents, Robot[] robots) {
+//    public static void toFile(File file, List<CalculatedEvent> calculatedEvents, List<Robot> robots) {
 //        try {
 //            FileWriter fileWriter = new FileWriter(file);
 //            System.out.println(calculatedEvents.get(0).positions.length);
@@ -85,7 +85,7 @@ public class CalculatedEvent implements Serializable {
 //                String positionsString = scanner.nextLine();
 //                String[] positionStrings = positionsString.split(" ");
 //                Vector[] positions = new Vector[NROF_ROBOTS];
-//                Robot[] robots = new Robot[NROF_ROBOTS];
+//                List<Robot> robots = new Robot[NROF_ROBOTS];
 //                for (int i = 0; i < positionStrings.length; i++) {
 //                    String[] coordinatesString = positionStrings[i].split(",");
 //                    double x = Double.parseDouble(coordinatesString[0]);

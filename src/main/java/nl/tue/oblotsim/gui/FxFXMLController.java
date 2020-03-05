@@ -1,6 +1,6 @@
-package nl.tue.oblotsim.GUI;
+package nl.tue.oblotsim.gui;
 
-import nl.tue.oblotsim.PositionTransformations.PositionTransformation;
+import nl.tue.oblotsim.positiontransformations.PositionTransformation;
 import nl.tue.oblotsim.Schedulers.*;
 import nl.tue.oblotsim.Util.Config;
 import javafx.animation.AnimationTimer;

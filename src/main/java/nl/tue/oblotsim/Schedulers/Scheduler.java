@@ -1,7 +1,7 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
 
-import Simulator.Robot;
+import nl.tue.oblotsim.Simulator.Robot;
 
 import java.util.List;
 
@@ -25,6 +25,6 @@ public abstract class Scheduler {
      * @param t the current time
      * @return the next event(s), null if there is none or a list if multiple happen on the same timestamp
      */
-    public abstract List<Event> getNextEvent(Robot[] robots, double t);
+    public abstract List<Event> getNextEvent(List<Robot> robots, double t);
 
 }

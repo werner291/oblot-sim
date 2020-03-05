@@ -1,7 +1,7 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
-import Simulator.Robot;
-import Simulator.State;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Simulator.State;
 
 import java.util.*;
 
@@ -59,7 +59,7 @@ public class AsyncScheduler extends Scheduler {
     }
 
     @Override
-    public List<Event> getNextEvent(Robot[] robots, double t) {
+    public List<Event> getNextEvent(List<Robot> robots, double t) {
         if (lastRequestedEventTime == t) {
             return lastReturnedEvents;
         }
@@ -82,7 +82,7 @@ public class AsyncScheduler extends Scheduler {
 
         if (earliestNextEventRobot == null) {
             earliestNextEventTime = t + 0.2*random.nextDouble();
-            earliestNextEventRobot = robots[random.nextInt(robots.length)];
+            earliestNextEventRobot = robots.get(random.nextInt(robots.size()));
         }
 
         if (earliestNextEventTime - t < 0.2) {

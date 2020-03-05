@@ -1,10 +1,9 @@
-import PositionTransformations.PositionTransformation;
-import PositionTransformations.RotationTransformation;
-import Util.Vector;
+import nl.tue.oblotsim.positiontransformations.PositionTransformation;
+import nl.tue.oblotsim.positiontransformations.RotationTransformation;
+import nl.tue.oblotsim.Util.Vector;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.constraints.DoubleRange;
-import org.junit.jupiter.api.Test;
 
 public class PositionTransformationTest {
 
@@ -21,8 +20,8 @@ public class PositionTransformationTest {
         Vector p = new Vector(pX, pY);
         PositionTransformation posTrans = new RotationTransformation(unitLength, r, chirality);
 
-        return p.equalsWithinEpsilon(posTrans.localToGlobal(posTrans.globalToLocal(p, origin), origin), 10E-5)
-                && p.equalsWithinEpsilon(posTrans.globalToLocal(posTrans.localToGlobal(p, origin), origin), 10E-5);
+        return p.equalsWithinEpsilon(posTrans.localToGlobal(posTrans.globalToLocal(p, origin), origin), 10E-4)
+                && p.equalsWithinEpsilon(posTrans.globalToLocal(posTrans.localToGlobal(p, origin), origin), 10E-4);
     }
 
 }

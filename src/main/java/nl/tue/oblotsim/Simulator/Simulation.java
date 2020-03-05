@@ -1,13 +1,12 @@
-package Simulator;
+package nl.tue.oblotsim.Simulator;
 
-import RobotPaths.RobotPath;
-import Schedulers.*;
-import Util.Config;
-import Util.Vector;
+import nl.tue.oblotsim.RobotPaths.RobotPath;
+import nl.tue.oblotsim.Schedulers.*;
+import nl.tue.oblotsim.Util.Config;
+import nl.tue.oblotsim.Util.Vector;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The main simulator. Works by extracting an event list of the schedule,
@@ -37,12 +36,13 @@ public class Simulation {
      */
     public Scheduler scheduler;
 
-    public Simulation(Config c, Robot[] robots, Scheduler scheduler) {
+    public Simulation(Config c, Collection<Robot> robots, Scheduler scheduler) {
         this.config = c;
         this.scheduler = scheduler;
         // Making assumption: No events at time 0. Dangerous?
-        timeline.put(0.0 , new CalculatedEvent(List.of(), List.of(robots)));
-        upcomingEvents = scheduler.getNextEvent(robots, 0.0);
+        final List<Robot> snapshot = List.copyOf(robots);
+        timeline.put(0.0 , new CalculatedEvent(List.of(), snapshot));
+        upcomingEvents = scheduler.getNextEvent(Collections.unmodifiableList(snapshot), 0.0);
     }
 
     /**
@@ -108,7 +108,7 @@ public class Simulation {
         timeline.put(eventsTime, newEvent);
 
         //noinspection Convert2MethodRef
-        upcomingEvents = scheduler.getNextEvent(robots.values().toArray((int i) -> new Robot[i]), eventsTime);
+        upcomingEvents = scheduler.getNextEvent(List.copyOf(robots.values()), eventsTime);
 
         return Optional.of(newEvent);
     }

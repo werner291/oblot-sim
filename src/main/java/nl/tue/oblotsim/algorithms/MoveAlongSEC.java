@@ -1,4 +1,4 @@
-package nl.tue.oblotsim.Algorithms;
+package nl.tue.oblotsim.algorithms;
 
 import nl.tue.oblotsim.RobotPaths.CircularPath;
 import nl.tue.oblotsim.RobotPaths.CombinedPath;

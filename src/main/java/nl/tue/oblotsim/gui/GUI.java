@@ -1,4 +1,4 @@
-package nl.tue.oblotsim.GUI;
+package nl.tue.oblotsim.gui;
 
 import nl.tue.oblotsim.Simulator.Simulation;
 import javafx.application.Application;

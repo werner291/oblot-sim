@@ -1,7 +1,7 @@
-package RobotPaths;
+package nl.tue.oblotsim.RobotPaths;
 
-import PositionTransformations.PositionTransformation;
-import Util.Vector;
+import nl.tue.oblotsim.positiontransformations.PositionTransformation;
+import nl.tue.oblotsim.Util.Vector;
 
 public abstract class RobotPath {
 

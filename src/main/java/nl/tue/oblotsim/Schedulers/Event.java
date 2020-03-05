@@ -1,6 +1,6 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
-import Simulator.Robot;
+import nl.tue.oblotsim.Simulator.Robot;
 
 /**
  * An event of a robot. Could be either start compute, start moving

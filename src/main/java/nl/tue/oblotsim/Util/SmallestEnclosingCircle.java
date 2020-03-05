@@ -1,4 +1,4 @@
-package Util;
+package nl.tue.oblotsim.Util;
 
 import java.util.ArrayList;
 import java.util.HashSet;

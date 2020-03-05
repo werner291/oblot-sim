@@ -1,7 +1,7 @@
-package Util;
+package nl.tue.oblotsim.Util;
 
 /**
- * A class containing parameters for the {@link Simulator}
+ * A class containing parameters for the {@link nl.tue.oblotsim.Simulator}
  */
 public class Config {
 

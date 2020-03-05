@@ -1,19 +1,4 @@
-package Schedulers;
-
-import Simulator.Robot;
-import Simulator.State;
-import net.jqwik.api.Example;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
+package nl.tue.oblotsim.Schedulers;
 
 class SchedulerTest {
 //

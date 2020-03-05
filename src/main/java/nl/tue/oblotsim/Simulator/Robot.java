@@ -1,16 +1,16 @@
-package Simulator;
+package nl.tue.oblotsim.Simulator;
 
-import Algorithms.Algorithm;
-import PositionTransformations.PositionTransformation;
-import RobotPaths.RobotPath;
-import Schedulers.Event;
-import Schedulers.EventType;
-import Util.Vector;
+import nl.tue.oblotsim.algorithms.Algorithm;
+import nl.tue.oblotsim.positiontransformations.PositionTransformation;
+import nl.tue.oblotsim.RobotPaths.RobotPath;
+import nl.tue.oblotsim.Util.Vector;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalDouble;
 import java.util.Scanner;
 import java.util.function.Supplier;
@@ -64,10 +64,10 @@ public class Robot {
      * @param robots The robots to same to the file.
      * @throws FileNotFoundException If the file location cannot be found.
      */
-    public static void toFile(File file, Robot[] robots) throws FileNotFoundException {
+    public static void toFile(File file, List<Robot> robots) throws FileNotFoundException {
         try (PrintWriter w = new PrintWriter(new FileOutputStream(file))) {
 
-            w.println(robots.length); // Print number of robots first.
+            w.println(robots.size()); // Print number of robots first.
 
             for (Robot robot : robots) {
                 w.println(robot.getPos().x + ", " + robot.getPos().y); // Then x and y positions, 1 per line.
@@ -105,11 +105,11 @@ public class Robot {
      * @param file the file to read the starting configuration from
      * @return a list of robots that start on the positions specified in the file
      */
-    public static Robot[] robotsFromFile(Algorithm algo, Supplier<PositionTransformation> t, File file) {
+    public static List<Robot> robotsFromFile(Algorithm algo, Supplier<PositionTransformation> t, File file) {
         try {
             Scanner s = new Scanner(file);
             int n = Integer.parseInt(s.nextLine());
-            Robot[] robots = new Robot[n];
+            List<Robot> robots = new ArrayList<>(n);
             int i = 0;
             while (s.hasNextLine()) {
                 String nextLine = s.nextLine();
@@ -117,7 +117,7 @@ public class Robot {
                 double x = Double.parseDouble(coordsString[0]);
                 double y = Double.parseDouble(coordsString[1]);
                 Vector pos = new Vector(x, y);
-                robots[i] = new Robot(i, algo, pos, t.get(), null, State.SLEEPING, 1.0, 0.0);
+                robots.add(new Robot(i, algo, pos, t.get(), null, State.SLEEPING, 1.0, 0.0));
                 i++;
             }
             return robots;

@@ -1,4 +1,4 @@
-package nl.tue.oblotsim.GUI;
+package nl.tue.oblotsim.gui;
 import javafx.scene.control.Button;
 
 public class EventButton extends Button {

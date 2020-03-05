@@ -1,12 +1,12 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
-import Algorithms.Algorithm;
-import PositionTransformations.RotationTransformation;
-import RobotPaths.LinearPath;
-import RobotPaths.RobotPath;
-import Simulator.Robot;
-import Simulator.State;
-import Util.Vector;
+import nl.tue.oblotsim.algorithms.Algorithm;
+import nl.tue.oblotsim.positiontransformations.RotationTransformation;
+import nl.tue.oblotsim.RobotPaths.LinearPath;
+import nl.tue.oblotsim.RobotPaths.RobotPath;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Simulator.State;
+import nl.tue.oblotsim.Util.Vector;
 
 import java.util.Arrays;
 

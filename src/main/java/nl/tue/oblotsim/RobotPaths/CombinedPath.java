@@ -1,8 +1,8 @@
-package RobotPaths;
+package nl.tue.oblotsim.RobotPaths;
 
-import PositionTransformations.PositionTransformation;
-import Util.Config;
-import Util.Vector;
+import nl.tue.oblotsim.positiontransformations.PositionTransformation;
+import nl.tue.oblotsim.Util.Config;
+import nl.tue.oblotsim.Util.Vector;
 
 import java.util.Arrays;
 import java.util.List;

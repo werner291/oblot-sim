@@ -1,8 +1,6 @@
-package Simulator;
+package nl.tue.oblotsim.Simulator;
 
-import Schedulers.EventType;
-
-import static Schedulers.EventType.*;
+import nl.tue.oblotsim.Schedulers.EventType;
 
 /**
  * The different states robots can be in.

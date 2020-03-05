@@ -1,14 +1,15 @@
-import Schedulers.FSyncScheduler;
-import Schedulers.TestUtil;
-import Simulator.Simulation;
-import Simulator.Robot;
-import Util.Config;
-import Util.Vector;
+import nl.tue.oblotsim.Schedulers.FSyncScheduler;
+import nl.tue.oblotsim.Schedulers.TestUtil;
+import nl.tue.oblotsim.Simulator.Simulation;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Util.Config;
+import nl.tue.oblotsim.Util.Vector;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -37,7 +38,7 @@ class SimulatorTest {
         Config config = new Config(true, Double.POSITIVE_INFINITY, true);
 
         // Perhaps consider making this a single static method?
-        Simulation sim = new Simulation(config, robots, new FSyncScheduler());
+        Simulation sim = new Simulation(config, List.of(robots), new FSyncScheduler());
 
         // Run until it all stops. Note that this implies that it stops.
         sim.simulateTillTimestamp(Double.POSITIVE_INFINITY);

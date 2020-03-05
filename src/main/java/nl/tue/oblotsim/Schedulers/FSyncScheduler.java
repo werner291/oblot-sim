@@ -1,7 +1,7 @@
-package Schedulers;
+package nl.tue.oblotsim.Schedulers;
 
-import Simulator.Robot;
-import Simulator.State;
+import nl.tue.oblotsim.Simulator.Robot;
+import nl.tue.oblotsim.Simulator.State;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class FSyncScheduler extends SSyncScheduler {
     }
 
     @Override
-    public List<Event> getNextEvent(Robot[] robots, double t) {
+    public List<Event> getNextEvent(List<Robot> robots, double t) {
         if (lastRequestedEventTime == t) {
             return lastReturnedEvents;
         }

@@ -23,10 +23,10 @@
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<?import GUI.RobotView?>
-<?import GUI.EventsView?>
+<?import nl.tue.oblotsim.gui.RobotView?>
+<?import nl.tue.oblotsim.gui.EventsView?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.FxFXMLController">
+<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="nl.tue.oblotsim.gui.FxFXMLController">
     <children>
         <MenuBar VBox.vgrow="NEVER">
             <menus>
@@ -81,7 +81,7 @@
                 <Menu mnemonicParsing="false" text="Help">
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#onGettingStarted" text="Getting Started" />
-                        <MenuItem mnemonicParsing="false" onAction="#onAbout" text="About Simulator.Simulator App" />
+                        <MenuItem mnemonicParsing="false" onAction="#onAbout" text="About nl.tue.oblotsim.Simulator.Simulator App" />
                     </items>
                 </Menu>
             </menus>
@@ -111,7 +111,7 @@
                     <children>
                         <AnchorPane prefHeight="250.0" prefWidth="282.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <children>
-                                <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Algorithms" textAlignment="CENTER" wrapText="false">
+                                <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="nl.tue.oblotsim.algorithms" textAlignment="CENTER" wrapText="false">
                                     <font>
                                         <Font size="18.0" fx:id="x1" />
                                     </font>
