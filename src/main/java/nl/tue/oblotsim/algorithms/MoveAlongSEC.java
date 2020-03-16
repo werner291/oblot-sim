@@ -15,7 +15,7 @@ public class MoveAlongSEC extends Algorithm {
     @Override
     public RobotPath doAlgorithm(Vector[] snapshot) {
         Circle SEC = SmallestEnclosingCircle.makeCircle(Arrays.asList(snapshot));
-        Vector onCircle = SEC.getPointOnCircle(origin);
+        Vector onCircle = SEC.getPointOnCircle(Vector.ZERO);
         Vector toCenter = SEC.c.sub(onCircle);
         RobotPath circlePath =  new CircularPath(onCircle, SEC.c, onCircle.add(toCenter).add(toCenter), false);
         RobotPath linePath = new LinearPath(onCircle);

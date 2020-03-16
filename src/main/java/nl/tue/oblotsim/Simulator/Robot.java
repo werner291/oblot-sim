@@ -45,6 +45,8 @@ public class Robot {
      * @param inCurrentStateSince
      */
     public Robot(int id, Algorithm algo, Vector pos, PositionTransformation trans, RobotPath path, State state, double speed, double inCurrentStateSince) {
+        assert state != State.MOVING || path != null;
+
         this.id = id;
         this.algo = algo;
         this.pos = pos;

@@ -23,8 +23,9 @@ public abstract class Scheduler {
      *
      * @param robots the snapshot of the robots
      * @param t the current time
+     * @param allowEarlyStop
      * @return the next event(s), null if there is none or a list if multiple happen on the same timestamp
      */
-    public abstract List<Event> getNextEvent(List<Robot> robots, double t);
+    public abstract List<Event> getNextEvent(List<Robot> robots, double t, boolean allowEarlyStop);
 
 }

@@ -42,7 +42,7 @@ public class Simulation {
         // Making assumption: No events at time 0. Dangerous?
         final List<Robot> snapshot = List.copyOf(robots);
         timeline.put(0.0 , new CalculatedEvent(List.of(), snapshot));
-        upcomingEvents = scheduler.getNextEvent(Collections.unmodifiableList(snapshot), 0.0);
+        upcomingEvents = scheduler.getNextEvent(Collections.unmodifiableList(snapshot), 0.0, c.interuptable);
     }
 
     /**
@@ -101,14 +101,14 @@ public class Simulation {
         Vector[] snapshot = robots.values().stream().map(robot -> robot.getPos()).toArray(Vector[]::new);
 
         for (Event event : upcomingEvents) {
-            robots.replace(event.getTargetId(), applyEventToRobot(event, robots.get(event.getTargetId()), snapshot));
+            robots.put(event.getTargetId(), applyEventToRobot(event, robots.get(event.getTargetId()), snapshot));
         }
 
         final CalculatedEvent newEvent = new CalculatedEvent(upcomingEvents, robots.values());
         timeline.put(eventsTime, newEvent);
 
         //noinspection Convert2MethodRef
-        upcomingEvents = scheduler.getNextEvent(List.copyOf(robots.values()), eventsTime);
+        upcomingEvents = scheduler.getNextEvent(List.copyOf(robots.values()), eventsTime, config.interuptable);
 
         return Optional.of(newEvent);
     }
@@ -123,11 +123,13 @@ public class Simulation {
             case START_COMPUTE:
                 assert robot.getState() == State.SLEEPING;
                 newPath = robot.calculate(snapshot);
+                assert newPath != null;
                 newState = State.COMPUTING;
                 break;
             case START_MOVING:
                 assert robot.getState() == State.COMPUTING;
                 newPath = robot.getPath();
+                assert newPath != null;
                 newState = State.MOVING;
                 break;
             case END_MOVING:

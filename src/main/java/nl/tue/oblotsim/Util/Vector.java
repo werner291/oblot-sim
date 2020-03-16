@@ -5,6 +5,7 @@ package nl.tue.oblotsim.Util;
  * No function modifies the original vector!
  */
 public class Vector {
+    public static final Vector ZERO = new Vector(0.0, 0.0);
     /**
      * The x coordinate of the vector.
      */

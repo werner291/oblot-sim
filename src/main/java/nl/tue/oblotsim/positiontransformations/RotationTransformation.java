@@ -74,5 +74,5 @@ public class RotationTransformation extends PositionTransformation {
         return this;
     }
 
-    public static PositionTransformation IDENTITY = new RotationTransformation(0.0);
+    public static RotationTransformation IDENTITY = new RotationTransformation(0.0);
 }

@@ -59,7 +59,7 @@ public class AsyncScheduler extends Scheduler {
     }
 
     @Override
-    public List<Event> getNextEvent(List<Robot> robots, double t) {
+    public List<Event> getNextEvent(List<Robot> robots, double t, boolean allowEarlyStop) {
         if (lastRequestedEventTime == t) {
             return lastReturnedEvents;
         }

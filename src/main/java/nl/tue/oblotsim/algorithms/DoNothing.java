@@ -11,6 +11,6 @@ public class DoNothing extends Algorithm {
 
     @Override
     public RobotPath doAlgorithm(Vector[] snapshot) {
-        return new LinearPath(origin);
+        return new LinearPath(Vector.ZERO);
     }
 }

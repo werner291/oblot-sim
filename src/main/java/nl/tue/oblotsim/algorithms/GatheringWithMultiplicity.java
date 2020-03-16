@@ -64,23 +64,23 @@ public class GatheringWithMultiplicity extends Algorithm {
 
         // if this robot is not a leader robot, do nothing. This assumes only 1 leader. Other cases are not implemented.
         Vector leader = getLeaderRobot(stringOfAngles, orderedPoints, SEC);
-        if (!leader.equals(origin)) return new LinearPath(origin);
+        if (!leader.equals(Vector.ZERO)) return new LinearPath(Vector.ZERO);
 
         // the 4 cases
         if (!robotAtCoC) {
             if (!SAmixed) {
                 if (NI > 1) {
-                    return new LinearPath(SEC.getPointOnCircle(origin)); // we are always looking from the perspective of the current robot
+                    return new LinearPath(SEC.getPointOnCircle(Vector.ZERO)); // we are always looking from the perspective of the current robot
                 } else { // NI <= 1
                     return new LinearPath(SEC.c);
                 }
             } else {
                 // pick a random one to go to
-                return new LinearPath(snapshot[0].equals(origin) ? snapshot[1] : snapshot[0]);
+                return new LinearPath(snapshot[0].equals(Vector.ZERO) ? snapshot[1] : snapshot[0]);
             }
         } else {
             if (!SAmixed) {
-                return new LinearPath(snapshot[0].equals(origin) ? snapshot[1] : snapshot[0]);
+                return new LinearPath(snapshot[0].equals(Vector.ZERO) ? snapshot[1] : snapshot[0]);
             } else {
                 return new LinearPath(SEC.c);
             }

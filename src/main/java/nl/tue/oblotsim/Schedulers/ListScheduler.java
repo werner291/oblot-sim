@@ -125,7 +125,7 @@ public class ListScheduler extends Scheduler {
     }
 
     @Override
-    public List<Event> getNextEvent(List<Robot> robots, double t) {
+    public List<Event> getNextEvent(List<Robot> robots, double t, boolean allowEarlyStop) {
         // There can be many events, while the most likely access is in sequential order.
         // Therefore, we maintain the current index and first check if it is the next one.
         // In all other cases, we do a binary search.

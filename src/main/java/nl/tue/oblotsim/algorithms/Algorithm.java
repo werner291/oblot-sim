@@ -9,7 +9,7 @@ import nl.tue.oblotsim.Util.Vector;
  */
 public abstract class Algorithm {
 
-    Vector origin = new Vector(0, 0);
+//    Vector origin = new Vector(0, 0);
 
     /**
      * Calculate a list of positions to go to, given a certain snapshot of the robots.
