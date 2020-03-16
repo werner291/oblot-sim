@@ -264,16 +264,19 @@ public class RobotView extends Region {
         double lineX = LINE_SEP * Math.floor(viewX / LINE_SEP) - viewX;
         double lineY = LINE_SEP * Math.floor(viewY / LINE_SEP) - viewY;
 
-        gc.setStroke(Color.BLACK);
         gc.setLineWidth(1);
 
         // vertical lines
         while (lineX * scale <= portWidth) {
             String label;
             if (viewX + lineX < 0) {
-                label = String.valueOf((int) (viewX + lineX - 0.5));
+                int tick = (int) (viewX + lineX - 0.5);
+                gc.setStroke(tick == 0 ? Color.BLACK : Color.GRAY);
+                label = String.valueOf(tick);
             } else {
-                label = String.valueOf((int) (viewX + lineX + 0.5));
+                int tick = (int) (viewX + lineX + 0.5);
+                gc.setStroke(tick == 0 ? Color.BLACK : Color.GRAY);
+                label = String.valueOf(tick);
             }
             gc.strokeText(label, (int) (lineX * scale) + 4, portHeight - 10);
             gc.strokeLine((int) ((lineX * scale) + 0.5), 0, (int) ((lineX * scale) + 0.5), portHeight);
@@ -284,9 +287,13 @@ public class RobotView extends Region {
         while (lineY * scale <= portHeight) {
             String label;
             if (viewY + lineY < 0) {
-                label = String.valueOf((int) (viewY + lineY - 0.5));
+                int tick = (int) (viewY + lineY - 0.5);
+                gc.setStroke(tick == 0 ? Color.BLACK : Color.GRAY);
+                label = String.valueOf(tick);
             } else {
-                label = String.valueOf((int) (viewY + lineY + 0.5));
+                int tick = (int) (viewY + lineY + 0.5);
+                gc.setStroke(tick == 0 ? Color.BLACK : Color.GRAY);
+                label = String.valueOf(tick);
             }
             gc.strokeText(label, 10, (int) portHeight - (lineY * scale) - 4);
             gc.strokeLine(0, (int) (portHeight - (lineY * scale) + 0.5), portWidth, (int) (portHeight - (lineY * scale) + 0.5));
