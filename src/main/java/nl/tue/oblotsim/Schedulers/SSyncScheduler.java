@@ -32,6 +32,9 @@ public class SSyncScheduler extends Scheduler {
         this.minComputeTime = minComputeTime;
         this.maxComputeTime = maxComputeTime;
 
+        if (minMoveTime <= 0.0) {
+            throw new IllegalArgumentException("minMoveTime should be > 0");
+        }
         this.minMoveTime = minMoveTime;
         this.maxMoveTime = maxMoveTime;
     }
@@ -43,7 +46,7 @@ public class SSyncScheduler extends Scheduler {
 
     /**
      * Pick a random non-empty sublist of the provided list of robots.
-     *
+     * <p>
      * Rng is seeded with the last "in current state since" among the given robots,
      * and should therefore yield the same pic within a round.
      *
@@ -60,17 +63,19 @@ public class SSyncScheduler extends Scheduler {
 
         Collections.shuffle(l, random);
 
-        return l.subList(0, 1 + random.nextInt(l.size()-1));
+        return l.subList(0, 1 + random.nextInt(l.size() - 1));
     }
 
     @Override
     public List<Event> getNextEvent(List<Robot> robots, double t, boolean allowEarlyStop) {
 
-        State currentRobotState = robots.get(0).getState();
-        double since = robots.get(0).getInCurrentStateSince();
+        Robot representative = robots.stream().max(Comparator.comparing(Robot::getInCurrentStateSince))
+                .orElseThrow(() -> new IllegalArgumentException("SSync scheduler not defined for empty robot list."));
+        State currentRobotState = representative.getState();
+        double since = representative.getInCurrentStateSince();
 
-        assert robots.stream().allMatch(robot -> robot.getState() == currentRobotState);
-        assert robots.stream().allMatch(robot -> robot.getInCurrentStateSince() == since);
+        assert robots.stream().allMatch(robot -> robot.getState() == currentRobotState || robot.getState() == State.SLEEPING);
+        assert robots.stream().allMatch(robot -> robot.getInCurrentStateSince() == since || robot.getState() == State.SLEEPING);
 
         switch (currentRobotState) {
 
@@ -88,7 +93,7 @@ public class SSyncScheduler extends Scheduler {
                             .filter(robot -> robot.getState() == State.MOVING)
                             .map(robot -> new Event(EventType.END_MOVING, since + makePseudorandomStopTime(robot, minMoveTime, maxMoveTime), robot.getId())).collect(Collectors.toList());
                 } else {
-                    double lastStopTime = Math.max(minMoveTime, robots.stream().mapToDouble(robot -> robot.willStopBefore().orElse(since)).max().orElse(since));
+                    double lastStopTime = Math.max(since + minMoveTime, robots.stream().mapToDouble(robot -> robot.willStopBefore().orElse(since)).max().orElse(since));
                     return robots.stream()
                             // Filter, because not all robots are active!
                             .filter(robot -> robot.getState() == State.MOVING)

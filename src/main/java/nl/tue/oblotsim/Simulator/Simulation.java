@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * A simulation is effectively stateless, the only stateful component about it is that it is computed gradually,
  * which effectively corresponds to a lazily-loaded sequence of simulation data.
  */
-public class Simulation {
+public class Simulation implements Iterable<CalculatedEvent> {
     /**
      * The {@link Config} for this simulator. Can be changed on the fly.
      */
@@ -41,7 +41,7 @@ public class Simulation {
         this.scheduler = scheduler;
         // Making assumption: No events at time 0. Dangerous?
         final List<Robot> snapshot = List.copyOf(robots);
-        timeline.put(0.0 , new CalculatedEvent(List.of(), snapshot));
+        timeline.put(0.0 , new CalculatedEvent(0.0, List.of(), snapshot));
         upcomingEvents = scheduler.getNextEvent(Collections.unmodifiableList(snapshot), 0.0, c.interuptable);
     }
 
@@ -104,11 +104,13 @@ public class Simulation {
             robots.put(event.getTargetId(), applyEventToRobot(event, robots.get(event.getTargetId()), snapshot));
         }
 
-        final CalculatedEvent newEvent = new CalculatedEvent(upcomingEvents, robots.values());
+        final CalculatedEvent newEvent = new CalculatedEvent(eventsTime, upcomingEvents, robots.values());
+        assert !timeline.containsKey(eventsTime);
         timeline.put(eventsTime, newEvent);
 
         //noinspection Convert2MethodRef
         upcomingEvents = scheduler.getNextEvent(List.copyOf(robots.values()), eventsTime, config.interuptable);
+        assert upcomingEvents.get(0).getT() > eventsTime;
 
         return Optional.of(newEvent);
     }
@@ -168,4 +170,34 @@ public class Simulation {
 
         return evt.getSnapshot().values().stream().map(robot -> robot.movedTo(robot.positionAtTimeWithoutStateChange(timestamp))).collect(Collectors.toList());
     }
+
+    class SimulationIterator implements Iterator<CalculatedEvent> {
+
+        CalculatedEvent next = timeline.isEmpty() ? simulateTillNextEvent().orElse(null) : timeline.firstEntry().getValue();
+
+        @Override
+        public boolean hasNext() {
+            return next != null;
+        }
+
+        @Override
+        public CalculatedEvent next() {
+            CalculatedEvent toReturn = next;
+
+            if (computedTimelineUntil() <= toReturn.getTimestamp()) {
+                simulateTillNextEvent();
+            }
+
+            Map.Entry<Double, CalculatedEvent> lastEntry = timeline.tailMap(toReturn.getTimestamp(), false).firstEntry();
+            next = lastEntry == null ? null : lastEntry.getValue();
+
+            return toReturn;
+        }
+    }
+
+    @Override
+    public Iterator<CalculatedEvent> iterator() {
+        return new SimulationIterator();
+    }
 }
+

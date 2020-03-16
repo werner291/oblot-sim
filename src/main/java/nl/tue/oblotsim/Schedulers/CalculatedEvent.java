@@ -12,18 +12,24 @@ import java.util.stream.Collectors;
  */
 public class CalculatedEvent implements Serializable {
 
+    private double timestamp;
     private List<Event> events;
 
     /**
      * Get the timestamp of the CalculatedEvent.
      */
     public double getTimestamp() {
-        return events.get(0).getT();
+        return timestamp;
     }
 
-    public CalculatedEvent(List<Event> events, Collection<Robot> snapshot) {
+    public CalculatedEvent(double timestamp, List<Event> events, Collection<Robot> snapshot) {
+
         // Defensive copy of the list of events.
+        this.timestamp = timestamp;
         this.events = List.copyOf(events);
+
+        assert events.stream().allMatch(event -> event.getT() == timestamp);
+
         this.snapshot = snapshot.stream().collect(Collectors.toMap(Robot::getId, robot -> robot));
     }
 

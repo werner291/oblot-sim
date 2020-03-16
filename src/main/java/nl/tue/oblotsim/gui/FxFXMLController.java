@@ -914,6 +914,8 @@ public class FxFXMLController {
         this.simulation.currentTimeProperty().bindBidirectional(dragBarSimulation.valueProperty());
         dragBarSimulation.maxProperty().bind(this.simulation.boundProperty());
         eventList.events.bind(this.simulation.eventsProperty());
+
+
     }
     //endregion
 }
